@@ -1,14 +1,15 @@
 package com.backend.gym_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
-import org.hibernate.annotations.CascadeType;
 
 @Entity
-@Data
+@Getter
+@Setter
 @Builder
-@RequiredArgsConstructor
+@NoArgsConstructor
 @AllArgsConstructor
 public class Owner {
 
@@ -22,7 +23,9 @@ public class Owner {
 
     private String phone;
 
-    @OneToOne
-    @Cascade(CascadeType.ALL)
+    private String subscriptionPlan;
+
+    @JsonBackReference
+    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Gym gym;
 }

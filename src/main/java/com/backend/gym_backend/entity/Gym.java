@@ -1,14 +1,13 @@
 package com.backend.gym_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
-import lombok.AllArgsConstructor;
-import lombok.Builder;
-import lombok.Data;
-import lombok.RequiredArgsConstructor;
+import lombok.*;
 
 @Entity
 @Builder
-@Data
+@Getter
+@Setter
 @RequiredArgsConstructor
 @AllArgsConstructor
 public class Gym {
@@ -26,6 +25,7 @@ public class Gym {
 
     private String googleMapUrl;
 
-    @OneToOne
+    @JsonManagedReference
+    @OneToOne(mappedBy = "gym")
     private Owner owner;
 }

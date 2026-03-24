@@ -22,25 +22,14 @@ public class OwnerService {
 
 
     public OwnerDetailsRequestDto save(OwnerDetailsRequestDto ownerDetailsRequestDto) {
-        Gym gym = new Gym();
-        gym.setName(ownerDetailsRequestDto.getGymName());
-        gym.setId(null);
-        gym.setGoogleMapUrl(ownerDetailsRequestDto.getGoogleMapUrl());
-        gym.setLocation(ownerDetailsRequestDto.getLocation());
-        gym.setWebsite(ownerDetailsRequestDto.getWebsite());
-
-        Owner owner = new Owner();
-        owner.setId(null);
-        owner.setPhone(ownerDetailsRequestDto.getPhone());
-        owner.setEmail(ownerDetailsRequestDto.getEmail());
-        owner.setName(ownerDetailsRequestDto.getOwnerName());
-        owner.setGym(gym);
-        gym.setOwner(owner);
-
+        Owner owner = Owner.builder()
+                .id(null)
+                .phone(ownerDetailsRequestDto.getPhone())
+                .email(ownerDetailsRequestDto.getEmail())
+                .name(ownerDetailsRequestDto.getOwnerName())
+                .build();
 
         ownerRepository.save(owner);
-        gymRepository.save(gym);
-
         return ownerDetailsRequestDto;
     }
 
@@ -53,6 +42,7 @@ public class OwnerService {
                 .phone(ownerDetailsRequestDto.getPhone())
                 .email(ownerDetailsRequestDto.getEmail())
                 .name(ownerDetailsRequestDto.getOwnerName())
+                .subscriptionPlan(ownerDetailsRequestDto.getSubscriptionPlan())
                 .build();
 
         ownerRepository.save(owner);
