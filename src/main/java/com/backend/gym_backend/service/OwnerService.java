@@ -49,7 +49,7 @@ public class OwnerService {
             throw new RuntimeException("User not found");
         }
         Owner owner = Owner.builder()
-                .id(null)
+                .id(ownerDetailsRequestDto.getOwnerId())
                 .phone(ownerDetailsRequestDto.getPhone())
                 .email(ownerDetailsRequestDto.getEmail())
                 .name(ownerDetailsRequestDto.getOwnerName())
@@ -59,7 +59,7 @@ public class OwnerService {
         return ownerDetailsRequestDto;
     }
 
-    public String findById(int id) {
+    public OwnerDetailsResponseDto findById(int id) {
         if (!ownerRepository.existsById(id)) {
             throw new RuntimeException("User not found");
         }
@@ -76,7 +76,7 @@ public class OwnerService {
                 .gymId(owner.getGym().getId())
                 .build();
 
-        return "deleted";
+        return responseDto;
     }
 
 
