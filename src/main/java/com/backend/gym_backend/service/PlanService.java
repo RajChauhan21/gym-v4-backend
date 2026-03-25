@@ -8,6 +8,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class PlanService {
 
@@ -83,6 +86,26 @@ public class PlanService {
                 .memberLimit(plan.getMemberLimit())
                 .subscriptions(plan.getSubscriptions())
                 .build();
+    }
+
+    public List<PlanResponseDto> findAllPlans(){
+        List<Plan> all = planRepository.findAll();
+        List<PlanResponseDto> plans = new ArrayList<>();
+        for (Plan p : all){
+            PlanResponseDto build = PlanResponseDto.builder()
+                    .id(p.getId())
+                    .name(p.getName())
+                    .price(p.getPrice())
+                    .days(p.getDays())
+                    .features(p.getFeatures())
+                    .memberLimit(p.getMemberLimit())
+                    .subscriptions(p.getSubscriptions())
+                    .build();
+
+            plans.add(build);
+        }
+
+        return plans;
     }
 
     public String deleteById(Integer id){

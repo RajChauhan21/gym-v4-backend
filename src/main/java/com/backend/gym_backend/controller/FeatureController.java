@@ -15,8 +15,6 @@ public class FeatureController {
     @Autowired
     private FeatureService featureService;
 
-    @Autowired
-    private PlanService planService;
 
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody FeatureRequestDto requestDto) {
@@ -33,9 +31,14 @@ public class FeatureController {
         return new ResponseEntity<>(featureService.findById(id), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAll() {
+        return new ResponseEntity<>(featureService.getAllFeatures(), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
-        return new ResponseEntity<>(planService.deleteById(id),HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(featureService.deleteById(id),HttpStatus.ACCEPTED);
     }
 
 }

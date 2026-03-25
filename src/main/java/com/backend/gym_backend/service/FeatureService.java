@@ -8,6 +8,9 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Service
 public class FeatureService {
 
@@ -63,6 +66,23 @@ public class FeatureService {
                 .name(feature.getName())
                 .description(feature.getDescription())
                 .build();
+    }
+
+    public List<FeatureResponseDto> getAllFeatures(){
+        List<Feature> all = featureRepository.findAll();
+        List<FeatureResponseDto> features = new ArrayList<>();
+        for (Feature f : all){
+            FeatureResponseDto build = FeatureResponseDto.builder()
+                    .id(f.getId())
+                    .features(f.getFeatures())
+                    .description(f.getDescription())
+                    .name(f.getName())
+                    .build();
+
+            features.add(build);
+        }
+
+        return features;
     }
 
     @Transactional

@@ -29,6 +29,11 @@ public class PlanController {
         return new ResponseEntity<>(planService.findById(id), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAllPlans(){
+        return new ResponseEntity<>(planService.findAllPlans(), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(planService.deleteById(id), HttpStatus.ACCEPTED);

@@ -28,6 +28,11 @@ public class PlanFeatureController {
         return new ResponseEntity<>(planFeatureService.findById(PfId), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAllPlanFeatures(){
+        return new ResponseEntity<>(planFeatureService.findAllPlanFeatures(), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer PfId){
         return new ResponseEntity<>(planFeatureService.deleteById(PfId), HttpStatus.ACCEPTED);

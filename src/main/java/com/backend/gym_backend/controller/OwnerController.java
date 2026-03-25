@@ -29,6 +29,11 @@ public class OwnerController {
         return new ResponseEntity<>(ownerService.findById(id), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAllOwners(){
+        return new ResponseEntity<>(ownerService.findAllOwners(), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteOwnerById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(ownerService.deleteById(id), HttpStatus.ACCEPTED);

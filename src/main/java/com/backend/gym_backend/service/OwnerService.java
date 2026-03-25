@@ -9,6 +9,8 @@ import com.backend.gym_backend.repo.OwnerRepository;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -21,7 +23,7 @@ public class OwnerService {
     private GymRepository gymRepository;
 
 
-    public OwnerDetailsRequestDto save(OwnerDetailsRequestDto ownerDetailsRequestDto) {
+    public OwnerDetailsResponseDto save(OwnerDetailsRequestDto ownerDetailsRequestDto) {
         Owner owner = Owner.builder()
                 .id(null)
                 .phone(ownerDetailsRequestDto.getPhone())
@@ -29,8 +31,14 @@ public class OwnerService {
                 .name(ownerDetailsRequestDto.getOwnerName())
                 .build();
 
-        ownerRepository.save(owner);
-        return ownerDetailsRequestDto;
+        Owner save = ownerRepository.save(owner);
+
+        return OwnerDetailsResponseDto.builder()
+                .ownerId(save.getId())
+                .ownerName(save.getName())
+                .email(save.getEmail())
+                .phone(save.getPhone())
+                .build();
     }
 
     public OwnerDetailsRequestDto update(OwnerDetailsRequestDto ownerDetailsRequestDto) {
@@ -42,7 +50,6 @@ public class OwnerService {
                 .phone(ownerDetailsRequestDto.getPhone())
                 .email(ownerDetailsRequestDto.getEmail())
                 .name(ownerDetailsRequestDto.getOwnerName())
-                .subscriptionPlan(ownerDetailsRequestDto.getSubscriptionPlan())
                 .build();
 
         ownerRepository.save(owner);
@@ -67,6 +74,28 @@ public class OwnerService {
                 .build();
 
         return responseDto;
+    }
+    public List<OwnerDetailsResponseDto> findAllOwners(){
+        List<Owner> all = ownerRepository.findAll();
+        List<OwnerDetailsResponseDto> owners = new ArrayList<>();
+
+        for (Owner o : all){
+            OwnerDetailsResponseDto responseDto = OwnerDetailsResponseDto.builder()
+                    .website(o.getGym().getWebsite())
+                    .email(o.getEmail())
+                    .phone(o.getPhone())
+                    .googleMapUrl(o.getGym().getGoogleMapUrl())
+                    .ownerName(o.getName())
+                    .gymName(o.getGym().getName())
+                    .location(o.getGym().getLocation())
+                    .ownerId(o.getId())
+                    .gymId(o.getGym().getId())
+                    .build();
+
+            owners.add(responseDto);
+        }
+
+        return owners;
     }
 
 

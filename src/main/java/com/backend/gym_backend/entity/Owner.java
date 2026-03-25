@@ -26,13 +26,11 @@ public class Owner {
 
     private String phone;
 
-    private String subscriptionPlan;
-
     @JsonBackReference()
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Gym gym;
 
     @JsonManagedReference("own")
-    @OneToMany(mappedBy = "owner")
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
     private List<Subscription> subscription;
 }

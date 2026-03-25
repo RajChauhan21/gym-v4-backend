@@ -11,6 +11,8 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -93,6 +95,23 @@ public class PlanFeatureService {
                 .plan(planFeature.getPlan())
                 .feature(planFeature.getFeature())
                 .build();
+    }
+
+    public List<PlanFeatureResponseDto> findAllPlanFeatures(){
+        List<PlanFeature> all = planFeatureRepository.findAll();
+        List<PlanFeatureResponseDto> planFeatures = new ArrayList<>();
+
+        for(PlanFeature p : all){
+            PlanFeatureResponseDto build = PlanFeatureResponseDto.builder()
+                    .id(p.getId())
+                    .plan(p.getPlan())
+                    .feature(p.getFeature())
+                    .build();
+
+            planFeatures.add(build);
+        }
+
+        return planFeatures;
     }
 
     public String deleteById(Integer id) {

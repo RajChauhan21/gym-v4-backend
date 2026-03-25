@@ -20,13 +20,18 @@ public class GymController {
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@RequestBody GymDetailsRequestDto requestDto){
+    public ResponseEntity<?> update(@RequestBody GymDetailsRequestDto requestDto) throws Exception {
         return new ResponseEntity<>(gymService.update(requestDto), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/findById")
     public ResponseEntity<?> findById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(gymService.findById(id), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/findAll")
+    public ResponseEntity<?> findAllGyms(){
+        return new ResponseEntity<>(gymService.findAllGyms(), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deleteById")
