@@ -31,6 +31,6 @@ public class Plan {
     private List<Subscription> subscriptions;
 
     @JsonManagedReference("pl")
-    @OneToMany(mappedBy = "plan")
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanFeature> features;
 }

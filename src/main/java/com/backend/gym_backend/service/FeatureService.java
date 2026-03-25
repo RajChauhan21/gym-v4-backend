@@ -4,6 +4,7 @@ import com.backend.gym_backend.dto.FeatureRequestDto;
 import com.backend.gym_backend.dto.FeatureResponseDto;
 import com.backend.gym_backend.entity.Feature;
 import com.backend.gym_backend.repo.FeatureRepository;
+import com.backend.gym_backend.repo.PlanFeatureRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -16,6 +17,9 @@ public class FeatureService {
 
     @Autowired
     private FeatureRepository featureRepository;
+
+    @Autowired
+    private PlanFeatureRepository planFeatureRepository;
 
     @Transactional
     public FeatureResponseDto save(FeatureRequestDto requestDto){

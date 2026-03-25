@@ -21,6 +21,6 @@ public class Feature {
     private String description;
 
     @JsonManagedReference("feat")
-    @OneToMany(mappedBy = "feature")
+    @OneToMany(mappedBy = "feature", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanFeature> features;
 }

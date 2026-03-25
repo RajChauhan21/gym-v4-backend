@@ -102,6 +102,7 @@ public class GymService {
         for(Gym g : all){
             GymDetailsResponseDto build = GymDetailsResponseDto.builder()
                     .name(g.getName())
+                    .id(g.getId())
                     .googleMapUrl(g.getGoogleMapUrl())
                     .location(g.getLocation())
                     .website(g.getWebsite())
