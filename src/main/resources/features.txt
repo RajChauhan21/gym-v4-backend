@@ -1,0 +1,11 @@
+INSERT INTO feature (name, description) VALUES
+('Members Management', 'Core functionality to add, edit, and manage gym member profiles.'),
+('Payments Tracking', 'Track successful, pending, and failed transaction records.'),
+('Plans Management', 'Create and configure various membership packages and durations.'),
+('Dashboard Cards', 'Overview metrics for revenue, new sign-ups, and active members.'),
+('Revenue Chart', 'Visual representation of earnings over 7, 30, and 90-day periods.'),
+('Recent Payments Widget', 'Quick-view list of the most recent financial transactions.'),
+('Expiring Members Widget', 'Urgent list of members whose plans are ending soon.'),
+('Advanced Filters', 'Enhanced search capabilities by plan, date range, and status.'),
+('Notifications', 'System alerts for new registrations and membership changes.'),
+('WhatsApp Reminders', 'Automated messaging for renewals and member engagement.');
