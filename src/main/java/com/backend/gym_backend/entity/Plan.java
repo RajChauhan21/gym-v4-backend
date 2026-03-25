@@ -1,0 +1,35 @@
+package com.backend.gym_backend.entity;
+
+import com.fasterxml.jackson.annotation.JsonManagedReference;
+import jakarta.persistence.*;
+import lombok.Getter;
+import lombok.Setter;
+
+import java.util.List;
+
+@Entity
+@Getter
+@Setter
+public class Plan {
+
+    @Id
+    @GeneratedValue(strategy = GenerationType.IDENTITY)
+    private Integer id;
+
+    private String name;
+
+    @Column(unique = true)
+    private Integer price;
+
+    private String days;
+
+    private Integer memberLimit;
+
+    @JsonManagedReference("subs")
+    @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
+    private List<Subscription> subscriptions;
+
+    @JsonManagedReference("pl")
+    @OneToMany(mappedBy = "plan")
+    private List<PlanFeature> features;
+}

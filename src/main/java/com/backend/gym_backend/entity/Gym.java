@@ -25,7 +25,7 @@ public class Gym {
 
     private String googleMapUrl;
 
-    @JsonManagedReference
+    @JsonManagedReference()
     @OneToOne(mappedBy = "gym")
     private Owner owner;
 }

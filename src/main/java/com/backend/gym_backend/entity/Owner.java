@@ -1,9 +1,12 @@
 package com.backend.gym_backend.entity;
 
 import com.fasterxml.jackson.annotation.JsonBackReference;
+import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
+
+import java.util.List;
 
 @Entity
 @Getter
@@ -25,7 +28,11 @@ public class Owner {
 
     private String subscriptionPlan;
 
-    @JsonBackReference
+    @JsonBackReference()
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Gym gym;
+
+    @JsonManagedReference("own")
+    @OneToMany(mappedBy = "owner")
+    private List<Subscription> subscription;
 }
