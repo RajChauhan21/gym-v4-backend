@@ -1,6 +1,6 @@
 package com.backend.gym_backend.controller;
 
-import com.backend.gym_backend.dto.OwnerDetailsRequestDto;
+import com.backend.gym_backend.dto.OwnerDetailsRequest;
 import com.backend.gym_backend.service.OwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,12 @@ public class OwnerController {
     private OwnerService ownerService;
 
     @PostMapping("/save")
-    public ResponseEntity<?> saveOwner(@RequestBody OwnerDetailsRequestDto detailsRequestDto){
+    public ResponseEntity<?> saveOwner(@RequestBody OwnerDetailsRequest detailsRequestDto){
         return new ResponseEntity<>(ownerService.save(detailsRequestDto), HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> updateOwner(@RequestBody OwnerDetailsRequestDto detailsRequestDto){
+    public ResponseEntity<?> updateOwner(@RequestBody OwnerDetailsRequest detailsRequestDto){
         return new ResponseEntity<>(ownerService.update(detailsRequestDto), HttpStatus.ACCEPTED);
     }
 

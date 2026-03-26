@@ -31,6 +31,10 @@ public class Owner {
     private Gym gym;
 
     @JsonManagedReference("own")
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL)
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Subscription> subscription;
+
+    @JsonManagedReference("mem")
+    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
+    private List<Member> members;
 }

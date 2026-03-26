@@ -8,7 +8,7 @@ import lombok.Data;
 
 @Data
 @Builder
-public class PlanFeatureResponseDto {
+public class PlanFeatureResponse {
 
     private Integer id;
 

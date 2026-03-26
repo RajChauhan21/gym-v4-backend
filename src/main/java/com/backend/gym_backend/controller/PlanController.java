@@ -1,6 +1,6 @@
 package com.backend.gym_backend.controller;
 
-import com.backend.gym_backend.dto.PlanRequestDto;
+import com.backend.gym_backend.dto.PlanRequest;
 import com.backend.gym_backend.service.PlanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,12 @@ public class PlanController {
     private PlanService planService;
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody PlanRequestDto requestDto){
+    public ResponseEntity<?> save(@RequestBody PlanRequest requestDto){
         return new ResponseEntity<>(planService.save(requestDto), HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@RequestBody PlanRequestDto requestDto){
+    public ResponseEntity<?> update(@RequestBody PlanRequest requestDto){
         return new ResponseEntity<>(planService.update(requestDto), HttpStatus.ACCEPTED);
     }
 

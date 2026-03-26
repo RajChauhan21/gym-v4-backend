@@ -2,8 +2,6 @@ package com.backend.gym_backend.dto;
 
 import com.backend.gym_backend.entity.PlanFeature;
 import com.backend.gym_backend.entity.Subscription;
-import com.fasterxml.jackson.annotation.JsonManagedReference;
-import jakarta.persistence.*;
 import lombok.Builder;
 import lombok.Data;
 
@@ -11,7 +9,7 @@ import java.util.List;
 
 @Data
 @Builder
-public class PlanResponseDto {
+public class PlanResponse {
 
     private Integer id;
 

@@ -1,8 +1,7 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.OwnerDetailsRequestDto;
-import com.backend.gym_backend.dto.OwnerDetailsResponseDto;
-import com.backend.gym_backend.entity.Gym;
+import com.backend.gym_backend.dto.OwnerDetailsRequest;
+import com.backend.gym_backend.dto.OwnerDetailsResponse;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.repo.GymRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
@@ -11,7 +10,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class OwnerService {
@@ -23,7 +21,7 @@ public class OwnerService {
     private GymRepository gymRepository;
 
 
-    public OwnerDetailsResponseDto save(OwnerDetailsRequestDto ownerDetailsRequestDto) {
+    public OwnerDetailsResponse save(OwnerDetailsRequest ownerDetailsRequestDto) {
         Owner owner = Owner.builder()
                 .id(null)
                 .phone(ownerDetailsRequestDto.getPhone())
@@ -33,7 +31,7 @@ public class OwnerService {
 
         Owner save = ownerRepository.save(owner);
 
-        return OwnerDetailsResponseDto.builder()
+        return OwnerDetailsResponse.builder()
                 .ownerId(save.getId())
                 .ownerName(save.getName())
                 .email(save.getEmail())
@@ -41,7 +39,7 @@ public class OwnerService {
                 .build();
     }
 
-    public OwnerDetailsRequestDto update(OwnerDetailsRequestDto ownerDetailsRequestDto) {
+    public OwnerDetailsRequest update(OwnerDetailsRequest ownerDetailsRequestDto) {
         if (!ownerRepository.existsById(ownerDetailsRequestDto.getOwnerId())) {
             throw new RuntimeException("User not found");
         }
@@ -56,12 +54,12 @@ public class OwnerService {
         return ownerDetailsRequestDto;
     }
 
-    public OwnerDetailsResponseDto findById(int id) {
+    public OwnerDetailsResponse findById(int id) {
         if (!ownerRepository.existsById(id)) {
             throw new RuntimeException("User not found");
         }
         Owner owner = ownerRepository.findById(id).get();
-        OwnerDetailsResponseDto responseDto = OwnerDetailsResponseDto.builder()
+        OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                 .website(owner.getGym().getWebsite())
                 .email(owner.getEmail())
                 .phone(owner.getPhone())
@@ -75,12 +73,12 @@ public class OwnerService {
 
         return responseDto;
     }
-    public List<OwnerDetailsResponseDto> findAllOwners(){
+    public List<OwnerDetailsResponse> findAllOwners(){
         List<Owner> all = ownerRepository.findAll();
-        List<OwnerDetailsResponseDto> owners = new ArrayList<>();
+        List<OwnerDetailsResponse> owners = new ArrayList<>();
 
         for (Owner o : all){
-            OwnerDetailsResponseDto responseDto = OwnerDetailsResponseDto.builder()
+            OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                     .website(o.getGym().getWebsite())
                     .email(o.getEmail())
                     .phone(o.getPhone())

@@ -5,23 +5,16 @@ import lombok.Data;
 
 @Data
 @Builder
-public class OwnerDetailsResponseDto {
+public class OwnerDetailsRequest {
 
     private Integer ownerId;
 
-    private Integer gymId;
-
     private String ownerName;
-
-    private String gymName;
 
     private String email;
 
     private String phone;
 
-    private String website;
+    private String subscriptionPlan;
 
-    private String location;
-
-    private String googleMapUrl;
 }

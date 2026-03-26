@@ -1,7 +1,7 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.PlanRequestDto;
-import com.backend.gym_backend.dto.PlanResponseDto;
+import com.backend.gym_backend.dto.PlanRequest;
+import com.backend.gym_backend.dto.PlanResponse;
 import com.backend.gym_backend.entity.Plan;
 import com.backend.gym_backend.repo.PlanRepository;
 import jakarta.transaction.Transactional;
@@ -18,7 +18,7 @@ public class PlanService {
     private PlanRepository planRepository;
 
     @Transactional
-    public PlanResponseDto save(PlanRequestDto requestDto){
+    public PlanResponse save(PlanRequest requestDto){
         Plan plan = new Plan();
         plan.setId(null);
         plan.setName(requestDto.getName());
@@ -31,7 +31,7 @@ public class PlanService {
         Plan save = planRepository.save(plan);
 
 
-        return PlanResponseDto.builder()
+        return PlanResponse.builder()
                 .id(save.getId())
                 .name(save.getName())
                 .price(save.getPrice())
@@ -44,7 +44,7 @@ public class PlanService {
     }
 
     @Transactional
-    public PlanResponseDto update(PlanRequestDto requestDto){
+    public PlanResponse update(PlanRequest requestDto){
         Plan plan = new Plan();
         plan.setId(requestDto.getId());
         plan.setName(requestDto.getName());
@@ -57,7 +57,7 @@ public class PlanService {
         Plan save = planRepository.save(plan);
 
 
-        return PlanResponseDto.builder()
+        return PlanResponse.builder()
                 .id(save.getId())
                 .name(save.getName())
                 .price(save.getPrice())
@@ -70,14 +70,14 @@ public class PlanService {
     }
 
 
-    public PlanResponseDto findById(Integer id){
+    public PlanResponse findById(Integer id){
         if (!planRepository.existsById(id)){
             throw new RuntimeException("Id not exists");
         }
 
         Plan plan = planRepository.findById(id).get();
 
-        return PlanResponseDto.builder()
+        return PlanResponse.builder()
                 .id(plan.getId())
                 .name(plan.getName())
                 .price(plan.getPrice())
@@ -88,11 +88,11 @@ public class PlanService {
                 .build();
     }
 
-    public List<PlanResponseDto> findAllPlans(){
+    public List<PlanResponse> findAllPlans(){
         List<Plan> all = planRepository.findAll();
-        List<PlanResponseDto> plans = new ArrayList<>();
+        List<PlanResponse> plans = new ArrayList<>();
         for (Plan p : all){
-            PlanResponseDto build = PlanResponseDto.builder()
+            PlanResponse build = PlanResponse.builder()
                     .id(p.getId())
                     .name(p.getName())
                     .price(p.getPrice())

@@ -1,6 +1,6 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.PlanFeatureResponseDto;
+import com.backend.gym_backend.dto.PlanFeatureResponse;
 import com.backend.gym_backend.entity.Feature;
 import com.backend.gym_backend.entity.Plan;
 import com.backend.gym_backend.entity.PlanFeature;
@@ -28,7 +28,7 @@ public class PlanFeatureService {
     private FeatureRepository featureRepository;
 
     @Transactional
-    public PlanFeatureResponseDto addFeaturesToPlan(Integer fId, Integer pId) {
+    public PlanFeatureResponse addFeaturesToPlan(Integer fId, Integer pId) {
         if (!planRepository.existsById(pId)) {
             throw new RuntimeException("Plan id not found");
         }
@@ -45,7 +45,7 @@ public class PlanFeatureService {
         planFeature.setPlan(plan);
         PlanFeature save = planFeatureRepository.save(planFeature);
 
-        return PlanFeatureResponseDto.builder()
+        return PlanFeatureResponse.builder()
                 .id(save.getId())
                 .feature(save.getFeature())
                 .plan(save.getPlan())
@@ -53,7 +53,7 @@ public class PlanFeatureService {
     }
 
     @Transactional
-    public PlanFeatureResponseDto updateFeaturesInPlan(Integer fPId, Integer fId, Integer pId) {
+    public PlanFeatureResponse updateFeaturesInPlan(Integer fPId, Integer fId, Integer pId) {
 
         if (!planFeatureRepository.existsById(fPId)) {
             throw new RuntimeException("Feature-Plan id not found");
@@ -76,33 +76,33 @@ public class PlanFeatureService {
         planFeature.setPlan(plan);
         PlanFeature save = planFeatureRepository.save(planFeature);
 
-        return PlanFeatureResponseDto.builder()
+        return PlanFeatureResponse.builder()
                 .id(save.getId())
                 .feature(save.getFeature())
                 .plan(save.getPlan())
                 .build();
     }
 
-    public PlanFeatureResponseDto findById(Integer id) {
+    public PlanFeatureResponse findById(Integer id) {
         if (!planFeatureRepository.existsById(id)) {
             throw new RuntimeException("Feature-Plan id not found");
         }
 
         PlanFeature planFeature = planFeatureRepository.findById(id).get();
 
-        return PlanFeatureResponseDto.builder()
+        return PlanFeatureResponse.builder()
                 .id(planFeature.getId())
                 .plan(planFeature.getPlan())
                 .feature(planFeature.getFeature())
                 .build();
     }
 
-    public List<PlanFeatureResponseDto> findAllPlanFeatures(){
+    public List<PlanFeatureResponse> findAllPlanFeatures(){
         List<PlanFeature> all = planFeatureRepository.findAll();
-        List<PlanFeatureResponseDto> planFeatures = new ArrayList<>();
+        List<PlanFeatureResponse> planFeatures = new ArrayList<>();
 
         for(PlanFeature p : all){
-            PlanFeatureResponseDto build = PlanFeatureResponseDto.builder()
+            PlanFeatureResponse build = PlanFeatureResponse.builder()
                     .id(p.getId())
                     .plan(p.getPlan())
                     .feature(p.getFeature())

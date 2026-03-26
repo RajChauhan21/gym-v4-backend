@@ -1,7 +1,7 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.GymDetailsRequestDto;
-import com.backend.gym_backend.dto.GymDetailsResponseDto;
+import com.backend.gym_backend.dto.GymDetailsRequest;
+import com.backend.gym_backend.dto.GymDetailsResponse;
 import com.backend.gym_backend.entity.Gym;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.repo.GymRepository;
@@ -21,7 +21,7 @@ public class GymService {
     @Autowired
     private OwnerRepository ownerRepository;
 
-    public GymDetailsResponseDto save(GymDetailsRequestDto requestDto) {
+    public GymDetailsResponse save(GymDetailsRequest requestDto) {
         Gym gym = new Gym();
         gym.setWebsite(requestDto.getWebsite());
         gym.setName(requestDto.getName());
@@ -38,7 +38,7 @@ public class GymService {
         Gym save = gymRepository.save(gym);
 
 
-        return GymDetailsResponseDto.builder()
+        return GymDetailsResponse.builder()
                 .id(save.getId())
                 .name(save.getName())
                 .googleMapUrl(save.getGoogleMapUrl())
@@ -48,7 +48,7 @@ public class GymService {
                 .build();
     }
 
-    public GymDetailsResponseDto update(GymDetailsRequestDto requestDto) throws Exception {
+    public GymDetailsResponse update(GymDetailsRequest requestDto) throws Exception {
         if (!gymRepository.existsById(requestDto.getGymId())){
             throw new RuntimeException("gym id not found");
         }
@@ -68,7 +68,7 @@ public class GymService {
         Gym save = gymRepository.save(gym);
 
 
-        return GymDetailsResponseDto.builder()
+        return GymDetailsResponse.builder()
                 .name(save.getName())
                 .id(save.getId())
                 .googleMapUrl(save.getGoogleMapUrl())
@@ -78,14 +78,14 @@ public class GymService {
                 .build();
     }
 
-    public GymDetailsResponseDto findById(Integer id) {
+    public GymDetailsResponse findById(Integer id) {
         if (gymRepository.findById(id).isEmpty()) {
             throw new RuntimeException("Id not found");
         }
 
         Gym gym = gymRepository.findById(id).get();
 
-        return GymDetailsResponseDto.builder()
+        return GymDetailsResponse.builder()
                 .name(gym.getName())
                 .googleMapUrl(gym.getGoogleMapUrl())
                 .location(gym.getLocation())
@@ -94,12 +94,12 @@ public class GymService {
                 .build();
     }
 
-    public List<GymDetailsResponseDto> findAllGyms(){
+    public List<GymDetailsResponse> findAllGyms(){
         List<Gym> all = gymRepository.findAll();
-        List<GymDetailsResponseDto> gyms = new ArrayList<>();
+        List<GymDetailsResponse> gyms = new ArrayList<>();
 
         for(Gym g : all){
-            GymDetailsResponseDto build = GymDetailsResponseDto.builder()
+            GymDetailsResponse build = GymDetailsResponse.builder()
                     .name(g.getName())
                     .id(g.getId())
                     .googleMapUrl(g.getGoogleMapUrl())

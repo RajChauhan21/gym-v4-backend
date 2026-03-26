@@ -8,7 +8,7 @@ import lombok.Data;
 @Data
 @Builder
 @AllArgsConstructor
-public class GymDetailsResponseDto {
+public class GymDetailsResponse {
 
     private Integer id;
 

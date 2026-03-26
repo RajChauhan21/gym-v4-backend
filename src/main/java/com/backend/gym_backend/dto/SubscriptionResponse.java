@@ -10,7 +10,7 @@ import java.time.LocalDate;
 
 @Data
 @Builder
-public class SubscriptionResponseDto {
+public class SubscriptionResponse {
 
     private Integer id;
 

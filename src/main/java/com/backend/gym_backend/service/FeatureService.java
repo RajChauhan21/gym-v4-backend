@@ -1,7 +1,7 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.FeatureRequestDto;
-import com.backend.gym_backend.dto.FeatureResponseDto;
+import com.backend.gym_backend.dto.FeatureRequest;
+import com.backend.gym_backend.dto.FeatureResponse;
 import com.backend.gym_backend.entity.Feature;
 import com.backend.gym_backend.repo.FeatureRepository;
 import com.backend.gym_backend.repo.PlanFeatureRepository;
@@ -22,7 +22,7 @@ public class FeatureService {
     private PlanFeatureRepository planFeatureRepository;
 
     @Transactional
-    public FeatureResponseDto save(FeatureRequestDto requestDto){
+    public FeatureResponse save(FeatureRequest requestDto){
         Feature feature = new Feature();
 
         feature.setId(null);
@@ -31,7 +31,7 @@ public class FeatureService {
 
         Feature save = featureRepository.save(feature);
 
-        return FeatureResponseDto.builder()
+        return FeatureResponse.builder()
                 .id(save.getId())
                 .features(save.getFeatures())
                 .name(save.getName())
@@ -40,7 +40,7 @@ public class FeatureService {
     }
 
     @Transactional
-    public FeatureResponseDto update(FeatureRequestDto requestDto){
+    public FeatureResponse update(FeatureRequest requestDto){
 
         Feature feature = new Feature();
 
@@ -50,7 +50,7 @@ public class FeatureService {
 
         Feature save = featureRepository.save(feature);
 
-        return FeatureResponseDto.builder()
+        return FeatureResponse.builder()
                 .id(save.getId())
                 .features(save.getFeatures())
                 .name(save.getName())
@@ -58,13 +58,13 @@ public class FeatureService {
                 .build();
     }
 
-    public FeatureResponseDto findById(Integer id){
+    public FeatureResponse findById(Integer id){
         if (!featureRepository.existsById(id)){
             throw new RuntimeException("Id not found");
         }
        Feature feature = featureRepository.findById(id).get();
 
-        return FeatureResponseDto.builder()
+        return FeatureResponse.builder()
                 .id(feature.getId())
                 .features(feature.getFeatures())
                 .name(feature.getName())
@@ -72,11 +72,11 @@ public class FeatureService {
                 .build();
     }
 
-    public List<FeatureResponseDto> getAllFeatures(){
+    public List<FeatureResponse> getAllFeatures(){
         List<Feature> all = featureRepository.findAll();
-        List<FeatureResponseDto> features = new ArrayList<>();
+        List<FeatureResponse> features = new ArrayList<>();
         for (Feature f : all){
-            FeatureResponseDto build = FeatureResponseDto.builder()
+            FeatureResponse build = FeatureResponse.builder()
                     .id(f.getId())
                     .features(f.getFeatures())
                     .description(f.getDescription())

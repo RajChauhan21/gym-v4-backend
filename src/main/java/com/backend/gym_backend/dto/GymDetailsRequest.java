@@ -5,7 +5,7 @@ import lombok.Data;
 
 @Data
 @AllArgsConstructor
-public class GymDetailsRequestDto {
+public class GymDetailsRequest {
 
     private Integer gymId;
 

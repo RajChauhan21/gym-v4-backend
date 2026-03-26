@@ -1,8 +1,7 @@
 package com.backend.gym_backend.controller;
 
-import com.backend.gym_backend.dto.FeatureRequestDto;
+import com.backend.gym_backend.dto.FeatureRequest;
 import com.backend.gym_backend.service.FeatureService;
-import com.backend.gym_backend.service.PlanService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -17,12 +16,12 @@ public class FeatureController {
 
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody FeatureRequestDto requestDto) {
+    public ResponseEntity<?> save(@RequestBody FeatureRequest requestDto) {
         return new ResponseEntity<>(featureService.save(requestDto), HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@RequestBody FeatureRequestDto requestDto) {
+    public ResponseEntity<?> update(@RequestBody FeatureRequest requestDto) {
         return new ResponseEntity<>(featureService.update(requestDto), HttpStatus.ACCEPTED);
     }
 

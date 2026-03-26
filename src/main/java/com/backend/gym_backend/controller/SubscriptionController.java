@@ -23,6 +23,11 @@ public class SubscriptionController {
         return new ResponseEntity<>(subscriptionService.findById(id), HttpStatus.ACCEPTED);
     }
 
+    @DeleteMapping("/deleteById")
+    public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
+        return new ResponseEntity<>(subscriptionService.deleteById(id), HttpStatus.ACCEPTED);
+    }
+
     @GetMapping("/findAll")
     public ResponseEntity<?> findAll(){
         return new ResponseEntity<>(subscriptionService.findAllSubscriptions(), HttpStatus.ACCEPTED);

@@ -1,6 +1,6 @@
 package com.backend.gym_backend.controller;
 
-import com.backend.gym_backend.dto.GymDetailsRequestDto;
+import com.backend.gym_backend.dto.GymDetailsRequest;
 import com.backend.gym_backend.service.GymService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -15,12 +15,12 @@ public class GymController {
     private GymService gymService;
 
     @PostMapping("/save")
-    public ResponseEntity<?> save(@RequestBody GymDetailsRequestDto requestDto){
+    public ResponseEntity<?> save(@RequestBody GymDetailsRequest requestDto){
         return new ResponseEntity<>(gymService.save(requestDto), HttpStatus.ACCEPTED);
     }
 
     @PutMapping("/update")
-    public ResponseEntity<?> update(@RequestBody GymDetailsRequestDto requestDto) throws Exception {
+    public ResponseEntity<?> update(@RequestBody GymDetailsRequest requestDto) throws Exception {
         return new ResponseEntity<>(gymService.update(requestDto), HttpStatus.ACCEPTED);
     }
 

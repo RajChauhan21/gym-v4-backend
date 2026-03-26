@@ -1,10 +1,9 @@
 package com.backend.gym_backend.service;
 
 import com.backend.gym_backend.Status;
-import com.backend.gym_backend.dto.SubscriptionResponseDto;
+import com.backend.gym_backend.dto.SubscriptionResponse;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
-import com.backend.gym_backend.entity.PlanFeature;
 import com.backend.gym_backend.entity.Subscription;
 import com.backend.gym_backend.repo.OwnerRepository;
 import com.backend.gym_backend.repo.PlanFeatureRepository;
@@ -16,7 +15,6 @@ import org.springframework.stereotype.Service;
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class SubscriptionService {
@@ -33,7 +31,7 @@ public class SubscriptionService {
     private PlanFeatureRepository planFeatureRepository;
 
 
-    public SubscriptionResponseDto ownerSubscribesToPlan(Integer oId, Integer pId){
+    public SubscriptionResponse ownerSubscribesToPlan(Integer oId, Integer pId){
         if (!ownerRepository.existsById(oId)){
             throw new RuntimeException("Owner Id not found");
         }
@@ -58,7 +56,7 @@ public class SubscriptionService {
 
         Subscription save = subscriptionRespository.save(subscription);
 
-        return SubscriptionResponseDto.builder()
+        return SubscriptionResponse.builder()
                 .owner(save.getOwner())
                 .plan(save.getPlan())
                 .id(save.getId())
@@ -70,14 +68,14 @@ public class SubscriptionService {
                 .build();
     }
 
-    public SubscriptionResponseDto findById(Integer id){
+    public SubscriptionResponse findById(Integer id){
         if(!planFeatureRepository.existsById(id)){
             throw new RuntimeException("Subscription id not found");
         }
 
         Subscription save = subscriptionRespository.findById(id).get();
 
-       return SubscriptionResponseDto.builder()
+       return SubscriptionResponse.builder()
                 .owner(save.getOwner())
                 .plan(save.getPlan())
                 .id(save.getId())
@@ -90,13 +88,23 @@ public class SubscriptionService {
 
     }
 
+    public String deleteById(Integer id){
+        if(!planFeatureRepository.existsById(id)){
+            throw new RuntimeException("Subscription id not found");
+        }
 
-    public List<SubscriptionResponseDto> findAllSubscriptions(){
+        subscriptionRespository.deleteById(id);
+
+        return "Subscription deleted successfully";
+    }
+
+
+    public List<SubscriptionResponse> findAllSubscriptions(){
         List<Subscription> all = subscriptionRespository.findAll();
-        List<SubscriptionResponseDto> subscriptions = new ArrayList<>();
+        List<SubscriptionResponse> subscriptions = new ArrayList<>();
 
         for (Subscription s : all) {
-            SubscriptionResponseDto build = SubscriptionResponseDto.builder()
+            SubscriptionResponse build = SubscriptionResponse.builder()
                     .owner(s.getOwner())
                     .plan(s.getPlan())
                     .id(s.getId())
