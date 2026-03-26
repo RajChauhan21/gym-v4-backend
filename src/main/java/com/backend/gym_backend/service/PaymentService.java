@@ -48,8 +48,8 @@ public class PaymentService {
         if (!paymentRepository.existsById(id)){
             throw new RuntimeException("payment id not found");
         }
-
-
+        paymentRepository.deleteById(id);
+        return "Deleted successfully";
     }
 
 }

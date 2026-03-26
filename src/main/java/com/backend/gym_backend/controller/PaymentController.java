@@ -5,10 +5,7 @@ import com.backend.gym_backend.service.PaymentService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
-import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestBody;
-import org.springframework.web.bind.annotation.RequestMapping;
-import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.*;
 
 @RestController
 @RequestMapping("/pay")
@@ -20,5 +17,10 @@ public class PaymentController {
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody PaymentRequest request){
         return new ResponseEntity<>(paymentService.save(request), HttpStatus.ACCEPTED);
+    }
+
+    @DeleteMapping("/deleteById")
+    public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
+        return new ResponseEntity<>(paymentService.deleteById(id), HttpStatus.ACCEPTED);
     }
 }
