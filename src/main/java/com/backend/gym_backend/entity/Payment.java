@@ -17,7 +17,7 @@ public class Payment {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    private String amountPaid;
+    private Integer amountPaid;
 
     private LocalDate date;
 
