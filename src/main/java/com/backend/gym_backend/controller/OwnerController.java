@@ -1,6 +1,9 @@
 package com.backend.gym_backend.controller;
 
+import com.backend.gym_backend.dto.AuthRequest;
+import com.backend.gym_backend.dto.AuthResponse;
 import com.backend.gym_backend.dto.OwnerDetailsRequest;
+import com.backend.gym_backend.dto.UserRequest;
 import com.backend.gym_backend.service.OwnerService;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
@@ -13,6 +16,16 @@ public class OwnerController {
 
     @Autowired
     private OwnerService ownerService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> signUp(@RequestBody UserRequest userRequest){
+        return new ResponseEntity<>(ownerService.signUp(userRequest), HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<AuthResponse> logIn(@RequestBody AuthRequest userRequest) throws Exception {
+        return new ResponseEntity<>(ownerService.logIn(userRequest), HttpStatus.ACCEPTED);
+    }
 
     @PostMapping("/save")
     public ResponseEntity<?> saveOwner(@RequestBody OwnerDetailsRequest detailsRequestDto){

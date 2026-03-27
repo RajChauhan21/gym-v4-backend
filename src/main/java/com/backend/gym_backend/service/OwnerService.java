@@ -1,8 +1,6 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.MemberResponse;
-import com.backend.gym_backend.dto.OwnerDetailsRequest;
-import com.backend.gym_backend.dto.OwnerDetailsResponse;
+import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.repo.GymRepository;
@@ -10,10 +8,16 @@ import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AuthenticationManager;
+import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
+import org.springframework.security.core.Authentication;
+import org.springframework.security.core.userdetails.UsernameNotFoundException;
+import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class OwnerService {
@@ -26,6 +30,48 @@ public class OwnerService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private AuthenticationManager authenticationManager;
+
+    @Autowired
+    private BCryptPasswordEncoder bCryptPasswordEncoder;
+
+    @Autowired
+    private JwtService jwtService;
+
+
+    public AuthResponse logIn(AuthRequest userRequest) throws Exception {
+        Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.getEmail(), userRequest.getPassword()));
+
+        if (authenticate.isAuthenticated()) {
+            Owner owner = ownerRepository.findByEmail(userRequest.getEmail()).get();
+            String token = jwtService.generateToken(owner);
+            return AuthResponse.builder()
+                    .password(owner.getPassword())
+                    .username(owner.getEmail())
+                    .token(token)
+                    .build();
+        }
+
+        throw new RuntimeException("please check your credentials");
+    }
+    @Transactional
+    public String signUp(UserRequest userRequest) {
+        Optional<Owner> ownerObj = ownerRepository.findByEmail(userRequest.getEmail());
+
+        if (ownerObj.isPresent()) {
+            throw new RuntimeException(userRequest.getEmail());
+        }
+        String password = bCryptPasswordEncoder.encode(userRequest.getPassword());
+        Owner owner = new Owner();
+        owner.setName(userRequest.getName());
+        owner.setPassword(password);
+        owner.setEmail(userRequest.getEmail());
+        ownerRepository.save(owner);
+
+        return "Account created successfully";
+    }
 
 
     @Transactional
@@ -133,4 +179,5 @@ public class OwnerService {
         ownerRepository.deleteById(id);
         return "deleted";
     }
+
 }
