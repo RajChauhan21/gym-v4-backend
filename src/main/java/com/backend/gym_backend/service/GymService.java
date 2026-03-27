@@ -6,6 +6,7 @@ import com.backend.gym_backend.entity.Gym;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.repo.GymRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class GymService {
     @Autowired
     private OwnerRepository ownerRepository;
 
+    @Transactional
     public GymDetailsResponse save(GymDetailsRequest requestDto) {
         Gym gym = new Gym();
         gym.setWebsite(requestDto.getWebsite());
@@ -48,6 +50,7 @@ public class GymService {
                 .build();
     }
 
+    @Transactional
     public GymDetailsResponse update(GymDetailsRequest requestDto) throws Exception {
         if (!gymRepository.existsById(requestDto.getGymId())){
             throw new RuntimeException("gym id not found");
@@ -114,6 +117,7 @@ public class GymService {
         return gyms;
     }
 
+    @Transactional
     public String deleteById(Integer gymId) {
         if (gymRepository.findById(gymId).isEmpty()) {
             throw new RuntimeException("owner not found");

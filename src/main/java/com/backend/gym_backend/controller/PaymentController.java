@@ -19,6 +19,11 @@ public class PaymentController {
         return new ResponseEntity<>(paymentService.save(request), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getAllPaymentsOfMember")
+    public ResponseEntity<?> save(@RequestParam("q") Integer id){
+        return new ResponseEntity<>(paymentService.getAllPaymentsOfMember(id), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(paymentService.deleteById(id), HttpStatus.ACCEPTED);

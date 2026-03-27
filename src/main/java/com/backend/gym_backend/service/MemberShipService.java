@@ -6,6 +6,7 @@ import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.MemberShip;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.MemberShipRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -21,6 +22,7 @@ public class MemberShipService {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Transactional
     public MemberShipResponse save(MemberShipRequest request) {
         MemberShip memberShip = new MemberShip();
 
@@ -39,6 +41,7 @@ public class MemberShipService {
                 .build();
     }
 
+    @Transactional
     public MemberShipResponse update(MemberShipRequest request) {
         if (!memberShipRepository.existsById(request.getId())) {
             throw new RuntimeException("Id not found");
@@ -75,6 +78,7 @@ public class MemberShipService {
                 .build();
     }
 
+    @Transactional
     public String deleteById(Integer id){
         if (!memberShipRepository.existsById(id)) {
             throw new RuntimeException("Id not found");

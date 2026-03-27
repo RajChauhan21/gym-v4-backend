@@ -1,10 +1,14 @@
 package com.backend.gym_backend.service;
 
+import com.backend.gym_backend.dto.MemberResponse;
 import com.backend.gym_backend.dto.OwnerDetailsRequest;
 import com.backend.gym_backend.dto.OwnerDetailsResponse;
+import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.repo.GymRepository;
+import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -20,7 +24,11 @@ public class OwnerService {
     @Autowired
     private GymRepository gymRepository;
 
+    @Autowired
+    private MemberRepository memberRepository;
 
+
+    @Transactional
     public OwnerDetailsResponse save(OwnerDetailsRequest ownerDetailsRequestDto) {
         Owner owner = Owner.builder()
                 .id(null)
@@ -39,6 +47,7 @@ public class OwnerService {
                 .build();
     }
 
+    @Transactional
     public OwnerDetailsRequest update(OwnerDetailsRequest ownerDetailsRequestDto) {
         if (!ownerRepository.existsById(ownerDetailsRequestDto.getOwnerId())) {
             throw new RuntimeException("User not found");
@@ -95,8 +104,28 @@ public class OwnerService {
 
         return owners;
     }
+    public List<MemberResponse> getAllMembersOfOwner(Integer ownerId){
+        List<MemberResponse> members = new ArrayList<>();
+        List<Member> byOwnerId = memberRepository.findByOwnerId(ownerId);
+        for (Member m : byOwnerId){
+            MemberResponse build = MemberResponse.builder()
+                    .expiry(m.getExpiry())
+                    .name(m.getName())
+                    .joined(m.getJoined())
+                    .id(m.getId())
+                    .dueAmount(m.getDueAmount())
+                    .email(m.getEmail())
+                    .address(m.getAddress())
+                    .phone(m.getPhone())
+                    .build();
+
+            members.add(build);
+        }
+        return members;
+    }
 
 
+    @Transactional
     public String deleteById(int id) {
         if (!ownerRepository.existsById(id)) {
             throw new RuntimeException("User not found");

@@ -29,6 +29,11 @@ public class MemberController {
         return new ResponseEntity<>(memberService.findById(id), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/findByMemberShipId")
+    public ResponseEntity<?> getMembersOnMemberShipId(@RequestParam("q") Integer id){
+        return new ResponseEntity<>(memberService.getMembersOnMemberShipId(id), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(memberService.deleteById(id), HttpStatus.ACCEPTED);

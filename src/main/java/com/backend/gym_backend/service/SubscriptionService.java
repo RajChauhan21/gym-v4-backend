@@ -8,7 +8,8 @@ import com.backend.gym_backend.entity.Subscription;
 import com.backend.gym_backend.repo.OwnerRepository;
 import com.backend.gym_backend.repo.PlanFeatureRepository;
 import com.backend.gym_backend.repo.PlanRepository;
-import com.backend.gym_backend.repo.SubscriptionRespository;
+import com.backend.gym_backend.repo.SubscriptionRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
@@ -26,11 +27,12 @@ public class SubscriptionService {
     private PlanRepository planRepository;
 
     @Autowired
-    private SubscriptionRespository subscriptionRespository;
+    private SubscriptionRepository subscriptionRepository;
+
     @Autowired
     private PlanFeatureRepository planFeatureRepository;
 
-
+    @Transactional
     public SubscriptionResponse ownerSubscribesToPlan(Integer oId, Integer pId){
         if (!ownerRepository.existsById(oId)){
             throw new RuntimeException("Owner Id not found");
@@ -54,7 +56,7 @@ public class SubscriptionService {
         long daysToAdd = (plan.getDays() != null && !plan.getDays().isEmpty()) ? Long.parseLong(plan.getDays()) : 0L;
         subscription.setEndDate(LocalDate.now().plusDays(daysToAdd));
 
-        Subscription save = subscriptionRespository.save(subscription);
+        Subscription save = subscriptionRepository.save(subscription);
 
         return SubscriptionResponse.builder()
                 .owner(save.getOwner())
@@ -73,7 +75,7 @@ public class SubscriptionService {
             throw new RuntimeException("Subscription id not found");
         }
 
-        Subscription save = subscriptionRespository.findById(id).get();
+        Subscription save = subscriptionRepository.findById(id).get();
 
        return SubscriptionResponse.builder()
                 .owner(save.getOwner())
@@ -88,19 +90,60 @@ public class SubscriptionService {
 
     }
 
+    public List<SubscriptionResponse> findSubscriptionsOfOwner(Integer ownerId){
+        List<SubscriptionResponse> subscriptionResponses = new ArrayList<>();
+        List<Subscription> subscriptions = subscriptionRepository.findByOwnerId(ownerId);
+
+        for (Subscription s : subscriptions){
+            SubscriptionResponse build = SubscriptionResponse.builder()
+                    .id(s.getId())
+                    .price(s.getPrice())
+                    .name(s.getName())
+                    .startDate(s.getStartDate())
+                    .endDate(s.getEndDate())
+                    .status(s.getStatus())
+                    .build();
+
+            subscriptionResponses.add(build);
+        }
+
+       return subscriptionResponses;
+    }
+
+    public List<SubscriptionResponse> findSubscriptionsOfPlan(Integer planId){
+        List<SubscriptionResponse> subscriptionResponses = new ArrayList<>();
+        List<Subscription> subscriptions = subscriptionRepository.findByPlanId(planId);
+
+        for (Subscription s : subscriptions){
+            SubscriptionResponse build = SubscriptionResponse.builder()
+                    .id(s.getId())
+                    .price(s.getPrice())
+                    .name(s.getName())
+                    .startDate(s.getStartDate())
+                    .endDate(s.getEndDate())
+                    .status(s.getStatus())
+                    .build();
+
+            subscriptionResponses.add(build);
+        }
+
+       return subscriptionResponses;
+    }
+
+    @Transactional
     public String deleteById(Integer id){
         if(!planFeatureRepository.existsById(id)){
             throw new RuntimeException("Subscription id not found");
         }
 
-        subscriptionRespository.deleteById(id);
+        subscriptionRepository.deleteById(id);
 
         return "Subscription deleted successfully";
     }
 
 
     public List<SubscriptionResponse> findAllSubscriptions(){
-        List<Subscription> all = subscriptionRespository.findAll();
+        List<Subscription> all = subscriptionRepository.findAll();
         List<SubscriptionResponse> subscriptions = new ArrayList<>();
 
         for (Subscription s : all) {

@@ -34,6 +34,11 @@ public class PlanController {
         return new ResponseEntity<>(planService.findAllPlans(), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getAllFeatures")
+    public ResponseEntity<?> getAllFeaturesOfPlan(@RequestParam("q") Integer planId){
+        return new ResponseEntity<>(planService.getAllFeaturesOfPlan(planId), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(planService.deleteById(id), HttpStatus.ACCEPTED);

@@ -23,6 +23,16 @@ public class SubscriptionController {
         return new ResponseEntity<>(subscriptionService.findById(id), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/findSubscriptionsOfPlan")
+    public ResponseEntity<?> findSubscriptionsOfPlan(@RequestParam("p") Integer id){
+        return new ResponseEntity<>(subscriptionService.findSubscriptionsOfPlan(id), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/findSubscriptionsOfOwner")
+    public ResponseEntity<?> findSubscriptionsOfOwner(@RequestParam("p") Integer id){
+        return new ResponseEntity<>(subscriptionService.findSubscriptionsOfOwner(id), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(subscriptionService.deleteById(id), HttpStatus.ACCEPTED);

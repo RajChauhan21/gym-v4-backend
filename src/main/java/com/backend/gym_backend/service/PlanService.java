@@ -1,8 +1,13 @@
 package com.backend.gym_backend.service;
 
+import com.backend.gym_backend.dto.FeatureResponse;
 import com.backend.gym_backend.dto.PlanRequest;
 import com.backend.gym_backend.dto.PlanResponse;
+import com.backend.gym_backend.entity.Feature;
 import com.backend.gym_backend.entity.Plan;
+import com.backend.gym_backend.entity.PlanFeature;
+import com.backend.gym_backend.repo.FeatureRepository;
+import com.backend.gym_backend.repo.PlanFeatureRepository;
 import com.backend.gym_backend.repo.PlanRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -16,6 +21,12 @@ public class PlanService {
 
     @Autowired
     private PlanRepository planRepository;
+
+    @Autowired
+    private PlanFeatureRepository planFeatureRepository;
+
+    @Autowired
+    private FeatureRepository featureRepository;
 
     @Transactional
     public PlanResponse save(PlanRequest requestDto){
@@ -108,6 +119,22 @@ public class PlanService {
         return plans;
     }
 
+    public List<FeatureResponse> getAllFeaturesOfPlan(Integer planId){
+        List<PlanFeature> byPlanId = planFeatureRepository.findByPlanId(planId);
+        List<FeatureResponse> featureResponses = new ArrayList<>();
+        for (PlanFeature p: byPlanId){
+            Feature feature = p.getFeature();
+            FeatureResponse build = FeatureResponse.builder()
+                    .id(feature.getId())
+                    .name(feature.getName())
+                    .description(feature.getDescription())
+                    .build();
+            featureResponses.add(build);
+        }
+        return featureResponses;
+    }
+
+    @Transactional
     public String deleteById(Integer id){
         if (!planRepository.existsById(id)){
             throw new RuntimeException("Id not exists");

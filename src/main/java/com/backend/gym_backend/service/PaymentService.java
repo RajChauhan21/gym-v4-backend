@@ -6,9 +6,11 @@ import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Payment;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.PaymentRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 
 @Service
@@ -20,6 +22,7 @@ public class PaymentService {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Transactional
     public PaymentResponse save(PaymentRequest request){
         if (!memberRepository.existsById(request.getMemberId())){
             throw new RuntimeException("member id not found");
@@ -44,12 +47,54 @@ public class PaymentService {
                 .build();
     }
 
+    @Transactional
+    public PaymentResponse update(PaymentRequest request){
+        if (!memberRepository.existsById(request.getMemberId())){
+            throw new RuntimeException("member id not found");
+        }
+        Payment payment = new Payment();
+        payment.setId(request.getPaymentId());
+        payment.setDate(request.getDate());
+        payment.setMethod(request.getMethod());
+        payment.setAmountPaid(request.getAmountPaid());
+        Payment save = paymentRepository.save(payment);
+        return PaymentResponse.builder()
+                .paymentId(save.getId())
+                .member(save.getMember())
+                .date(save.getDate())
+                .amountPaid(save.getAmountPaid())
+                .method(save.getMethod())
+                .build();
+    }
+
     public String deleteById(Integer id){
         if (!paymentRepository.existsById(id)){
             throw new RuntimeException("payment id not found");
         }
         paymentRepository.deleteById(id);
         return "Deleted successfully";
+    }
+
+    public List<PaymentResponse> getAllPaymentsOfMember(Integer memberId){
+        if (!memberRepository.existsById(memberId)){
+            throw new RuntimeException("member id not found");
+        }
+        Member member = memberRepository.findById(memberId).get();
+
+        List<PaymentResponse> payments = new ArrayList<>();
+
+        for (Payment p : member.getPayments()){
+            PaymentResponse build = PaymentResponse.builder()
+                    .date(p.getDate())
+                    .amountPaid(p.getAmountPaid())
+                    .paymentId(p.getId())
+                    .member(p.getMember())
+                    .build();
+
+            payments.add(build);
+        }
+
+        return payments;
     }
 
 }

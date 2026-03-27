@@ -114,6 +114,7 @@ public class PlanFeatureService {
         return planFeatures;
     }
 
+    @Transactional
     public String deleteById(Integer id) {
         if (!planFeatureRepository.existsById(id)) {
             throw new RuntimeException("Feature-Plan id not found");

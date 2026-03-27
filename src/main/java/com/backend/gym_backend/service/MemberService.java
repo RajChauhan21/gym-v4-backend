@@ -8,10 +8,13 @@ import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.MemberShipRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.util.ArrayList;
+import java.util.List;
 
 @Service
 public class MemberService {
@@ -25,6 +28,7 @@ public class MemberService {
     @Autowired
     private OwnerRepository ownerRepository;
 
+    @Transactional
     public MemberResponse save(MemberRequest request) {
         if (!memberShipRepository.existsById(request.getPackageId())) {
             throw new RuntimeException("Member Ship id not found");
@@ -64,6 +68,7 @@ public class MemberService {
                 .build();
     }
 
+    @Transactional
     public MemberResponse update(MemberRequest request) {
         if (!memberShipRepository.existsById(request.getPackageId())) {
             throw new RuntimeException("Member Ship id not found");
@@ -124,6 +129,29 @@ public class MemberService {
                 .build();
     }
 
+    public List<MemberResponse> getMembersOnMemberShipId(Integer memberShipId) {
+        List<Member> memberList = memberRepository.findByMemberShipId(memberShipId);
+        List<MemberResponse> memberResponses = new ArrayList<>();
+
+        for (Member m : memberList) {
+            MemberResponse build = MemberResponse.builder()
+                    .expiry(m.getExpiry())
+                    .name(m.getName())
+                    .joined(m.getJoined())
+                    .id(m.getId())
+                    .dueAmount(m.getDueAmount())
+                    .email(m.getEmail())
+                    .address(m.getAddress())
+                    .phone(m.getPhone())
+                    .build();
+
+            memberResponses.add(build);
+        }
+
+        return memberResponses;
+    }
+
+    @Transactional
     public String deleteById(Integer id) {
         if (!memberRepository.existsById(id)) {
             throw new RuntimeException("Member id not found");

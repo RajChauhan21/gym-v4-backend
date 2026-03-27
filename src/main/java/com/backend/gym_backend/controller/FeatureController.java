@@ -14,7 +14,6 @@ public class FeatureController {
     @Autowired
     private FeatureService featureService;
 
-
     @PostMapping("/save")
     public ResponseEntity<?> save(@RequestBody FeatureRequest requestDto) {
         return new ResponseEntity<>(featureService.save(requestDto), HttpStatus.ACCEPTED);
