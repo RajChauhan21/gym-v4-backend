@@ -26,6 +26,8 @@ public class Owner {
 
     private String phone;
 
+    private String image;
+
     @JsonBackReference()
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
     private Gym gym;

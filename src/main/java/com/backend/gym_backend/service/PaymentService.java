@@ -88,6 +88,7 @@ public class PaymentService {
                     .date(p.getDate())
                     .amountPaid(p.getAmountPaid())
                     .paymentId(p.getId())
+                    .method(p.getMethod())
                     .member(p.getMember())
                     .build();
 
