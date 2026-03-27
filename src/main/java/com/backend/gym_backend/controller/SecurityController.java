@@ -28,8 +28,7 @@ public class SecurityController {
             MultiValueMap<String, String> map = new LinkedMultiValueMap<>();
 
             map.add("code", code);
-            String clientId = "144740755127-1416kcu4fi7b3qlq5sst3tnj71tpo925.apps.googleusercontent.com";
-            String secret = "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";
+
             map.add("client_id", clientId);
             map.add("client_secret", secret);
             map.add("redirect_uri", "https://developers.google.com/oauthplayground");
