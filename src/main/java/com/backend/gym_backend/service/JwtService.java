@@ -34,6 +34,7 @@ public class JwtService {
     }
 
     public Claims getClaims(String token){ //extract claims from token
+        System.out.println("TOKEN RECEIVED = " + token);
         return Jwts.parser()
                 .verifyWith(secretKey())
                 .build()

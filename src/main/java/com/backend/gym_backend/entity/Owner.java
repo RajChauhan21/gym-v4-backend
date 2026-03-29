@@ -1,5 +1,6 @@
 package com.backend.gym_backend.entity;
 
+import com.backend.gym_backend.enums.OAuthProvider;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -28,6 +29,13 @@ public class Owner {
     private String password;
 
     private String phone;
+
+    private String image;
+
+    @Enumerated(EnumType.STRING)
+    private OAuthProvider provider;
+
+    private String providerId;
 
     @JsonBackReference()
     @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)

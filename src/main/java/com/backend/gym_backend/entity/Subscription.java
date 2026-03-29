@@ -1,6 +1,6 @@
 package com.backend.gym_backend.entity;
 
-import com.backend.gym_backend.Status;
+import com.backend.gym_backend.enums.Status;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.Getter;

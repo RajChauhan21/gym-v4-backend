@@ -21,6 +21,8 @@ public class Gym {
 
     private String website;
 
+    private String image;
+
     private String location;
 
     private String googleMapUrl;
