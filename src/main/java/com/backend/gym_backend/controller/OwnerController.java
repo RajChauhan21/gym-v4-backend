@@ -1,7 +1,12 @@
 package com.backend.gym_backend.controller;
 
+import com.backend.gym_backend.dto.AuthRequest;
+import com.backend.gym_backend.dto.AuthResponse;
 import com.backend.gym_backend.dto.OwnerDetailsRequest;
+import com.backend.gym_backend.dto.UserRequest;
+import com.backend.gym_backend.security.CookieUtil;
 import com.backend.gym_backend.service.OwnerService;
+import jakarta.servlet.http.HttpServletResponse;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -13,6 +18,22 @@ public class OwnerController {
 
     @Autowired
     private OwnerService ownerService;
+
+    @PostMapping("/signup")
+    public ResponseEntity<String> signUp(@RequestBody UserRequest userRequest){
+        return new ResponseEntity<>(ownerService.signUp(userRequest), HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/login")
+    public ResponseEntity<?> logIn(@RequestBody AuthRequest userRequest, HttpServletResponse response) throws Exception {
+        return new ResponseEntity<>(ownerService.logIn(userRequest,response), HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping("/logout")
+    public ResponseEntity<?> logout(HttpServletResponse response) {
+        CookieUtil.deleteJwtCookie(response);
+        return ResponseEntity.ok("Logged out");
+    }
 
     @PostMapping("/save")
     public ResponseEntity<?> saveOwner(@RequestBody OwnerDetailsRequest detailsRequestDto){
@@ -34,7 +55,7 @@ public class OwnerController {
         return new ResponseEntity<>(ownerService.findAllOwners(), HttpStatus.ACCEPTED);
     }
 
-    @GetMapping("/getAllMembers")
+    @GetMapping("/getAllMembersOfOwner")
     public ResponseEntity<?> getAllMembersOfOwner(@RequestParam("q") Integer ownerId){
         return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId), HttpStatus.ACCEPTED);
     }

@@ -1,6 +1,6 @@
 package com.backend.gym_backend.dto;
 
-import com.backend.gym_backend.Status;
+import com.backend.gym_backend.enums.Status;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
 import lombok.Builder;
