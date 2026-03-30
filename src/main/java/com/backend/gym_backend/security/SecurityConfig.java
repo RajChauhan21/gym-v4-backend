@@ -37,17 +37,17 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         return http.authorizeHttpRequests(h ->
-                        h.requestMatchers("/owner/signup", "/owner/login", "/onwer/refresh").permitAll() // remove security for signup and login requests
+                        h.requestMatchers("/owner/signup", "/owner/login", "/owner/refresh").permitAll() // remove security for signup and login requests
                                 .anyRequest().authenticated())
                 .csrf(c -> c.disable())
                 .httpBasic(Customizer.withDefaults())
-                .cors(c->c.configurationSource(corsConfigurationSource()))
+                .cors(c -> c.configurationSource(corsConfigurationSource()))
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //stateless security
-                .oauth2Login(o->o.successHandler(oAuth2Handler))
+                .oauth2Login(o -> o.successHandler(oAuth2Handler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) //add our custom jwt filter before specified filter
                 .logout(l -> l.disable())
                 .exceptionHandling(ex ->
-                        ex.authenticationEntryPoint((req,res,e) -> {
+                        ex.authenticationEntryPoint((req, res, e) -> {
                             res.sendError(HttpServletResponse.SC_UNAUTHORIZED);
                         })
                 )
@@ -79,7 +79,7 @@ public class SecurityConfig {
         CorsConfiguration config = new CorsConfiguration();
 
         config.setAllowedOrigins(List.of("http://localhost:5173"));
-        config.setAllowedMethods(List.of("GET","POST","PUT","DELETE"));
+        config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);
 

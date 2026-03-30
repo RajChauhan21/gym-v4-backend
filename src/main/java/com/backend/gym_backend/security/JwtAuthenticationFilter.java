@@ -2,6 +2,7 @@ package com.backend.gym_backend.security;
 
 
 import com.backend.gym_backend.service.JwtService;
+import io.jsonwebtoken.ExpiredJwtException;
 import jakarta.servlet.FilterChain;
 import jakarta.servlet.ServletException;
 import jakarta.servlet.http.Cookie;
@@ -47,6 +48,14 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
     @Override
     protected void doFilterInternal(HttpServletRequest request, HttpServletResponse response, FilterChain
             filterChain) throws ServletException, IOException {
+
+        String path = request.getServletPath();
+
+        if (path.equals("/owner/login") || path.equals("/owner/refresh")) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
         String header = request.getHeader("Authorization"); //get Authorization header
         String token = null;
         if (header != null && header.startsWith("Bearer ")) {
@@ -55,7 +64,12 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
             token = getJwtFromCookie(request);
         }
 
-        if (token != null) {
+        if (token == null) {
+            filterChain.doFilter(request, response);
+            return;
+        }
+
+        try {
             String userName = jwtService.getUsername(token); //extract username from token
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //retrieve security context
             if (authentication == null && userName != null) { //user is not authenticated yet
@@ -68,7 +82,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
                     SecurityContextHolder.getContext().setAuthentication(authenticationToken); //update security context, so that next filter can recognize the request
                 }
             }
+        } catch (ExpiredJwtException e) {
+            throw new RuntimeException("your token has been expired");
         }
+
 
         filterChain.doFilter(request, response); //call the next filter
     }

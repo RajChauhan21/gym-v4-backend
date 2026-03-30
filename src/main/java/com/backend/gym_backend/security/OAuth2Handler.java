@@ -36,6 +36,7 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
 
+
     private final ObjectMapper mapper = new ObjectMapper();
 
     public void onAuthenticationSuccess(HttpServletRequest request, HttpServletResponse response, Authentication authentication) throws IOException, ServletException {
