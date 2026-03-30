@@ -3,10 +3,12 @@ package com.backend.gym_backend.service;
 import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Owner;
+import com.backend.gym_backend.entity.RefreshToken;
 import com.backend.gym_backend.enums.OAuthProvider;
 import com.backend.gym_backend.repo.GymRepository;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
+import com.backend.gym_backend.repo.RefreshTokenRepository;
 import com.backend.gym_backend.security.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -18,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
@@ -43,6 +47,9 @@ public class OwnerService {
     @Autowired
     private JwtService jwtService;
 
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
+
 
     public ResponseEntity<?> logIn(AuthRequest userRequest, HttpServletResponse response) throws Exception {
         if (ownerRepository.findByEmail(userRequest.getEmail()).isEmpty()){
@@ -56,7 +63,17 @@ public class OwnerService {
 
         if (authenticate.isAuthenticated()) {
             String token = jwtService.generateToken(owner);
-            CookieUtil.createJwtCookie(response,token);
+            String refreshToken = jwtService.generateRefreshToken();
+            CookieUtil.createJwtCookie(response,token,refreshToken);
+
+            RefreshToken rt = refreshTokenRepository.findByOwner(owner)
+                    .orElse(new RefreshToken());
+
+            rt.setOwner(owner);
+            rt.setToken(refreshToken);
+            rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
+            refreshTokenRepository.save(rt);
+
             return ResponseEntity.ok("Login Successfull");
         }
 

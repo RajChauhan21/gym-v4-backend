@@ -11,12 +11,17 @@ import org.springframework.stereotype.Service;
 
 import javax.crypto.SecretKey;
 import java.util.Date;
+import java.util.UUID;
 
 @Service
 public class JwtService {
 
     @Value("${jwt.secret.key}")
     public String jwtSecretKey;
+
+    public String generateRefreshToken() {
+        return UUID.randomUUID().toString();
+    }
 
     public SecretKey secretKey(){
         return Keys.hmacShaKeyFor(Decoders.BASE64.decode(jwtSecretKey)); //first decode in BASE64, then encode using hmac algorithm
@@ -34,7 +39,7 @@ public class JwtService {
     }
 
     public Claims getClaims(String token){ //extract claims from token
-        System.out.println("TOKEN RECEIVED = " + token);
+//        System.out.println("TOKEN RECEIVED = " + token);
         return Jwts.parser()
                 .verifyWith(secretKey())
                 .build()

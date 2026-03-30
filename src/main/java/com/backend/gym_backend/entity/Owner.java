@@ -48,4 +48,8 @@ public class Owner {
     @JsonManagedReference("mem")
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members;
+
+    @JsonManagedReference("ref")
+    @OneToOne(mappedBy = "owner")
+    private RefreshToken refreshToken;
 }

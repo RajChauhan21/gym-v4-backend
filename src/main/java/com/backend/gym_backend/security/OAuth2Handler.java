@@ -2,8 +2,10 @@ package com.backend.gym_backend.security;
 
 import com.backend.gym_backend.dto.OAuth2UserInfo;
 import com.backend.gym_backend.entity.Owner;
+import com.backend.gym_backend.entity.RefreshToken;
 import com.backend.gym_backend.enums.OAuthProvider;
 import com.backend.gym_backend.repo.OwnerRepository;
+import com.backend.gym_backend.repo.RefreshTokenRepository;
 import com.backend.gym_backend.service.JwtService;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import jakarta.servlet.ServletException;
@@ -17,6 +19,8 @@ import org.springframework.security.web.authentication.SimpleUrlAuthenticationSu
 import org.springframework.stereotype.Component;
 
 import java.io.IOException;
+import java.time.Instant;
+import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Objects;
 
@@ -28,6 +32,9 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
 
     @Autowired
     private OwnerRepository ownerRepository;
+
+    @Autowired
+    private RefreshTokenRepository refreshTokenRepository;
 
     private final ObjectMapper mapper = new ObjectMapper();
 
@@ -53,7 +60,18 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
 
         // 5. Generate JWT and Redirect
         String jwt = jwtService.generateToken(owner);
-        CookieUtil.createJwtCookie(response,jwt);
+        String refreshToken = jwtService.generateRefreshToken();
+
+        RefreshToken rt = refreshTokenRepository.findByOwner(owner)
+                .orElse(new RefreshToken());
+
+        rt.setOwner(owner);
+        rt.setToken(refreshToken);
+        rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
+
+        refreshTokenRepository.save(rt);
+
+        CookieUtil.createJwtCookie(response, jwt, refreshToken);
         response.sendRedirect("http://localhost:5173/dashboard");
     }
 
@@ -74,9 +92,10 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
         Owner owner = new Owner();
 
         owner.setProviderId(userInfo.getId());
-        owner.setProvider(Objects.equals(provider, "google") ?OAuthProvider.GOOGLE: Objects.equals(provider, "facebook") ?OAuthProvider.FACEBOOK:OAuthProvider.INSTAGRAM);
+        owner.setProvider(Objects.equals(provider, "google") ? OAuthProvider.GOOGLE : Objects.equals(provider, "facebook") ? OAuthProvider.FACEBOOK : OAuthProvider.INSTAGRAM);
         owner.setName(userInfo.getName());
         owner.setEmail(userInfo.getEmail());
+        owner.setImage(userInfo.getPicture());
         owner.setPassword(null);
 
         return ownerRepository.save(owner);
