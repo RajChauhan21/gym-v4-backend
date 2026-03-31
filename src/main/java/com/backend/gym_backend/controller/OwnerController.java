@@ -12,6 +12,7 @@ import com.backend.gym_backend.service.OwnerService;
 import jakarta.servlet.http.Cookie;
 import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
+import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
@@ -42,13 +43,15 @@ public class OwnerController {
         return new ResponseEntity<>(ownerService.logIn(userRequest, response), HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/logout")
+    @Transactional
+    @PostMapping("/auth/logout")
     public ResponseEntity<?> logout(HttpServletResponse response, HttpServletRequest request) {
         String refreshToken = CookieUtil.extractCookie(request, "refreshToken");
         if (refreshToken != null) {
             refreshTokenRepository.deleteByToken(refreshToken);
         }
         CookieUtil.clearCookies(response);
+        System.out.println("Log out endpoint called");
         return ResponseEntity.ok("Logged out");
     }
 
@@ -82,7 +85,7 @@ public class OwnerController {
         return new ResponseEntity<>(ownerService.deleteById(id), HttpStatus.ACCEPTED);
     }
 
-    @PostMapping("/refresh")
+    @PostMapping("/auth/refresh")
     public ResponseEntity<?> refreshToken(HttpServletRequest request,
                                           HttpServletResponse response) {
 

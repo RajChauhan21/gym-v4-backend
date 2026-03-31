@@ -17,7 +17,7 @@ public class CookieUtil {
 
         Cookie refreshCookie = new Cookie("refreshToken", refreshToken);
         refreshCookie.setHttpOnly(true);
-        refreshCookie.setPath("/owner/refresh");
+        refreshCookie.setPath("/owner/auth");
         refreshCookie.setSecure(false); //true in production HTTPS
         refreshCookie.setMaxAge(7 * 24 * 60 * 60); // 7 days
 //        refreshCookie.setAttribute("SameSite", "None"); use in production
@@ -60,7 +60,7 @@ public class CookieUtil {
         jwt.setSecure(false);
 
         Cookie refresh = new Cookie("refreshToken", null);
-        refresh.setPath("/auth/refresh");
+        refresh.setPath("/owner/auth");
         refresh.setMaxAge(0);
         refresh.setHttpOnly(true);
         refresh.setSecure(false);

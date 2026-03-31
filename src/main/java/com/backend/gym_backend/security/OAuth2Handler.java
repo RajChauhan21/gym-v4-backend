@@ -73,7 +73,7 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
         refreshTokenRepository.save(rt);
 
         CookieUtil.createJwtCookie(response, jwt, refreshToken);
-        response.sendRedirect("http://localhost:5173/dashboard");
+        response.sendRedirect("http://localhost:5173/dashboard?login=success");
     }
 
     private OAuth2UserInfo mapToUserInfo(Map<String, Object> attributes, String provider) {

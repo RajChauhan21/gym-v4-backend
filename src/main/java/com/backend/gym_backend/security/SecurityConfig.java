@@ -33,11 +33,14 @@ public class SecurityConfig {
     @Autowired
     private OAuth2Handler oAuth2Handler;
 
+    @Autowired
+    private RateLimitFilter rateLimitFilter;
+
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         return http.authorizeHttpRequests(h ->
-                        h.requestMatchers("/owner/signup", "/owner/login", "/owner/refresh").permitAll() // remove security for signup and login requests
+                        h.requestMatchers("/owner/signup", "/owner/login", "/owner/auth/refresh").permitAll() // remove security for signup and login requests
                                 .anyRequest().authenticated())
                 .csrf(c -> c.disable())
                 .httpBasic(Customizer.withDefaults())
@@ -45,6 +48,7 @@ public class SecurityConfig {
                 .sessionManagement(session -> session.sessionCreationPolicy(SessionCreationPolicy.STATELESS)) //stateless security
                 .oauth2Login(o -> o.successHandler(oAuth2Handler))
                 .addFilterBefore(jwtAuthenticationFilter, UsernamePasswordAuthenticationFilter.class) //add our custom jwt filter before specified filter
+                .addFilterAfter(rateLimitFilter, UsernamePasswordAuthenticationFilter.class)
                 .logout(l -> l.disable())
                 .exceptionHandling(ex ->
                         ex.authenticationEntryPoint((req, res, e) -> {
