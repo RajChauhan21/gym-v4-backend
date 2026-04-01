@@ -26,12 +26,18 @@ public class GymService {
     public GymDetailsResponse save(GymDetailsRequest requestDto) {
         Gym gym = new Gym();
         gym.setWebsite(requestDto.getWebsite());
-        gym.setName(requestDto.getName());
+        gym.setName(requestDto.getGymName());
         gym.setLocation(requestDto.getLocation());
         gym.setGoogleMapUrl(requestDto.getGoogleMapUrl());
         gym.setId(null);
         if (requestDto.getOwnerId()!=null && ownerRepository.existsById(requestDto.getOwnerId())) {
             Owner owner = ownerRepository.findById(requestDto.getOwnerId()).get();
+            owner.setName(requestDto.getOwnerName());
+            owner.setPhone(requestDto.getNumber());
+
+            if (!requestDto.getEmail().equals(owner.getEmail()) && ownerRepository.findByEmail(requestDto.getEmail()).isPresent()){
+                throw new RuntimeException("Email already exists");
+            }
             gym.setOwner(owner);
             owner.setGym(gym);
             ownerRepository.save(owner);
@@ -57,7 +63,7 @@ public class GymService {
         }
         Gym gym = new Gym();
         gym.setWebsite(requestDto.getWebsite());
-        gym.setName(requestDto.getName());
+        gym.setName(requestDto.getGymName());
         gym.setLocation(requestDto.getLocation());
         gym.setGoogleMapUrl(requestDto.getGoogleMapUrl());
         gym.setId(requestDto.getGymId());
@@ -120,7 +126,7 @@ public class GymService {
     @Transactional
     public String deleteById(Integer gymId) {
         if (gymRepository.findById(gymId).isEmpty()) {
-            throw new RuntimeException("owner not found");
+            throw new RuntimeException("gym not found");
         }
         Owner owner = gymRepository.findById(gymId).get().getOwner();
         if (owner != null) {
@@ -129,6 +135,7 @@ public class GymService {
         }
 
         gymRepository.deleteById(gymId);
+        gymRepository.flush();
         return "deleted successfully";
     }
 }

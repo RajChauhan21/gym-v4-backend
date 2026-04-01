@@ -21,8 +21,6 @@ public class GymDetailsRequest {
 
     private String location;
 
-    private String address;
-
     private String email;
 
     private String googleMapUrl;
