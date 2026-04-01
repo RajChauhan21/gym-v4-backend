@@ -51,7 +51,7 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
 
         String path = request.getServletPath();
 
-        if (path.equals("/owner/login") || path.equals("/owner/auth/refresh")) {
+        if (path.equals("/owner/login") || path.equals("/owner/auth/refresh") || path.equals("/owner/signup")) {
             filterChain.doFilter(request, response);
             return;
         }
@@ -70,10 +70,10 @@ public class JwtAuthenticationFilter extends OncePerRequestFilter {
         }
 
         try {
-            String userName = jwtService.getUsername(token); //extract username from token
+            String userId = jwtService.getUsername(token); //extract username from token
             Authentication authentication = SecurityContextHolder.getContext().getAuthentication(); //retrieve security context
-            if (authentication == null && userName != null) { //user is not authenticated yet
-                UserDetails userDetails = userDetailsService.loadUserByUsername(userName); //get username from db
+            if (authentication == null && userId != null) { //user is not authenticated yet
+                UserDetails userDetails = userDetailsService.loadUserByUsername(userId); //get username from db
                 if (jwtService.isTokenValid(token, userDetails)) { //check if token is valid ie - matching username and expiry
 
                     //prepare the next filter

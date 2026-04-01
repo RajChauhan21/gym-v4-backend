@@ -11,11 +11,19 @@ public class GymDetailsRequest {
 
     private Integer ownerId;
 
-    private String name;
+    private String gymName;
 
     private String website;
 
+    private String ownerName;
+
+    private String number;
+
     private String location;
+
+    private String address;
+
+    private String email;
 
     private String googleMapUrl;
 }

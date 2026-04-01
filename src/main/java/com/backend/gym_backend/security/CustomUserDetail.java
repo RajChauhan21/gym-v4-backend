@@ -20,14 +20,14 @@ public class CustomUserDetail implements UserDetailsService {
     @Override
     public UserDetails loadUserByUsername(String username) throws UsernameNotFoundException {
 
-        Optional<Owner> owner = repository.findByEmail(username);
+        Optional<Owner> owner = repository.findById(Math.toIntExact(Long.parseLong(username)));
         if (owner.isEmpty()){
-            throw new UsernameNotFoundException("Email not found");
+            throw new UsernameNotFoundException("User not found");
         }
 
         return User
                 .builder()
-                .username(owner.get().getEmail())
+                .username(String.valueOf(owner.get().getId()))
                 .password(owner.get().getPassword()!=null ? owner.get().getPassword() : "null")
                 .build();
     }

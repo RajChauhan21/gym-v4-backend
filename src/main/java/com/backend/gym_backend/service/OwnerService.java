@@ -52,11 +52,11 @@ public class OwnerService {
 
 
     public ResponseEntity<?> logIn(AuthRequest userRequest, HttpServletResponse response) throws Exception {
-        if (ownerRepository.findByEmail(userRequest.getEmail()).isEmpty()){
+        if (ownerRepository.findByEmail(userRequest.getEmail()).isEmpty()) {
             throw new RuntimeException("Email not found");
         }
         Owner owner = ownerRepository.findByEmail(userRequest.getEmail()).get();
-        if (owner.getProvider()!= OAuthProvider.LOCAL){
+        if (owner.getProvider() != OAuthProvider.LOCAL) {
             throw new RuntimeException("Please consider login using google, facebook or instagram");
         }
         Authentication authenticate = authenticationManager.authenticate(new UsernamePasswordAuthenticationToken(userRequest.getEmail(), userRequest.getPassword()));
@@ -64,7 +64,7 @@ public class OwnerService {
         if (authenticate.isAuthenticated()) {
             String token = jwtService.generateToken(owner);
             String refreshToken = jwtService.generateRefreshToken();
-            CookieUtil.createJwtCookie(response,token,refreshToken);
+            CookieUtil.createJwtCookie(response, token, refreshToken);
 
             RefreshToken rt = refreshTokenRepository.findByOwner(owner)
                     .orElse(new RefreshToken());
@@ -74,11 +74,24 @@ public class OwnerService {
             rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(rt);
 
-            return ResponseEntity.ok("Login Successfull");
+            OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
+                    .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
+                    .email(owner.getEmail())
+                    .phone(owner.getPhone())
+                    .googleMapUrl(owner.getGym() != null ? owner.getGym().getGoogleMapUrl() : "")
+                    .ownerName(owner.getName())
+                    .gymName(owner.getGym() != null ? owner.getGym().getName() : "")
+                    .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
+                    .ownerId(owner.getId())
+                    .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
+                    .build();
+
+            return ResponseEntity.ok(responseDto);
         }
 
         throw new RuntimeException("please check your credentials");
     }
+
     @Transactional
     public String signUp(UserRequest userRequest) {
         Optional<Owner> ownerObj = ownerRepository.findByEmail(userRequest.getEmail());
@@ -139,24 +152,27 @@ public class OwnerService {
         }
         Owner owner = ownerRepository.findById(id).get();
         OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
-                .website(owner.getGym().getWebsite())
+                .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
                 .email(owner.getEmail())
+                .ownerImage(owner.getImage())
+                .gymImage(owner.getGym() != null ? owner.getGym().getImage() : "")
                 .phone(owner.getPhone())
-                .googleMapUrl(owner.getGym().getGoogleMapUrl())
+                .googleMapUrl(owner.getGym() != null ? owner.getGym().getGoogleMapUrl() : "")
                 .ownerName(owner.getName())
-                .gymName(owner.getGym().getName())
-                .location(owner.getGym().getLocation())
+                .gymName(owner.getGym() != null ? owner.getGym().getName() : "")
+                .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
                 .ownerId(owner.getId())
-                .gymId(owner.getGym().getId())
+                .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
                 .build();
 
         return responseDto;
     }
-    public List<OwnerDetailsResponse> findAllOwners(){
+
+    public List<OwnerDetailsResponse> findAllOwners() {
         List<Owner> all = ownerRepository.findAll();
         List<OwnerDetailsResponse> owners = new ArrayList<>();
 
-        for (Owner o : all){
+        for (Owner o : all) {
             OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                     .website(o.getGym().getWebsite())
                     .email(o.getEmail())
@@ -174,10 +190,11 @@ public class OwnerService {
 
         return owners;
     }
-    public List<MemberResponse> getAllMembersOfOwner(Integer ownerId){
+
+    public List<MemberResponse> getAllMembersOfOwner(Integer ownerId) {
         List<MemberResponse> members = new ArrayList<>();
         List<Member> byOwnerId = memberRepository.findByOwnerId(ownerId);
-        for (Member m : byOwnerId){
+        for (Member m : byOwnerId) {
             MemberResponse build = MemberResponse.builder()
                     .expiry(m.getExpiry())
                     .name(m.getName())
@@ -192,6 +209,28 @@ public class OwnerService {
             members.add(build);
         }
         return members;
+    }
+
+    public OwnerDetailsResponse findByEmail(String email) {
+        if (ownerRepository.findByEmail(email).isEmpty()) {
+            throw new RuntimeException("Email not found");
+        }
+        Owner owner = ownerRepository.findByEmail(email).get();
+        OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
+                .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
+                .email(owner.getEmail())
+                .ownerImage(owner.getImage())
+                .gymImage(owner.getGym() != null ? owner.getGym().getImage() : "")
+                .phone(owner.getPhone())
+                .googleMapUrl(owner.getGym() != null ? owner.getGym().getGoogleMapUrl() : "")
+                .ownerName(owner.getName())
+                .gymName(owner.getGym() != null ? owner.getGym().getName() : "")
+                .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
+                .ownerId(owner.getId())
+                .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
+                .build();
+
+        return responseDto;
     }
 
 

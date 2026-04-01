@@ -24,4 +24,8 @@ public class OwnerDetailsResponse {
     private String location;
 
     private String googleMapUrl;
+
+    private String ownerImage;
+
+    private String gymImage;
 }

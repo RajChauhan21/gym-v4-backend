@@ -4,6 +4,7 @@ import com.backend.gym_backend.dto.AuthRequest;
 import com.backend.gym_backend.dto.AuthResponse;
 import com.backend.gym_backend.dto.OwnerDetailsRequest;
 import com.backend.gym_backend.dto.UserRequest;
+import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.RefreshToken;
 import com.backend.gym_backend.repo.RefreshTokenRepository;
 import com.backend.gym_backend.security.CookieUtil;
@@ -16,6 +17,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
@@ -32,6 +34,12 @@ public class OwnerController {
 
     @Autowired
     private JwtService jwtService;
+
+    @GetMapping("/me")
+    public ResponseEntity<?> getMe(Authentication authentication){
+        String email = authentication.getName();
+        return new ResponseEntity<>(ownerService.findById(Math.toIntExact(Long.parseLong(email))), HttpStatus.ACCEPTED);
+    }
 
     @PostMapping("/signup")
     public ResponseEntity<String> signUp(@RequestBody UserRequest userRequest) {

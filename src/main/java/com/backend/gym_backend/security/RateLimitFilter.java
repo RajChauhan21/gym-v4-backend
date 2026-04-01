@@ -5,6 +5,7 @@ import io.github.bucket4j.Bucket;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
@@ -31,17 +32,28 @@ public class RateLimitFilter implements Filter {
         HttpServletRequest httpRequest = (HttpServletRequest) request;
         HttpServletResponse httpResponse = (HttpServletResponse) response;
 
-        String key; //get ip address from request
+        String path = httpRequest.getRequestURI();
 
-        Authentication authentication = SecurityContextHolder.getContext().getAuthentication();
+        String key;
 
-        if (authentication!=null && authentication.isAuthenticated()){
-            key = authentication.getName();
+        if (path.equals("/owner/login") || path.equals("/owner/signup")) {
+
+            key = request.getRemoteAddr(); // prevent brute force
+
+        } else {
+
+            Authentication auth = SecurityContextHolder.getContext().getAuthentication();
+
+            if (auth != null && auth.isAuthenticated() && !(auth instanceof AnonymousAuthenticationToken)) {
+
+                key = auth.getName();
+
+            } else {
+
+                key = request.getRemoteAddr();
+            }
         }
-        else{
-            key = httpRequest.getRemoteAddr();
-        }
-        System.out.println(key);
+        System.out.println("key " + key);
         Bucket bucket = rateLimitService.resolveBucket(key);
 
         if (bucket.tryConsume(1)) { //consume 1 token
