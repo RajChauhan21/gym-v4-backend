@@ -10,15 +10,25 @@ import lombok.Data;
 @AllArgsConstructor
 public class GymDetailsResponse {
 
-    private Integer id;
+    private Integer gymId;
 
-    private String name;
+    private Integer ownerId;
+
+    private String gymName;
 
     private String website;
 
+    private String ownerName;
+
+    private String number;
+
     private String location;
+
+    private String email;
 
     private String googleMapUrl;
 
-    private Owner owner;
+    private String ownerImage;
+
+    private String gymImage;
 }

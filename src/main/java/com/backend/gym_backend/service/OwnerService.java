@@ -84,6 +84,8 @@ public class OwnerService {
                     .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
                     .ownerId(owner.getId())
                     .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
+                    .gymImage(owner.getGym() !=null ? owner.getGym().getImage() : "")
+                    .ownerImage(owner.getImage())
                     .build();
 
             return ResponseEntity.ok(responseDto);

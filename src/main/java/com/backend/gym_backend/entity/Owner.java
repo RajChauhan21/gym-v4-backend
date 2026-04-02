@@ -38,7 +38,7 @@ public class Owner {
     private String providerId;
 
     @JsonBackReference()
-    @OneToOne(cascade = CascadeType.ALL, orphanRemoval = true)
+    @OneToOne(cascade = CascadeType.ALL)
     private Gym gym;
 
     @JsonManagedReference("own")

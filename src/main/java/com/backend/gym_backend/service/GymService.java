@@ -24,66 +24,105 @@ public class GymService {
 
     @Transactional
     public GymDetailsResponse save(GymDetailsRequest requestDto) {
-        Gym gym = new Gym();
-        gym.setWebsite(requestDto.getWebsite());
+
+        Gym gym;
+
+        // -------- CREATE or UPDATE --------
+        if (requestDto.getGymId() == null) {
+
+            // CREATE
+            if (gymRepository.existsByName(requestDto.getGymName())) {
+                throw new RuntimeException("Gym name already exists");
+            }
+
+            gym = new Gym();
+
+        } else {
+
+            // UPDATE
+            gym = gymRepository.findById(requestDto.getGymId())
+                    .orElseThrow(() -> new RuntimeException("Gym not found"));
+
+            if (gymRepository.existsByNameAndIdNot(requestDto.getGymName(), requestDto.getGymId())) {
+                throw new RuntimeException("Gym name already exists");
+            }
+        }
+
+        // -------- SET GYM DATA --------
         gym.setName(requestDto.getGymName());
+        gym.setWebsite(requestDto.getWebsite());
         gym.setLocation(requestDto.getLocation());
         gym.setGoogleMapUrl(requestDto.getGoogleMapUrl());
-        gym.setId(null);
-        if (requestDto.getOwnerId()!=null && ownerRepository.existsById(requestDto.getOwnerId())) {
-            Owner owner = ownerRepository.findById(requestDto.getOwnerId()).get();
+
+        Owner owner = null;
+
+        // -------- OWNER UPDATE --------
+        if (requestDto.getOwnerId() != null) {
+
+            owner = ownerRepository.findById(requestDto.getOwnerId())
+                    .orElseThrow(() -> new RuntimeException("Owner not found"));
+
             owner.setName(requestDto.getOwnerName());
             owner.setPhone(requestDto.getNumber());
 
-            if (!requestDto.getEmail().equals(owner.getEmail()) && ownerRepository.findByEmail(requestDto.getEmail()).isPresent()){
+            if (!requestDto.getEmail().equals(owner.getEmail())
+                    && ownerRepository.findByEmail(requestDto.getEmail()).isPresent()) {
                 throw new RuntimeException("Email already exists");
             }
-            gym.setOwner(owner);
+
             owner.setGym(gym);
-            ownerRepository.save(owner);
+            gym.setOwner(owner);
+
+            ownerRepository.save(owner); // cascade will handle gym if configured
         }
-
-        Gym save = gymRepository.save(gym);
-
-
+        Gym savedGym = owner.getGym();
         return GymDetailsResponse.builder()
-                .id(save.getId())
-                .name(save.getName())
-                .googleMapUrl(save.getGoogleMapUrl())
-                .location(save.getLocation())
-                .website(save.getWebsite())
-                .owner(save.getOwner())
+                .gymId(savedGym.getId())
+                .gymName(savedGym.getName())
+                .googleMapUrl(savedGym.getGoogleMapUrl())
+                .location(savedGym.getLocation())
+                .website(savedGym.getWebsite())
+                .ownerName(savedGym.getOwner() != null ? savedGym.getOwner().getName() : null)
+                .email(savedGym.getOwner() != null ? savedGym.getOwner().getEmail() : null)
+                .number(savedGym.getOwner() != null ? savedGym.getOwner().getPhone() : null)
+                .ownerId(savedGym.getOwner() != null ? savedGym.getOwner().getId() : null)
+                .gymImage(savedGym.getImage())
+                .ownerImage(owner != null ? owner.getImage() : null)
                 .build();
     }
 
     @Transactional
     public GymDetailsResponse update(GymDetailsRequest requestDto) throws Exception {
-        if (!gymRepository.existsById(requestDto.getGymId())){
+        if (!gymRepository.existsById(requestDto.getGymId())) {
             throw new RuntimeException("gym id not found");
         }
+        Owner newOwner = null;
         Gym gym = new Gym();
         gym.setWebsite(requestDto.getWebsite());
         gym.setName(requestDto.getGymName());
         gym.setLocation(requestDto.getLocation());
         gym.setGoogleMapUrl(requestDto.getGoogleMapUrl());
         gym.setId(requestDto.getGymId());
-        if (requestDto.getOwnerId()!=null && ownerRepository.existsById(requestDto.getOwnerId())) {
+        if (requestDto.getOwnerId() != null && ownerRepository.existsById(requestDto.getOwnerId())) {
             Owner owner = ownerRepository.findById(requestDto.getOwnerId()).get();
             gym.setOwner(owner);
             owner.setGym(gym);
-            ownerRepository.save(owner);
+            newOwner = ownerRepository.save(owner);
         }
 
-        Gym save = gymRepository.save(gym);
-
-
+        Gym save = newOwner.getGym();
         return GymDetailsResponse.builder()
-                .name(save.getName())
-                .id(save.getId())
+                .gymId(save.getId())
+                .gymName(save.getName())
                 .googleMapUrl(save.getGoogleMapUrl())
                 .location(save.getLocation())
                 .website(save.getWebsite())
-                .owner(save.getOwner())
+                .ownerName(save.getOwner().getName())
+                .email(save.getOwner().getEmail())
+                .number(save.getOwner().getPhone())
+                .ownerId(save.getOwner().getId())
+                .gymImage(save.getImage())
+                .ownerImage(newOwner.getImage())
                 .build();
     }
 
@@ -95,26 +134,37 @@ public class GymService {
         Gym gym = gymRepository.findById(id).get();
 
         return GymDetailsResponse.builder()
-                .name(gym.getName())
+                .gymId(gym.getId())
+                .gymName(gym.getName())
                 .googleMapUrl(gym.getGoogleMapUrl())
                 .location(gym.getLocation())
                 .website(gym.getWebsite())
-                .owner(gym.getOwner())
+                .ownerName(gym.getOwner().getName())
+                .email(gym.getOwner().getEmail())
+                .number(gym.getOwner().getPhone())
+                .ownerId(gym.getOwner().getId())
+                .gymImage(gym.getImage())
+                .ownerImage(gym.getOwner().getImage())
                 .build();
     }
 
-    public List<GymDetailsResponse> findAllGyms(){
+    public List<GymDetailsResponse> findAllGyms() {
         List<Gym> all = gymRepository.findAll();
         List<GymDetailsResponse> gyms = new ArrayList<>();
 
-        for(Gym g : all){
+        for (Gym gym : all) {
             GymDetailsResponse build = GymDetailsResponse.builder()
-                    .name(g.getName())
-                    .id(g.getId())
-                    .googleMapUrl(g.getGoogleMapUrl())
-                    .location(g.getLocation())
-                    .website(g.getWebsite())
-                    .owner(g.getOwner())
+                    .gymId(gym.getId())
+                    .gymName(gym.getName())
+                    .googleMapUrl(gym.getGoogleMapUrl())
+                    .location(gym.getLocation())
+                    .website(gym.getWebsite())
+                    .ownerName(gym.getOwner().getName())
+                    .email(gym.getOwner().getEmail())
+                    .number(gym.getOwner().getPhone())
+                    .ownerId(gym.getOwner().getId())
+                    .gymImage(gym.getImage())
+                    .ownerImage(gym.getOwner().getImage())
                     .build();
 
             gyms.add(build);
