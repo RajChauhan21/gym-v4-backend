@@ -62,8 +62,9 @@ public class RateLimitFilter implements Filter {
 
         } else {
 
-            httpResponse.setStatus(429);
-            httpResponse.getWriter().write("Too many requests");
+//            httpResponse.setStatus(429);
+//            httpResponse.getWriter().write("Too many requests");
+            throw new RuntimeException("Too many requests");
         }
     }
 }

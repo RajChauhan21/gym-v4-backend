@@ -7,6 +7,8 @@ import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
 
+@CrossOrigin("*")
+
 @RestController
 @RequestMapping("/member")
 public class MemberController {
@@ -19,7 +21,7 @@ public class MemberController {
         return new ResponseEntity<>(memberService.save(request), HttpStatus.ACCEPTED);
     }
 
-    @PutMapping("/update")
+    @PostMapping("/update")
     public ResponseEntity<?> update(@RequestBody MemberRequest request){
         return new ResponseEntity<>(memberService.update(request), HttpStatus.ACCEPTED);
     }

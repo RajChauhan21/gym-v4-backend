@@ -10,6 +10,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -43,22 +44,24 @@ public class MemberShipService {
 
     @Transactional
     public MemberShipResponse update(MemberShipRequest request) {
-        if (!memberShipRepository.existsById(request.getId())) {
-            throw new RuntimeException("Id not found");
+        if (request.getId()==null && memberShipRepository.findByName(request.getName()).isPresent()){
+            throw new RuntimeException("Plan already exists");
+        }
+        if (memberShipRepository.existsByNameAndIdNot(request.getName(), request.getId())){
+            throw new RuntimeException("Plan already exists");
         }
         MemberShip memberShip = new MemberShip();
         memberShip.setId(request.getId());
         memberShip.setName(request.getName());
         memberShip.setPrice(request.getPrice());
-        memberShip.setValidity(request.getValidity());
+        memberShip.setValidity(request.getValidity()*30);//convert months in days
         MemberShip save = memberShipRepository.save(memberShip);
 
         return MemberShipResponse.builder()
                 .name(save.getName())
                 .id(save.getId())
                 .price(save.getPrice())
-                .validity(save.getValidity())
-                .members(save.getMembers())
+                .validity(save.getValidity()/30)
                 .build();
     }
 
@@ -74,8 +77,22 @@ public class MemberShipService {
                 .id(save.getId())
                 .price(save.getPrice())
                 .validity(save.getValidity())
-                .members(save.getMembers())
                 .build();
+    }
+
+    public List<MemberShipResponse> getAll(){
+        List<MemberShipResponse> responses = new ArrayList<>();
+        for (MemberShip m : memberShipRepository.findAll()){
+            MemberShipResponse build = MemberShipResponse.builder()
+                    .name(m.getName())
+                    .id(m.getId())
+                    .price(m.getPrice())
+                    .validity(m.getValidity() / 30)
+                    .build();
+            responses.add(build);
+        }
+
+        return responses;
     }
 
     @Transactional

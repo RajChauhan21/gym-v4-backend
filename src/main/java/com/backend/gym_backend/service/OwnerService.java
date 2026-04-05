@@ -206,6 +206,8 @@ public class OwnerService {
                     .email(m.getEmail())
                     .address(m.getAddress())
                     .phone(m.getPhone())
+                    .ownerId(m.getOwner().getId())
+                    .plan(m.getMemberShip()!=null ? m.getMemberShip().getName() : "N/A")
                     .build();
 
             members.add(build);

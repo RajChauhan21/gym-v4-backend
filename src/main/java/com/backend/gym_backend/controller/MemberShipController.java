@@ -6,7 +6,7 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+@CrossOrigin("*")
 @RestController
 @RequestMapping("/member-ship")
 public class MemberShipController {
@@ -19,9 +19,14 @@ public class MemberShipController {
         return new ResponseEntity<>(memberShipService.save(request), HttpStatus.ACCEPTED);
     }
 
-    @PutMapping("/update")
+    @PostMapping("/update")
     public ResponseEntity<?> update(@RequestBody MemberShipRequest request){
         return new ResponseEntity<>(memberShipService.update(request), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/getAll")
+    public ResponseEntity<?> getAll(){
+        return new ResponseEntity<>(memberShipService.getAll(), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/findById")

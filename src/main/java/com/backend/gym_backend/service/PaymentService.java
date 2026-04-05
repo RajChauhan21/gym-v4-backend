@@ -1,5 +1,6 @@
 package com.backend.gym_backend.service;
 
+import com.backend.gym_backend.dto.PaymentProjection;
 import com.backend.gym_backend.dto.PaymentRequest;
 import com.backend.gym_backend.dto.PaymentResponse;
 import com.backend.gym_backend.entity.Member;
@@ -8,6 +9,8 @@ import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.PaymentRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
@@ -29,7 +32,7 @@ public class PaymentService {
         }
         Member member  = memberRepository.findById(request.getMemberId()).get();
         Payment payment = new Payment();
-        payment.setId(null);
+        payment.setId(request.getPaymentId()!=null ? request.getPaymentId() : null);
         payment.setDate(request.getDate());
         payment.setMethod(request.getMethod());
         payment.setAmountPaid(request.getAmountPaid());
@@ -96,6 +99,10 @@ public class PaymentService {
         }
 
         return payments;
+    }
+
+    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, Pageable pageable){
+        return paymentRepository.findPaymentsByOwnerId(ownerId,pageable);
     }
 
 }

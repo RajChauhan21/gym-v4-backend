@@ -26,7 +26,8 @@ public class MemberResponse {
 
     private Integer dueAmount;
 
-    private Owner owner;
+    private int ownerId;
 
-    private MemberShip memberShip;
+    private String plan;
+
 }

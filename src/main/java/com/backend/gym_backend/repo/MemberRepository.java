@@ -10,4 +10,8 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     List<Member> findByOwnerId(Integer ownerId);
 
     List<Member> findByMemberShipId(Integer memberShipId);
+
+    boolean existsByNameAndIdNot(String name, Integer id);
+
+    boolean existsByName(String name);
 }

@@ -22,4 +22,8 @@ public class MemberRequest {
 
     private String address;
 
+    private LocalDate joined;
+
+    private LocalDate expiry;
+
 }

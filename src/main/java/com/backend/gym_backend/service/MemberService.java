@@ -62,8 +62,8 @@ public class MemberService {
                 .joined(save.getJoined())
                 .expiry(save.getExpiry())
                 .phone(save.getPhone())
-                .owner(save.getOwner())
-                .memberShip(save.getMemberShip())
+                .ownerId(save.getOwner().getId())
+                .plan(save.getMemberShip().getName())
                 .dueAmount(save.getDueAmount())
                 .build();
     }
@@ -76,22 +76,28 @@ public class MemberService {
         if (!ownerRepository.existsById(request.getOwnerId())) {
             throw new RuntimeException("Owner id not found");
         }
+        if(request.getMemberId()==null && memberRepository.existsByName(request.getName())){
+            throw new RuntimeException("Member already exists with the name");
+        }
+        if(memberRepository.existsByNameAndIdNot(request.getName(),request.getMemberId())){
+            throw new RuntimeException("Member already exists with the name");
+        }
         MemberShip memberShip = memberShipRepository.findById(request.getPackageId()).get();
         Owner owner = ownerRepository.findById(request.getOwnerId()).get();
 
-        Member member = new Member();
-        member.setId(request.getMemberId());
-        member.setName(request.getName());
-        member.setAddress(request.getAddress());
-        member.setJoined(LocalDate.now());
-        member.setMemberShip(memberShip);
-        member.setOwner(owner);
-        member.setDueAmount(memberShip.getPrice());
-        member.setExpiry(LocalDate.now().plusDays(memberShip.getValidity()));
-        member.setEmail(request.getEmail());
-        member.setPhone(request.getPhone());
+        Member newMember = new Member();
+        newMember.setId(request.getMemberId()!=null ?request.getMemberId(): null);
+        newMember.setName(request.getName());
+        newMember.setAddress(request.getAddress());
+        newMember.setJoined(request.getJoined()!=null?request.getJoined():LocalDate.now());
+        newMember.setMemberShip(memberShip);
+        newMember.setOwner(owner);
+        newMember.setDueAmount(memberShip.getPrice());
+        newMember.setExpiry(request.getExpiry()!=null?request.getExpiry():LocalDate.now().plusDays(memberShip.getValidity()));
+        newMember.setEmail(request.getEmail());
+        newMember.setPhone(request.getPhone());
 
-        Member save = memberRepository.save(member);
+        Member save = memberRepository.save(newMember);
 
 
         return MemberResponse.builder()
@@ -102,8 +108,8 @@ public class MemberService {
                 .joined(save.getJoined())
                 .expiry(save.getExpiry())
                 .phone(save.getPhone())
-                .owner(save.getOwner())
-                .memberShip(save.getMemberShip())
+                .ownerId(save.getOwner().getId())
+                .plan(save.getMemberShip().getName())
                 .dueAmount(save.getDueAmount())
                 .build();
     }
@@ -123,8 +129,8 @@ public class MemberService {
                 .joined(save.getJoined())
                 .expiry(save.getExpiry())
                 .phone(save.getPhone())
-                .owner(save.getOwner())
-                .memberShip(save.getMemberShip())
+                .ownerId(save.getOwner().getId())
+                .plan(save.getMemberShip().getName())
                 .dueAmount(save.getDueAmount())
                 .build();
     }
