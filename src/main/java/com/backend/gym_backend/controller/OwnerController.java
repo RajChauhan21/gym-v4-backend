@@ -15,6 +15,7 @@ import jakarta.servlet.http.HttpServletRequest;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
@@ -84,8 +85,8 @@ public class OwnerController {
     }
 
     @GetMapping("/getAllMembersOfOwner")
-    public ResponseEntity<?> getAllMembersOfOwner(@RequestParam("q") Integer ownerId) {
-        return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> getAllMembersOfOwner(@RequestParam("q") Integer ownerId, Pageable pageable) {
+        return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId, pageable), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deleteById")

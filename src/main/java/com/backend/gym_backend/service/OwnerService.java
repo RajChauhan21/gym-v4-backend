@@ -13,6 +13,8 @@ import com.backend.gym_backend.security.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.authentication.AuthenticationManager;
 import org.springframework.security.authentication.UsernamePasswordAuthenticationToken;
@@ -193,7 +195,7 @@ public class OwnerService {
         return owners;
     }
 
-    public List<MemberResponse> getAllMembersOfOwner(Integer ownerId) {
+    public List<MemberResponse> getAllMemberOfOwner(Integer ownerId) {
         List<MemberResponse> members = new ArrayList<>();
         List<Member> byOwnerId = memberRepository.findByOwnerId(ownerId);
         for (Member m : byOwnerId) {
@@ -213,6 +215,10 @@ public class OwnerService {
             members.add(build);
         }
         return members;
+    }
+
+    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, Pageable pageable){
+        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId),pageable);
     }
 
     public OwnerDetailsResponse findByEmail(String email) {
