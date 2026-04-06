@@ -102,7 +102,7 @@ public class PaymentService {
     }
 
     public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, Pageable pageable){
-        return paymentRepository.findPaymentsByOwnerId(ownerId,pageable);
+        return paymentRepository.findPaymentsFiltered(ownerId,pageable);
     }
 
 }
