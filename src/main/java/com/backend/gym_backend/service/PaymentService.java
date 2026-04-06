@@ -13,6 +13,7 @@ import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -101,8 +102,8 @@ public class PaymentService {
         return payments;
     }
 
-    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, Pageable pageable){
-        return paymentRepository.findPaymentsFiltered(ownerId,pageable);
+    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable){
+        return paymentRepository.findPaymentsFiltered(ownerId,memberName,membershipName,method, amount,dateFrom,dateTo,pageable);
     }
 
 }

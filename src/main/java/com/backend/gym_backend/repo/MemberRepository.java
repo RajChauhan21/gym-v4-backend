@@ -22,40 +22,31 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     boolean existsByName(String name);
 
     @Query(
-            value = """
-                    SELECT 
-                        m.id AS id, m.name AS name, m.email AS email, m.phone AS phone, 
-                        m.address AS address, m.joined AS joined, m.expiry AS expiry, 
-                        m.due_amount AS dueAmount, m.owner_id AS ownerId, ms.name AS plan 
-                    FROM member m 
-                    LEFT JOIN member_ship ms ON m.member_ship_id = ms.id 
-                    WHERE m.owner_id = :ownerId
-                    AND (:name IS NULL OR m.name LIKE %:name%)
-                    AND (:email IS NULL OR m.email LIKE %:email%)
-                    AND (:dueAmount IS NULL OR m.due_amount = :dueAmount)
-                    -- Date Range Logic for Joined
-                    AND (:joinedFrom IS NULL OR m.joined >= :joinedFrom)
-                    AND (:joinedTo IS NULL OR m.joined <= :joinedTo)
-                    -- Date Range Logic for Expiry
-                    AND (:expiryFrom IS NULL OR m.expiry >= :expiryFrom)
-                    AND (:expiryTo IS NULL OR m.expiry <= :expiryTo)
-                    """,
-            countQuery = """
-                    SELECT COUNT(*) FROM member m 
-                    WHERE m.owner_id = :ownerId
-                    AND (:name IS NULL OR m.name LIKE %:name%)
-                    -- ... include all other filters from above for accurate counting ...
-                    AND (:joinedFrom IS NULL OR m.joined >= :joinedFrom)
-                    AND (:joinedTo IS NULL OR m.joined <= :joinedTo)
-                    AND (:expiryFrom IS NULL OR m.expiry >= :expiryFrom)
-                    AND (:expiryTo IS NULL OR m.expiry <= :expiryTo)
-                    """,
+            value = "SELECT m.id AS id, m.name AS name, m.email AS email, m.phone AS phone, " +
+                    "m.address AS address, m.joined AS joined, m.expiry AS expiry, " +
+                    "m.due_amount AS dueAmount, m.owner_id AS ownerId, ms.name AS plan " +
+                    "FROM member m " +
+                    "LEFT JOIN member_ship ms ON m.member_ship_id = ms.id " +
+                    "WHERE m.owner_id = ?1 " +
+                    "AND (?2 IS NULL OR m.name LIKE CONCAT('%', ?2, '%')) " +
+                    "AND (?3 IS NULL OR m.due_amount = ?3) " +
+                    "AND (?4 IS NULL OR m.joined >= ?4) " +
+                    "AND (?5 IS NULL OR m.joined <= ?5) " +
+                    "AND (?6 IS NULL OR m.expiry >= ?6) " +
+                    "AND (?7 IS NULL OR m.expiry <= ?7)",
+            countQuery = "SELECT COUNT(*) FROM member m " +
+                    "WHERE m.owner_id = ?1 " +
+                    "AND (?2 IS NULL OR m.name LIKE CONCAT('%', ?2, '%')) " +
+                    "AND (?3 IS NULL OR m.due_amount = ?3) " +
+                    "AND (?4 IS NULL OR m.joined >= ?4) " +
+                    "AND (?5 IS NULL OR m.joined <= ?5) " +
+                    "AND (?6 IS NULL OR m.expiry >= ?6) " +
+                    "AND (?7 IS NULL OR m.expiry <= ?7)",
             nativeQuery = true
     )
-    Page<MemberProjection> findMembersFiltered(
+    Page<MemberProjection> findAllMembersByOwnerId(
             @Param("ownerId") Long ownerId,
             @Param("name") String name,
-            @Param("email") String email,
             @Param("dueAmount") Integer dueAmount,
             @Param("joinedFrom") LocalDate joinedFrom,
             @Param("joinedTo") LocalDate joinedTo,

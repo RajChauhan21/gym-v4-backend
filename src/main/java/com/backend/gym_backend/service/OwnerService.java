@@ -23,6 +23,7 @@ import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
 import java.time.Instant;
+import java.time.LocalDate;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -217,8 +218,8 @@ public class OwnerService {
         return members;
     }
 
-    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, Pageable pageable){
-        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId),pageable);
+    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom,LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, Pageable pageable){
+        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId),name,dueAmount,joinedFrom,joinedTo, expiryFrom,expiryTo,pageable);
     }
 
     public OwnerDetailsResponse findByEmail(String email) {

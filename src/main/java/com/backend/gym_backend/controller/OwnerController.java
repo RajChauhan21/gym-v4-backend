@@ -1,10 +1,8 @@
 package com.backend.gym_backend.controller;
 
 import com.backend.gym_backend.dto.AuthRequest;
-import com.backend.gym_backend.dto.AuthResponse;
 import com.backend.gym_backend.dto.OwnerDetailsRequest;
 import com.backend.gym_backend.dto.UserRequest;
-import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.RefreshToken;
 import com.backend.gym_backend.repo.RefreshTokenRepository;
 import com.backend.gym_backend.security.CookieUtil;
@@ -22,6 +20,8 @@ import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
 
 import java.time.Instant;
+import java.time.LocalDate;
+
 @CrossOrigin("*")
 @RestController
 @RequestMapping("/owner")
@@ -37,7 +37,7 @@ public class OwnerController {
     private JwtService jwtService;
 
     @GetMapping("/me")
-    public ResponseEntity<?> getMe(Authentication authentication){
+    public ResponseEntity<?> getMe(Authentication authentication) {
         String email = authentication.getName();
         return new ResponseEntity<>(ownerService.findById(Math.toIntExact(Long.parseLong(email))), HttpStatus.ACCEPTED);
     }
@@ -85,8 +85,13 @@ public class OwnerController {
     }
 
     @GetMapping("/getAllMembersOfOwner")
-    public ResponseEntity<?> getAllMembersOfOwner(@RequestParam("q") Integer ownerId, Pageable pageable) {
-        return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId, pageable), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> getAllMembersOfOwner(@RequestParam("q") Integer ownerId, @RequestParam(value = "name",required = false) String name,
+                                                  @RequestParam(value = "dueAmount",required = false) Integer dueAmount,
+                                                  @RequestParam(value = "joinedFrom",required = false) LocalDate joinedFrom,
+                                                  @RequestParam(value = "joinedTo",required = false) LocalDate joinedTo,
+                                                  @RequestParam(value = "expiryFrom",required = false) LocalDate expiryFrom,
+                                                  @RequestParam(value = "expiryTo",required = false) LocalDate expiryTo,Pageable pageable) {
+        return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId,name,dueAmount,joinedFrom,joinedTo,expiryFrom,expiryTo,pageable), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deleteById")
