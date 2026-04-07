@@ -35,8 +35,6 @@ public class OwnerService {
     @Autowired
     private OwnerRepository ownerRepository;
 
-    @Autowired
-    private GymRepository gymRepository;
 
     @Autowired
     private MemberRepository memberRepository;
@@ -196,30 +194,18 @@ public class OwnerService {
         return owners;
     }
 
-    public List<MemberResponse> getAllMemberOfOwner(Integer ownerId) {
+    public Integer getDueAmountOfAllMembersOfOwner(Integer ownerId) {
         List<MemberResponse> members = new ArrayList<>();
         List<Member> byOwnerId = memberRepository.findByOwnerId(ownerId);
+        Integer sum = 0;
         for (Member m : byOwnerId) {
-            MemberResponse build = MemberResponse.builder()
-                    .expiry(m.getExpiry())
-                    .name(m.getName())
-                    .joined(m.getJoined())
-                    .id(m.getId())
-                    .dueAmount(m.getDueAmount())
-                    .email(m.getEmail())
-                    .address(m.getAddress())
-                    .phone(m.getPhone())
-                    .ownerId(m.getOwner().getId())
-                    .plan(m.getMemberShip()!=null ? m.getMemberShip().getName() : "N/A")
-                    .build();
-
-            members.add(build);
+           sum+= m.getDueAmount();
         }
-        return members;
+        return sum;
     }
 
-    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom,LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, Pageable pageable){
-        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId),name,dueAmount,joinedFrom,joinedTo, expiryFrom,expiryTo,pageable);
+    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom,LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo,String plan, Pageable pageable){
+        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId),name,dueAmount,joinedFrom,joinedTo, expiryFrom,expiryTo,plan, pageable);
     }
 
     public OwnerDetailsResponse findByEmail(String email) {

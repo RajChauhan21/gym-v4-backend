@@ -82,14 +82,10 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-//        config.setAllowedOrigins(List.of("https://moralistically-unregretted-brice.ngrok-free.dev/member-ship/getAll","http://localhost:5173","https://tqtjpmd0-5173.inc1.devtunnels.ms/"));
+        config.setAllowedOrigins(List.of("https://moralistically-unregretted-brice.ngrok-free.dev/member-ship/getAll","http://localhost:5173","https://tqtjpmd0-5173.inc1.devtunnels.ms/"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE","OPTIONS"));
-//        config.setAllowedHeaders(List.of("*"));
-        config.setAllowCredentials(true);
-
-        config.setAllowedOriginPatterns(List.of("*"));
-//        config.setAllowedMethods(List.of("*"));
         config.setAllowedHeaders(List.of("*"));
+        config.setAllowCredentials(true);
 
         UrlBasedCorsConfigurationSource source =
                 new UrlBasedCorsConfigurationSource();

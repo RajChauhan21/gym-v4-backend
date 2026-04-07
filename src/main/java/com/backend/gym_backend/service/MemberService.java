@@ -157,6 +157,10 @@ public class MemberService {
         return memberResponses;
     }
 
+    public Integer getAllMembersCount(Integer ownerId){
+        return memberRepository.countAllMembersByOwnerId(ownerId);
+    }
+
     @Transactional
     public String deleteById(Integer id) {
         if (!memberRepository.existsById(id)) {

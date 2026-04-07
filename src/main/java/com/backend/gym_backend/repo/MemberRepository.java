@@ -33,27 +33,34 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
                     "AND (?4 IS NULL OR m.joined >= ?4) " +
                     "AND (?5 IS NULL OR m.joined <= ?5) " +
                     "AND (?6 IS NULL OR m.expiry >= ?6) " +
-                    "AND (?7 IS NULL OR m.expiry <= ?7)",
+                    "AND (?7 IS NULL OR m.expiry <= ?7) " +
+                    "AND (?8 IS NULL OR ms.name = ?8)", // New Plan Filter
             countQuery = "SELECT COUNT(*) FROM member m " +
+                    "LEFT JOIN member_ship ms ON m.member_ship_id = ms.id " + // Join needed for count too
                     "WHERE m.owner_id = ?1 " +
                     "AND (?2 IS NULL OR m.name LIKE CONCAT('%', ?2, '%')) " +
                     "AND (?3 IS NULL OR m.due_amount = ?3) " +
                     "AND (?4 IS NULL OR m.joined >= ?4) " +
                     "AND (?5 IS NULL OR m.joined <= ?5) " +
                     "AND (?6 IS NULL OR m.expiry >= ?6) " +
-                    "AND (?7 IS NULL OR m.expiry <= ?7)",
+                    "AND (?7 IS NULL OR m.expiry <= ?7) " +
+                    "AND (?8 IS NULL OR ms.name = ?8)",
             nativeQuery = true
     )
     Page<MemberProjection> findAllMembersByOwnerId(
-            @Param("ownerId") Long ownerId,
-            @Param("name") String name,
-            @Param("dueAmount") Integer dueAmount,
-            @Param("joinedFrom") LocalDate joinedFrom,
-            @Param("joinedTo") LocalDate joinedTo,
-            @Param("expiryFrom") LocalDate expiryFrom,
-            @Param("expiryTo") LocalDate expiryTo,
+            Long ownerId,     // ?1
+            String name,      // ?2
+            Integer dueAmount,// ?3
+            LocalDate joinedFrom, // ?4
+            LocalDate joinedTo,   // ?5
+            LocalDate expiryFrom, // ?6
+            LocalDate expiryTo,   // ?7
+            String plan,      // ?8
             Pageable pageable
     );
+
+    @Query(value = "SELECT COUNT(*) FROM member WHERE owner_id = :ownerId", nativeQuery = true)
+    Integer countAllMembersByOwnerId(@Param("ownerId") Integer ownerId);
 
 
 }

@@ -10,7 +10,6 @@ import org.springframework.web.bind.annotation.*;
 
 import java.time.LocalDate;
 
-@CrossOrigin("*")
 @RestController
 @RequestMapping("/pay")
 public class PaymentController {
@@ -30,12 +29,12 @@ public class PaymentController {
 
     @GetMapping("/getAllPaymentsOfMembersByOwnerId")
     public ResponseEntity<?> getAllPaymentsOfMemberByOwnerId(@RequestParam("q") Integer ownerId,
-                                                             @RequestParam(value = "m", required = false) String memberName,
-                                                             @RequestParam(value = "p",required = false) String plan,
-                                                             @RequestParam(value = "meth",required = false) String method,
-                                                             @RequestParam(value = "a",required = false) Integer amount,
-                                                             @RequestParam(value = "df",required = false) LocalDate dateFrom,
-                                                             @RequestParam(value = "dt",required = false) LocalDate dateTo, Pageable pageable) {
+                                                             @RequestParam(value = "name", required = false) String memberName,
+                                                             @RequestParam(value = "plan",required = false) String plan,
+                                                             @RequestParam(value = "method",required = false) String method,
+                                                             @RequestParam(value = "amount",required = false) Integer amount,
+                                                             @RequestParam(value = "from",required = false) LocalDate dateFrom,
+                                                             @RequestParam(value = "to",required = false) LocalDate dateTo, Pageable pageable) {
         return new ResponseEntity<>(paymentService.getAllPaymentsOfMemberByOwnerId(Long.valueOf(ownerId), memberName, plan, method, amount, dateFrom, dateTo, pageable), HttpStatus.ACCEPTED);
     }
 
