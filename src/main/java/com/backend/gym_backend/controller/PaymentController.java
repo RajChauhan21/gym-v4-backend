@@ -38,6 +38,11 @@ public class PaymentController {
         return new ResponseEntity<>(paymentService.getAllPaymentsOfMemberByOwnerId(Long.valueOf(ownerId), memberName, plan, method, amount, dateFrom, dateTo, pageable), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getTotalAmount")
+    public ResponseEntity<?> getTotalAmount(){
+        return new ResponseEntity<>(paymentService.getTotalAmountPaid(),HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id) {
         return new ResponseEntity<>(paymentService.deleteById(id), HttpStatus.ACCEPTED);

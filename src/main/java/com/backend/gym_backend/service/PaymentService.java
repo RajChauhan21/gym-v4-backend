@@ -102,6 +102,10 @@ public class PaymentService {
         return payments;
     }
 
+    public Long getTotalAmountPaid(){
+        return paymentRepository.sumAllAmounts();
+    }
+
     public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable){
         return paymentRepository.findPaymentsFiltered(ownerId,memberName,membershipName,method, amount,dateFrom,dateTo,pageable);
     }
