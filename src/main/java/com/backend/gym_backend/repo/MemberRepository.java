@@ -1,6 +1,7 @@
 package com.backend.gym_backend.repo;
 
 import com.backend.gym_backend.dto.MemberProjection;
+import com.backend.gym_backend.dto.MemberSearchProjection;
 import com.backend.gym_backend.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -61,6 +62,24 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     @Query(value = "SELECT COUNT(*) FROM member WHERE owner_id = :ownerId", nativeQuery = true)
     Integer countAllMembersByOwnerId(@Param("ownerId") Integer ownerId);
+
+
+    @Query(value = """
+        SELECT
+            m.id AS memberId,
+            m.name AS fullName,
+            mm.name AS planName
+        FROM member m
+        LEFT JOIN member_ship mm ON mm.id = m.member_ship_id
+        WHERE m.owner_id = :ownerId
+          AND LOWER(m.name) LIKE LOWER(CONCAT('%', :query, '%'))
+        ORDER BY m.name
+        LIMIT 10
+        """, nativeQuery = true)
+    List<MemberSearchProjection> searchMembers(
+            @Param("ownerId") Integer ownerId,
+            @Param("query") String query
+    );
 
 
 }

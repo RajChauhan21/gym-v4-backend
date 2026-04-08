@@ -3,6 +3,7 @@ package com.backend.gym_backend.controller;
 import com.backend.gym_backend.dto.MemberRequest;
 import com.backend.gym_backend.service.MemberService;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Pageable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
@@ -33,6 +34,11 @@ public class MemberController {
     @GetMapping("/findByMemberShipId")
     public ResponseEntity<?> getMembersOnMemberShipId(@RequestParam("q") Integer id){
         return new ResponseEntity<>(memberService.getMembersOnMemberShipId(id), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/searchMembers")
+    public ResponseEntity<?> searchMembers(@RequestParam("o") Integer ownerId,@RequestParam("q") String query){
+        return new ResponseEntity<>(memberService.searchMembers(ownerId,query), HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deleteById")

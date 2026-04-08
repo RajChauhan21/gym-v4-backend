@@ -42,6 +42,6 @@ public class Member {
     private MemberShip memberShip;
 
     @JsonManagedReference("pay")
-    @OneToMany(mappedBy = "member")
+    @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Payment> payments;
 }

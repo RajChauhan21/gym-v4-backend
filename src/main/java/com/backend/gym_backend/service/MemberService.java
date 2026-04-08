@@ -2,19 +2,24 @@ package com.backend.gym_backend.service;
 
 import com.backend.gym_backend.dto.MemberRequest;
 import com.backend.gym_backend.dto.MemberResponse;
+import com.backend.gym_backend.dto.MemberSearchProjection;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.MemberShip;
 import com.backend.gym_backend.entity.Owner;
+import com.backend.gym_backend.entity.Payment;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.MemberShipRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.data.domain.Page;
+import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Optional;
 
 @Service
 public class MemberService {
@@ -161,12 +166,15 @@ public class MemberService {
         return memberRepository.countAllMembersByOwnerId(ownerId);
     }
 
+    public List<MemberSearchProjection> searchMembers(Integer ownerId,String query){
+        return memberRepository.searchMembers(ownerId,query);
+    }
+
     @Transactional
     public String deleteById(Integer id) {
         if (!memberRepository.existsById(id)) {
             throw new RuntimeException("Member id not found");
         }
-
         memberRepository.deleteById(id);
         return "Member deleted successfully";
     }
