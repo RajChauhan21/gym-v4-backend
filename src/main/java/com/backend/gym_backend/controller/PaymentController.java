@@ -17,9 +17,9 @@ public class PaymentController {
     @Autowired
     private PaymentService paymentService;
 
-    @PostMapping("/save")
+    @PostMapping("/update")
     public ResponseEntity<?> save(@RequestBody PaymentRequest request) {
-        return new ResponseEntity<>(paymentService.save(request), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(paymentService.update(request), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/getAllPaymentsOfMember")
@@ -41,6 +41,11 @@ public class PaymentController {
     @GetMapping("/getTotalAmount")
     public ResponseEntity<?> getTotalAmount(){
         return new ResponseEntity<>(paymentService.getTotalAmountPaid(),HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/getRevenue")
+    public ResponseEntity<?> getRevenueThisMonth(@RequestParam("q") Integer ownerId){
+        return new ResponseEntity<>(paymentService.getRevenues(ownerId),HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deleteById")

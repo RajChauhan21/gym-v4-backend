@@ -3,6 +3,7 @@ package com.backend.gym_backend.service;
 import com.backend.gym_backend.dto.PaymentProjection;
 import com.backend.gym_backend.dto.PaymentRequest;
 import com.backend.gym_backend.dto.PaymentResponse;
+import com.backend.gym_backend.dto.RevenueProjection;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Payment;
 import com.backend.gym_backend.repo.MemberRepository;
@@ -27,18 +28,18 @@ public class PaymentService {
     private MemberRepository memberRepository;
 
     @Transactional
-    public PaymentResponse save(PaymentRequest request){
-        if (!memberRepository.existsById(request.getMemberId())){
+    public PaymentResponse save(PaymentRequest request) {
+        if (!memberRepository.existsById(request.getMemberId())) {
             throw new RuntimeException("member id not found");
         }
-        Member member  = memberRepository.findById(request.getMemberId()).get();
+        Member member = memberRepository.findById(request.getMemberId()).get();
         Payment payment = new Payment();
-        payment.setId(request.getPaymentId()!=null ? request.getPaymentId() : null);
+        payment.setId(request.getPaymentId() != null ? request.getPaymentId() : null);
         payment.setDate(request.getDate());
         payment.setMethod(request.getMethod());
         payment.setAmountPaid(request.getAmountPaid());
         payment.setMember(member);
-        member.setDueAmount(Math.abs(member.getDueAmount())-request.getAmountPaid());
+        member.setDueAmount(Math.abs(member.getDueAmount()) - request.getAmountPaid());
 
         Payment save = paymentRepository.save(payment);
         memberRepository.save(member);
@@ -52,15 +53,19 @@ public class PaymentService {
     }
 
     @Transactional
-    public PaymentResponse update(PaymentRequest request){
-        if (!memberRepository.existsById(request.getMemberId())){
+    public PaymentResponse update(PaymentRequest request) {
+        if (!memberRepository.existsById(request.getMemberId())) {
             throw new RuntimeException("member id not found");
         }
+        Member member = memberRepository.findById(request.getMemberId()).get();
+
         Payment payment = new Payment();
         payment.setId(request.getPaymentId());
         payment.setDate(request.getDate());
         payment.setMethod(request.getMethod());
         payment.setAmountPaid(request.getAmountPaid());
+        member.setDueAmount(Math.abs(member.getDueAmount()) - request.getAmountPaid());
+        payment.setMember(member);
         Payment save = paymentRepository.save(payment);
         return PaymentResponse.builder()
                 .paymentId(save.getId())
@@ -71,23 +76,23 @@ public class PaymentService {
                 .build();
     }
 
-    public String deleteById(Integer id){
-        if (!paymentRepository.existsById(id)){
+    public String deleteById(Integer id) {
+        if (!paymentRepository.existsById(id)) {
             throw new RuntimeException("payment id not found");
         }
         paymentRepository.deleteById(id);
         return "Deleted successfully";
     }
 
-    public List<PaymentResponse> getAllPaymentsOfMember(Integer memberId){
-        if (!memberRepository.existsById(memberId)){
+    public List<PaymentResponse> getAllPaymentsOfMember(Integer memberId) {
+        if (!memberRepository.existsById(memberId)) {
             throw new RuntimeException("member id not found");
         }
         Member member = memberRepository.findById(memberId).get();
 
         List<PaymentResponse> payments = new ArrayList<>();
 
-        for (Payment p : member.getPayments()){
+        for (Payment p : member.getPayments()) {
             PaymentResponse build = PaymentResponse.builder()
                     .date(p.getDate())
                     .amountPaid(p.getAmountPaid())
@@ -102,12 +107,20 @@ public class PaymentService {
         return payments;
     }
 
-    public Long getTotalAmountPaid(){
+    public Long getTotalAmountPaid() {
         return paymentRepository.sumAllAmounts();
     }
 
-    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable){
-        return paymentRepository.findPaymentsFiltered(ownerId,memberName,membershipName,method, amount,dateFrom,dateTo,pageable);
+    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
+        return paymentRepository.findPaymentsFiltered(ownerId, memberName, membershipName, method, amount, dateFrom, dateTo, pageable);
+    }
+
+    public Double getRevenueThisMonth(){
+        return paymentRepository.calculateCurrentMonthRevenueNative();
+    }
+
+    public RevenueProjection getRevenues(Integer ownerId){
+        return paymentRepository.getRevenueByOwner(ownerId);
     }
 
 }
