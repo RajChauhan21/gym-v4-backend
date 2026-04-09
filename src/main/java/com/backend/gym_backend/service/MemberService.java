@@ -3,6 +3,7 @@ package com.backend.gym_backend.service;
 import com.backend.gym_backend.dto.MemberRequest;
 import com.backend.gym_backend.dto.MemberResponse;
 import com.backend.gym_backend.dto.MemberSearchProjection;
+import com.backend.gym_backend.dto.RevenueProjection;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.MemberShip;
 import com.backend.gym_backend.entity.Owner;
@@ -168,6 +169,22 @@ public class MemberService {
 
     public List<MemberSearchProjection> searchMembers(Integer ownerId,String query){
         return memberRepository.searchMembers(ownerId,query);
+    }
+
+    public Integer countActiveMembers(Integer ownerId){
+        return memberRepository.countActiveMembersByOwner(ownerId);
+    }
+
+    public Integer getMembersJoinedCurrentMonth(Integer ownerId){
+        return memberRepository.countNewMembersThisMonth(ownerId);
+    }
+
+    public Integer getMembersCountExpiringIn7Days(Integer ownerId){
+        return memberRepository.countMembersExpiringSoon(ownerId);
+    }
+
+    public RevenueProjection getAllStatsOfMembers(Integer ownerId){
+        return memberRepository.getFullStatsByOwner(ownerId);
     }
 
     @Transactional

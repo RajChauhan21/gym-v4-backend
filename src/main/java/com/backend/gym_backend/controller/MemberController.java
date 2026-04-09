@@ -41,6 +41,26 @@ public class MemberController {
         return new ResponseEntity<>(memberService.searchMembers(ownerId,query), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getActiveMembers")
+    public ResponseEntity<?> getActiveMembers(@RequestParam("o") Integer ownerId){
+        return new ResponseEntity<>(memberService.countActiveMembers(ownerId), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/getMembersJoined")
+    public ResponseEntity<?> getMembersJoinedCurrentMonth(@RequestParam("o") Integer ownerId){
+        return new ResponseEntity<>(memberService.getMembersJoinedCurrentMonth(ownerId), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/getMembersExpiringSoon")
+    public ResponseEntity<?> getMembersExpiringSoon(@RequestParam("o") Integer ownerId){
+        return new ResponseEntity<>(memberService.getMembersCountExpiringIn7Days(ownerId), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/getAllStatsOfMember")
+    public ResponseEntity<?> getAllStatsOfMember(@RequestParam("o") Integer ownerId){
+        return new ResponseEntity<>(memberService.getAllStatsOfMembers(ownerId), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(memberService.deleteById(id), HttpStatus.ACCEPTED);

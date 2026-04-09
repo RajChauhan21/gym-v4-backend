@@ -4,5 +4,10 @@ public interface RevenueProjection {
 
     Double getTotalRevenue();
     Double getCurrentMonthRevenue();
-    Integer getTotalRecords();
+    Double getLastMonthRevenue();
+    Long getActiveMemberCount();
+    Long getActiveMembersThreeMonthsAgo();
+    Long getNewMembersThisMonth();
+    Long getNewMembersLastMonth();
+    Long getExpiringSoonCount();
 }

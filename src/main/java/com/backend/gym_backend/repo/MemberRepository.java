@@ -2,6 +2,7 @@ package com.backend.gym_backend.repo;
 
 import com.backend.gym_backend.dto.MemberProjection;
 import com.backend.gym_backend.dto.MemberSearchProjection;
+import com.backend.gym_backend.dto.RevenueProjection;
 import com.backend.gym_backend.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
@@ -65,21 +66,54 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
 
     @Query(value = """
-        SELECT
-            m.id AS memberId,
-            m.name AS fullName,
-            mm.name AS planName
-        FROM member m
-        LEFT JOIN member_ship mm ON mm.id = m.member_ship_id
-        WHERE m.owner_id = :ownerId
-          AND LOWER(m.name) LIKE LOWER(CONCAT('%', :query, '%'))
-        ORDER BY m.name
-        LIMIT 10
-        """, nativeQuery = true)
+            SELECT
+                m.id AS memberId,
+                m.name AS fullName,
+                mm.name AS planName
+            FROM member m
+            LEFT JOIN member_ship mm ON mm.id = m.member_ship_id
+            WHERE m.owner_id = :ownerId
+              AND LOWER(m.name) LIKE LOWER(CONCAT('%', :query, '%'))
+            ORDER BY m.name
+            LIMIT 10
+            """, nativeQuery = true)
     List<MemberSearchProjection> searchMembers(
             @Param("ownerId") Integer ownerId,
             @Param("query") String query
     );
+
+    @Query(value = "SELECT COUNT(*) FROM member WHERE owner_id = :ownerId AND expiry > CURDATE()",
+            nativeQuery = true)
+    Integer countActiveMembersByOwner(@Param("ownerId") Integer ownerId);
+
+
+    @Query(value = "SELECT COUNT(*) FROM member " +
+            "WHERE owner_id = :ownerId " +
+            "AND MONTH(joined) = MONTH(CURDATE()) " +
+            "AND YEAR(joined) = YEAR(CURDATE())",
+            nativeQuery = true)
+    Integer countNewMembersThisMonth(@Param("ownerId") Integer ownerId);
+
+    @Query(value = "SELECT COUNT(*) FROM member " +
+            "WHERE owner_id = :ownerId " +
+            "AND expiry BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)",
+            nativeQuery = true)
+    Integer countMembersExpiringSoon(@Param("ownerId") Integer ownerId);
+
+    @Query(value = "SELECT " +
+            "  SUM(p.amount_paid) AS totalRevenue, " +
+            "  SUM(CASE WHEN MONTH(p.date) = MONTH(CURDATE()) AND YEAR(p.date) = YEAR(CURDATE()) THEN p.amount_paid ELSE 0 END) AS currentMonthRevenue, " +
+            "  SUM(CASE WHEN MONTH(p.date) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(p.date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) THEN p.amount_paid ELSE 0 END) AS lastMonthRevenue, " + // Added this line
+            "  COUNT(DISTINCT CASE WHEN m.expiry > CURDATE() THEN m.id END) AS activeMemberCount, " +
+            "  COUNT(DISTINCT CASE WHEN m.expiry > DATE_SUB(CURDATE(), INTERVAL 3 MONTH) AND m.joined <= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) THEN m.id END) AS activeMembersThreeMonthsAgo, " +
+            "  COUNT(CASE WHEN MONTH(m.joined) = MONTH(CURDATE()) AND YEAR(m.joined) = YEAR(CURDATE()) THEN m.id END) AS newMembersThisMonth, " +
+            "  COUNT(CASE WHEN MONTH(m.joined) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(m.joined) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) THEN m.id END) AS newMembersLastMonth, " +
+            "  COUNT(DISTINCT CASE WHEN m.expiry BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN m.id END) AS expiringSoonCount " +
+            "FROM payment p " +
+            "JOIN member m ON p.member_id = m.id " +
+            "WHERE m.owner_id = :ownerId",
+            nativeQuery = true)
+    RevenueProjection getFullStatsByOwner(@Param("ownerId") Integer ownerId);
 
 
 }
