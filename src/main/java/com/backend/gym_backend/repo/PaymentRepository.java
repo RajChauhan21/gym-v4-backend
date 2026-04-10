@@ -1,6 +1,7 @@
 package com.backend.gym_backend.repo;
 
 import com.backend.gym_backend.dto.PaymentProjection;
+import com.backend.gym_backend.dto.RevenueChartProjection;
 import com.backend.gym_backend.dto.RevenueProjection;
 import com.backend.gym_backend.entity.Payment;
 import org.springframework.data.domain.Page;
@@ -10,6 +11,7 @@ import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.util.List;
 
 public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
@@ -82,6 +84,22 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             "WHERE m.owner_id = :ownerId",
             nativeQuery = true)
     RevenueProjection getRevenueByOwner(@Param("ownerId") Integer ownerId);
+
+
+    @Query(value = """
+            SELECT
+                                     DATE(p.date) AS date,
+                                     COALESCE(SUM(p.amount_paid),0) AS revenue
+                                 FROM payment p
+                                 JOIN member m ON m.id = p.member_id
+                                 WHERE m.owner_id = :ownerId
+                                 AND DATE(p.date)
+                                 BETWEEN DATE_SUB(CURDATE(), INTERVAL (:days - 1) DAY)
+                                 AND CURDATE()
+                                 GROUP BY DATE(p.date)
+                                 ORDER BY DATE(p.date);
+            """, nativeQuery = true)
+    List<RevenueChartProjection> getRevenueOverview(Integer ownerId, Integer days);
 
 
 }

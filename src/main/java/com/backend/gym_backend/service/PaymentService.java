@@ -1,9 +1,6 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.PaymentProjection;
-import com.backend.gym_backend.dto.PaymentRequest;
-import com.backend.gym_backend.dto.PaymentResponse;
-import com.backend.gym_backend.dto.RevenueProjection;
+import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Payment;
 import com.backend.gym_backend.repo.MemberRepository;
@@ -109,6 +106,10 @@ public class PaymentService {
 
     public Long getTotalAmountPaid() {
         return paymentRepository.sumAllAmounts();
+    }
+
+    public List<RevenueChartProjection> getRevenueOverview(Integer ownerId, Integer days){
+        return paymentRepository.getRevenueOverview(ownerId,days);
     }
 
     public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {

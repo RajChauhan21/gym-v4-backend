@@ -48,6 +48,13 @@ public class PaymentController {
         return new ResponseEntity<>(paymentService.getRevenues(ownerId),HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getRevenueChartDetails")
+    public ResponseEntity<?> getRevenueChartDetails(@RequestParam("q") Integer ownerId, @RequestParam("d") Integer days){
+        return new ResponseEntity<>(paymentService.getRevenueOverview(ownerId,days),HttpStatus.ACCEPTED);
+    }
+
+
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id) {
         return new ResponseEntity<>(paymentService.deleteById(id), HttpStatus.ACCEPTED);

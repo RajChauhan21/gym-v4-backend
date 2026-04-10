@@ -103,17 +103,61 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
     @Query(value = "SELECT " +
             "  SUM(p.amount_paid) AS totalRevenue, " +
             "  SUM(CASE WHEN MONTH(p.date) = MONTH(CURDATE()) AND YEAR(p.date) = YEAR(CURDATE()) THEN p.amount_paid ELSE 0 END) AS currentMonthRevenue, " +
-            "  SUM(CASE WHEN MONTH(p.date) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(p.date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) THEN p.amount_paid ELSE 0 END) AS lastMonthRevenue, " + // Added this line
+            "  SUM(CASE WHEN MONTH(p.date) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(p.date) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) THEN p.amount_paid ELSE 0 END) AS lastMonthRevenue, " +
             "  COUNT(DISTINCT CASE WHEN m.expiry > CURDATE() THEN m.id END) AS activeMemberCount, " +
-            "  COUNT(DISTINCT CASE WHEN m.expiry > DATE_SUB(CURDATE(), INTERVAL 3 MONTH) AND m.joined <= DATE_SUB(CURDATE(), INTERVAL 3 MONTH) THEN m.id END) AS activeMembersThreeMonthsAgo, " +
-            "  COUNT(CASE WHEN MONTH(m.joined) = MONTH(CURDATE()) AND YEAR(m.joined) = YEAR(CURDATE()) THEN m.id END) AS newMembersThisMonth, " +
-            "  COUNT(CASE WHEN MONTH(m.joined) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(m.joined) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) THEN m.id END) AS newMembersLastMonth, " +
+            // Fixed: This will now count the 6th member even if they have 0 payments
+            "COUNT(DISTINCT CASE WHEN MONTH(m.joined) = MONTH(DATE_SUB(CURDATE(), INTERVAL 3 MONTH)) AND YEAR(m.joined) = YEAR(DATE_SUB(CURDATE(), INTERVAL 3 MONTH)) THEN m.id END) AS activeMembersThreeMonthsAgo, " +
+            "  COUNT(DISTINCT CASE WHEN MONTH(m.joined) = MONTH(CURDATE()) AND YEAR(m.joined) = YEAR(CURDATE()) THEN m.id END) AS newMembersThisMonth, " +
+            "  COUNT(DISTINCT CASE WHEN MONTH(m.joined) = MONTH(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) AND YEAR(m.joined) = YEAR(DATE_SUB(CURDATE(), INTERVAL 1 MONTH)) THEN m.id END) AS newMembersLastMonth, " +
             "  COUNT(DISTINCT CASE WHEN m.expiry BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY) THEN m.id END) AS expiringSoonCount " +
-            "FROM payment p " +
-            "JOIN member m ON p.member_id = m.id " +
+            "FROM member m " + // 1. Start with the MEMBER table
+            "LEFT JOIN payment p ON p.member_id = m.id " + // 2. LEFT JOIN to include members with 0 payments
             "WHERE m.owner_id = :ownerId",
             nativeQuery = true)
     RevenueProjection getFullStatsByOwner(@Param("ownerId") Integer ownerId);
 
+    @Query(value = """
+            SELECT
+            
+                COALESCE(SUM(CASE
+                    WHEN MONTH(p.date) = MONTH(CURDATE())
+                    AND YEAR(p.date) = YEAR(CURDATE())
+                    THEN p.amount_paid END),0) AS currentMonthRevenue,
+            
+                COUNT(CASE
+                    WHEN MONTH(m.joined) = MONTH(CURDATE())
+                    AND YEAR(m.joined) = YEAR(CURDATE())
+                    THEN 1 END) AS newMembersThisMonth,
+            
+                COUNT(CASE
+                    WHEN m.expiry >= CURDATE()
+                    THEN 1 END) AS activeMemberCount,
+            
+                COUNT(CASE
+                    WHEN m.expiry BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
+                    THEN 1 END) AS expiringSoonCount,
+            
+                COALESCE(SUM(CASE
+                    WHEN MONTH(p.date) = MONTH(CURDATE() - INTERVAL 1 MONTH)
+                    AND YEAR(p.date) = YEAR(CURDATE() - INTERVAL 1 MONTH)
+                    THEN p.amount_paid END),0) AS lastMonthRevenue,
+            
+                COUNT(CASE
+                    WHEN m.joined <= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+                    AND m.expiry >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
+                    THEN 1 END) AS activeMembersThreeMonthsAgo,
+            
+                COUNT(CASE
+                    WHEN MONTH(m.joined) = MONTH(CURDATE() - INTERVAL 1 MONTH)
+                    AND YEAR(m.joined) = YEAR(CURDATE() - INTERVAL 1 MONTH)
+                    THEN 1 END) AS newMembersLastMonth,
+            
+                COALESCE(SUM(p.amount_paid),0) AS totalRevenue
+            
+            FROM member m
+            LEFT JOIN payment p ON p.member_id = m.id
+            WHERE m.owner_id = :ownerId
+            """, nativeQuery = true)
+    RevenueProjection getFullStatsByOwners(@Param("ownerId") Integer ownerId);
 
 }
