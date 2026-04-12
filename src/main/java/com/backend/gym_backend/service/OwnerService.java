@@ -1,14 +1,9 @@
 package com.backend.gym_backend.service;
 
 import com.backend.gym_backend.dto.*;
-import com.backend.gym_backend.entity.Member;
-import com.backend.gym_backend.entity.Owner;
-import com.backend.gym_backend.entity.RefreshToken;
+import com.backend.gym_backend.entity.*;
 import com.backend.gym_backend.enums.OAuthProvider;
-import com.backend.gym_backend.repo.GymRepository;
-import com.backend.gym_backend.repo.MemberRepository;
-import com.backend.gym_backend.repo.OwnerRepository;
-import com.backend.gym_backend.repo.RefreshTokenRepository;
+import com.backend.gym_backend.repo.*;
 import com.backend.gym_backend.security.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
@@ -35,7 +30,6 @@ public class OwnerService {
     @Autowired
     private OwnerRepository ownerRepository;
 
-
     @Autowired
     private MemberRepository memberRepository;
 
@@ -50,6 +44,12 @@ public class OwnerService {
 
     @Autowired
     private RefreshTokenRepository refreshTokenRepository;
+
+    @Autowired
+    private SubscriptionService subscriptionService;
+
+    @Autowired
+    private PlanRepository planRepository;
 
 
     public ResponseEntity<?> logIn(AuthRequest userRequest, HttpServletResponse response) throws Exception {
@@ -74,7 +74,8 @@ public class OwnerService {
             rt.setToken(refreshToken);
             rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(rt);
-
+            Subscription subscription = owner.getSubscription().get(0);
+            Plan plan = subscription.getPlan();
             OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                     .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
                     .email(owner.getEmail())
@@ -87,6 +88,13 @@ public class OwnerService {
                     .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
                     .gymImage(owner.getGym() !=null ? owner.getGym().getImage() : "")
                     .ownerImage(owner.getImage())
+                    .price(subscription.getPrice())
+                    .endDate(subscription.getEndDate())
+                    .startDate(subscription.getStartDate())
+                    .planName(subscription.getName())
+                    .status(subscription.getStatus())
+                    .memberLimitCount(plan.getMemberLimit())
+                    .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
                     .build();
 
             return ResponseEntity.ok(responseDto);
@@ -100,10 +108,12 @@ public class OwnerService {
         Optional<Owner> ownerObj = ownerRepository.findByEmail(userRequest.getEmail());
 
         if (ownerObj.isPresent()) {
-            throw new RuntimeException(userRequest.getEmail());
+            throw new RuntimeException("Email already present " + userRequest.getEmail());
         }
         String password = bCryptPasswordEncoder.encode(userRequest.getPassword());
         Owner owner = new Owner();
+        Plan trial = planRepository.findByName("Trial").get();
+        subscriptionService.ownerSubscribesToPlan(owner.getId(),trial.getId());
         owner.setProvider(OAuthProvider.LOCAL);
         owner.setName(userRequest.getName());
         owner.setPassword(password);

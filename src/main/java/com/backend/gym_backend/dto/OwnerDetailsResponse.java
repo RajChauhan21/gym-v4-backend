@@ -1,7 +1,10 @@
 package com.backend.gym_backend.dto;
 
+import com.backend.gym_backend.enums.Status;
 import lombok.Builder;
 import lombok.Data;
+
+import java.time.LocalDate;
 
 @Data
 @Builder
@@ -28,4 +31,20 @@ public class OwnerDetailsResponse {
     private String ownerImage;
 
     private String gymImage;
+
+    private String planName;
+
+    private Integer price;
+
+    private LocalDate startDate;
+
+    private LocalDate endDate;
+
+    private Status status;
+
+    private Integer memberLimitCount;
+
+    private Integer currentMemberCount;
+
+
 }
