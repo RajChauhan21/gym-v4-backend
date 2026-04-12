@@ -48,6 +48,11 @@ public class PaymentController {
         return new ResponseEntity<>(paymentService.getRevenues(ownerId),HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getRecentPayments")
+    public ResponseEntity<?> getRecentPayments(@RequestParam("q") Integer ownerId){
+        return new ResponseEntity<>(paymentService.getRecentPaymentByOwnerId(ownerId),HttpStatus.ACCEPTED);
+    }
+
     @GetMapping("/getRevenueChartDetails")
     public ResponseEntity<?> getRevenueChartDetails(@RequestParam("q") Integer ownerId, @RequestParam("d") Integer days){
         return new ResponseEntity<>(paymentService.getRevenueOverview(ownerId,days),HttpStatus.ACCEPTED);

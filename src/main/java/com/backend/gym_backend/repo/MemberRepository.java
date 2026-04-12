@@ -1,5 +1,6 @@
 package com.backend.gym_backend.repo;
 
+import com.backend.gym_backend.dto.MemberExpiryProjection;
 import com.backend.gym_backend.dto.MemberProjection;
 import com.backend.gym_backend.dto.MemberSearchProjection;
 import com.backend.gym_backend.dto.RevenueProjection;
@@ -116,48 +117,16 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
             nativeQuery = true)
     RevenueProjection getFullStatsByOwner(@Param("ownerId") Integer ownerId);
 
+
     @Query(value = """
             SELECT
-            
-                COALESCE(SUM(CASE
-                    WHEN MONTH(p.date) = MONTH(CURDATE())
-                    AND YEAR(p.date) = YEAR(CURDATE())
-                    THEN p.amount_paid END),0) AS currentMonthRevenue,
-            
-                COUNT(CASE
-                    WHEN MONTH(m.joined) = MONTH(CURDATE())
-                    AND YEAR(m.joined) = YEAR(CURDATE())
-                    THEN 1 END) AS newMembersThisMonth,
-            
-                COUNT(CASE
-                    WHEN m.expiry >= CURDATE()
-                    THEN 1 END) AS activeMemberCount,
-            
-                COUNT(CASE
-                    WHEN m.expiry BETWEEN CURDATE() AND DATE_ADD(CURDATE(), INTERVAL 7 DAY)
-                    THEN 1 END) AS expiringSoonCount,
-            
-                COALESCE(SUM(CASE
-                    WHEN MONTH(p.date) = MONTH(CURDATE() - INTERVAL 1 MONTH)
-                    AND YEAR(p.date) = YEAR(CURDATE() - INTERVAL 1 MONTH)
-                    THEN p.amount_paid END),0) AS lastMonthRevenue,
-            
-                COUNT(CASE
-                    WHEN m.joined <= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
-                    AND m.expiry >= DATE_SUB(CURDATE(), INTERVAL 3 MONTH)
-                    THEN 1 END) AS activeMembersThreeMonthsAgo,
-            
-                COUNT(CASE
-                    WHEN MONTH(m.joined) = MONTH(CURDATE() - INTERVAL 1 MONTH)
-                    AND YEAR(m.joined) = YEAR(CURDATE() - INTERVAL 1 MONTH)
-                    THEN 1 END) AS newMembersLastMonth,
-            
-                COALESCE(SUM(p.amount_paid),0) AS totalRevenue
-            
+                m.name AS name,
+                m.expiry AS expiry
             FROM member m
-            LEFT JOIN payment p ON p.member_id = m.id
             WHERE m.owner_id = :ownerId
+              AND m.expiry BETWEEN CURRENT_DATE AND (CURRENT_DATE + INTERVAL 7 DAY)
+            ORDER BY m.expiry ASC
             """, nativeQuery = true)
-    RevenueProjection getFullStatsByOwners(@Param("ownerId") Integer ownerId);
+    List<MemberExpiryProjection> findExpiringMembers(@Param("ownerId") Integer ownerId);
 
 }

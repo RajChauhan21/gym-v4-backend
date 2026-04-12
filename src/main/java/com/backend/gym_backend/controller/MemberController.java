@@ -61,6 +61,11 @@ public class MemberController {
         return new ResponseEntity<>(memberService.getAllStatsOfMembers(ownerId), HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/getLatestMemberExpiry")
+    public ResponseEntity<?> getLatestMemberExpiry(@RequestParam("o") Integer ownerId){
+        return new ResponseEntity<>(memberService.getLatestMemberExpiry(ownerId), HttpStatus.ACCEPTED);
+    }
+
     @DeleteMapping("/deleteById")
     public ResponseEntity<?> deleteById(@RequestParam("q") Integer id){
         return new ResponseEntity<>(memberService.deleteById(id), HttpStatus.ACCEPTED);

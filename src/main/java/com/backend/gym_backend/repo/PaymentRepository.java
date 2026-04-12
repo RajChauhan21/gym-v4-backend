@@ -1,6 +1,7 @@
 package com.backend.gym_backend.repo;
 
 import com.backend.gym_backend.dto.PaymentProjection;
+import com.backend.gym_backend.dto.RecentPaymentProjection;
 import com.backend.gym_backend.dto.RevenueChartProjection;
 import com.backend.gym_backend.dto.RevenueProjection;
 import com.backend.gym_backend.entity.Payment;
@@ -100,6 +101,19 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
                                  ORDER BY DATE(p.date);
             """, nativeQuery = true)
     List<RevenueChartProjection> getRevenueOverview(Integer ownerId, Integer days);
+
+
+    @Query(value = """
+        SELECT
+            m.name AS memberName,
+            p.amount_paid AS amount
+        FROM payment p
+        INNER JOIN member m ON p.member_id = m.id
+        WHERE m.owner_id = :ownerId
+        ORDER BY p.date DESC
+        LIMIT 5
+        """, nativeQuery = true)
+    List<RecentPaymentProjection> findRecentPaymentsByOwner(@Param("ownerId") Integer ownerId);
 
 
 }

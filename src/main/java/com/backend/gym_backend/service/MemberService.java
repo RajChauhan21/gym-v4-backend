@@ -1,9 +1,6 @@
 package com.backend.gym_backend.service;
 
-import com.backend.gym_backend.dto.MemberRequest;
-import com.backend.gym_backend.dto.MemberResponse;
-import com.backend.gym_backend.dto.MemberSearchProjection;
-import com.backend.gym_backend.dto.RevenueProjection;
+import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.MemberShip;
 import com.backend.gym_backend.entity.Owner;
@@ -185,6 +182,10 @@ public class MemberService {
 
     public RevenueProjection getAllStatsOfMembers(Integer ownerId){
         return memberRepository.getFullStatsByOwner(ownerId);
+    }
+
+    public List<MemberExpiryProjection> getLatestMemberExpiry(Integer ownerId){
+        return memberRepository.findExpiringMembers(ownerId);
     }
 
     @Transactional

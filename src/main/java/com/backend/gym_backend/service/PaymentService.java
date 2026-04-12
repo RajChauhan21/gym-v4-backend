@@ -61,7 +61,7 @@ public class PaymentService {
         payment.setDate(request.getDate());
         payment.setMethod(request.getMethod());
         payment.setAmountPaid(request.getAmountPaid());
-        member.setDueAmount(Math.abs(member.getDueAmount()) - request.getAmountPaid());
+        member.setDueAmount(Math.max(Math.abs(member.getDueAmount()) - request.getAmountPaid(), 0));
         payment.setMember(member);
         Payment save = paymentRepository.save(payment);
         return PaymentResponse.builder()
@@ -118,6 +118,10 @@ public class PaymentService {
 
     public Double getRevenueThisMonth(){
         return paymentRepository.calculateCurrentMonthRevenueNative();
+    }
+
+    public List<RecentPaymentProjection> getRecentPaymentByOwnerId(Integer ownerId){
+        return paymentRepository.findRecentPaymentsByOwner(ownerId);
     }
 
     public RevenueProjection getRevenues(Integer ownerId){
