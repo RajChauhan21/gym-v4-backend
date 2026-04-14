@@ -25,6 +25,8 @@ public class Subscription {
 
     private LocalDate endDate;
 
+    private String razorpaySubscriptionId;
+
     @Enumerated(EnumType.STRING)
     private Status status;
 

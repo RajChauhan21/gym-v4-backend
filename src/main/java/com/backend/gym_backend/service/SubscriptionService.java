@@ -33,7 +33,7 @@ public class SubscriptionService {
     private PlanFeatureRepository planFeatureRepository;
 
     @Transactional
-    public SubscriptionResponse ownerSubscribesToPlan(Integer oId, Integer pId){
+    public SubscriptionResponse ownerSubscribesToPlan(Integer oId, Integer pId, String razorPaySubsId, String status){
         if (!ownerRepository.existsById(oId)){
             throw new RuntimeException("Owner Id not found");
         }
@@ -50,7 +50,8 @@ public class SubscriptionService {
         subscription.setOwner(owner);
         subscription.setName(plan.getName());
         subscription.setPrice(plan.getPrice());
-        subscription.setStatus(Status.ACTIVE);
+        subscription.setStatus(status.equals("ACTIVE")?Status.ACTIVE:Status.CREATED);
+        subscription.setRazorpaySubscriptionId(razorPaySubsId);
         subscription.setId(null);
         subscription.setStartDate(LocalDate.now());
         long daysToAdd = (plan.getDays() != null && !plan.getDays().isEmpty()) ? Long.parseLong(plan.getDays()) : 0L;
@@ -69,6 +70,8 @@ public class SubscriptionService {
                 .status(save.getStatus())
                 .build();
     }
+
+
 
     public SubscriptionResponse findById(Integer id){
         if(!planFeatureRepository.existsById(id)){

@@ -113,7 +113,7 @@ public class OwnerService {
         String password = bCryptPasswordEncoder.encode(userRequest.getPassword());
         Owner owner = new Owner();
         Plan trial = planRepository.findByName("Trial").get();
-        subscriptionService.ownerSubscribesToPlan(owner.getId(),trial.getId());
+        subscriptionService.ownerSubscribesToPlan(owner.getId(),trial.getId(), password, password);
         owner.setProvider(OAuthProvider.LOCAL);
         owner.setName(userRequest.getName());
         owner.setPassword(password);

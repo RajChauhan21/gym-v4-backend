@@ -26,6 +26,8 @@ public class Plan {
 
     private Integer memberLimit;
 
+    private String razorPayPlanId;
+
     @JsonManagedReference("subs")
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL)
     private List<Subscription> subscriptions;
