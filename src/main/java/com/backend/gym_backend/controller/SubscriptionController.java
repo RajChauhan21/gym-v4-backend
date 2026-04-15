@@ -15,7 +15,7 @@ public class SubscriptionController {
 
     @GetMapping("/add")
     public ResponseEntity<?> save(@RequestParam("p") Integer pId, @RequestParam("o") Integer oId){
-        return new ResponseEntity<>(subscriptionService.ownerSubscribesToPlan(oId,pId, , ), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(subscriptionService.ownerSubscribesToPlan(oId,pId,"",""), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/findById")

@@ -22,7 +22,7 @@ public class RazorPayController {
 
     @PostMapping("/webhook")
     public ResponseEntity<?> receiveWebHookResponse(@RequestBody String payload, HttpServletRequest request){
-
+        return new ResponseEntity<>(razorpayPaymentService.getWebHookResponse(payload,request), HttpStatus.ACCEPTED);
     }
 }
 

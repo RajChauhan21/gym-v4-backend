@@ -7,14 +7,17 @@ public class InvoicePaidEvent {
 
     private Payload payload;
 
+    @Data
     public static class Payload {
         public Invoice invoice;
     }
 
+    @Data
     public static class Invoice {
         public Entity entity;
     }
 
+    @Data
     public static class Entity {
         private String id;
         private String subscription_id;

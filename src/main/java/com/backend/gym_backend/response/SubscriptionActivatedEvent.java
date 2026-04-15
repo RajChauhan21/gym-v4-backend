@@ -7,15 +7,18 @@ public class SubscriptionActivatedEvent {
 
     private Payload payload;
 
-    static class Payload {
+    @Data
+   public static class Payload {
         private Subscription subscription;
     }
 
-    static class Subscription {
+    @Data
+   public static class Subscription {
         private Entity entity;
     }
 
-    static class Entity {
+    @Data
+   public static class Entity {
         private String id;
     }
 }

@@ -6,11 +6,13 @@ import com.backend.gym_backend.response.InvoicePaidEvent;
 import com.backend.gym_backend.response.PaymentCaptureEvent;
 import com.backend.gym_backend.response.PaymentPayload;
 import com.backend.gym_backend.response.SubscriptionActivatedEvent;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Subscription;
 import com.razorpay.Utils;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
@@ -19,18 +21,23 @@ import org.springframework.http.ResponseEntity;
 import org.springframework.stereotype.Service;
 
 @Service
+@Slf4j
 public class RazorpayPaymentService {
 
 
-    PaymentPayload paymentPayload = null;
     @Value("${razorpay.api.key}")
     private String apiKey;
+
     @Value("${razorpay.api.secret}")
     private String secretKey;
+
     @Autowired
     private PlanRepository planRepository;
+
     @Autowired
     private SubscriptionService subscriptionService;
+
+    private ObjectMapper objectMapper;
 
     public String createSubscriptions(int planId, int ownerId) throws RazorpayException {
         if (!planRepository.existsById(planId)) {
@@ -87,7 +94,7 @@ public class RazorpayPaymentService {
                     JSONObject planRequest = new JSONObject();
                     planRequest.put("period", "monthly"); // ideally from DB
                     planRequest.put("interval", 1);
-
+                    log.info("Plan object {}", planRequest);
                     JSONObject item = new JSONObject();
                     item.put("name", plan.getName());
                     item.put("amount", plan.getPrice() * 100); // paise
@@ -107,7 +114,9 @@ public class RazorpayPaymentService {
         JSONObject subRequest = new JSONObject();
         subRequest.put("plan_id", plan.getRazorPayPlanId());
         subRequest.put("customer_notify", 1);
-        subRequest.put("total_count", 9999);
+        subRequest.put("total_count", 1200);
+
+        log.info("subs object {}",subRequest);
 
         Subscription razorSub =
                 razorpayClient.subscriptions.create(subRequest);
@@ -160,7 +169,7 @@ public class RazorpayPaymentService {
     }
 
     public ResponseEntity<?> sendWebHookResponse() {
-        return new ResponseEntity<>(paymentPayload, HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
     }
 
     private boolean verifySignature(String payload, String signature) {
@@ -176,7 +185,7 @@ public class RazorpayPaymentService {
     }
 
     private void handleSubscriptionActivated(String payload) throws Exception {
-
+        log.info("subscription response {payload}", payload);
         SubscriptionActivatedEvent event =
                 objectMapper.readValue(payload, SubscriptionActivatedEvent.class);
 
@@ -185,32 +194,33 @@ public class RazorpayPaymentService {
                 .getEntity()
                 .getId();
 
-        subscriptionService.activateSubscription(subId);
+//        subscriptionService.activateSubscription(subId);
     }
 
     private void handlePaymentCaptured(String payload) throws Exception {
-
+        log.info("payment response {payload}", payload);
         PaymentCaptureEvent event =
                 objectMapper.readValue(payload, PaymentCaptureEvent.class);
 
         var entity = event.getPayload().getPayment().getEntity();
 
-        paymentService.savePayment(
-                entity.getId(),
-                entity.getAmount()
-        );
+//        paymentService.savePayment(
+//                entity.getId(),
+//                entity.getAmount()
+//        );
+
     }
 
     private void handleInvoicePaid(String payload) throws Exception {
-
+        log.info("invoice response {payload}", payload);
         InvoicePaidEvent event =
                 objectMapper.readValue(payload, InvoicePaidEvent.class);
 
-        event.getPayload().
+        event.getPayload().getInvoice().getEntity();
 
-        invoiceService.saveInvoice(
-                entity.getId(),
-                entity.getSubscription_id()
-        );
+//        invoiceService.saveInvoice(
+//                entity.getId(),
+//                entity.getSubscription_id()
+//        );
     }
 }

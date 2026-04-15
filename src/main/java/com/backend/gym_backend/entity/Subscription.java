@@ -28,6 +28,7 @@ public class Subscription {
     private String razorpaySubscriptionId;
 
     @Enumerated(EnumType.STRING)
+    @Column(length = 50)
     private Status status;
 
     @JsonBackReference("own")
