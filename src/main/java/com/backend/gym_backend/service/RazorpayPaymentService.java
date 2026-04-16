@@ -4,7 +4,6 @@ import com.backend.gym_backend.entity.Plan;
 import com.backend.gym_backend.repo.PlanRepository;
 import com.backend.gym_backend.response.InvoicePaidEvent;
 import com.backend.gym_backend.response.PaymentCaptureEvent;
-import com.backend.gym_backend.response.PaymentPayload;
 import com.backend.gym_backend.response.SubscriptionActivatedEvent;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.razorpay.RazorpayClient;
@@ -12,16 +11,19 @@ import com.razorpay.RazorpayException;
 import com.razorpay.Subscription;
 import com.razorpay.Utils;
 import jakarta.servlet.http.HttpServletRequest;
+import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
+import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
 @Service
 @Slf4j
+@RequiredArgsConstructor
 public class RazorpayPaymentService {
 
 
@@ -37,7 +39,7 @@ public class RazorpayPaymentService {
     @Autowired
     private SubscriptionService subscriptionService;
 
-    private ObjectMapper objectMapper;
+    private final ObjectMapper objectMapper;
 
     public String createSubscriptions(int planId, int ownerId) throws RazorpayException {
         if (!planRepository.existsById(planId)) {
@@ -114,9 +116,11 @@ public class RazorpayPaymentService {
         JSONObject subRequest = new JSONObject();
         subRequest.put("plan_id", plan.getRazorPayPlanId());
         subRequest.put("customer_notify", 1);
-        subRequest.put("total_count", 1200);
+        subRequest.put("total_count", 120);
+        long startAt = (System.currentTimeMillis() / 1000) + (10 * 60); // start after 10 mins
+        subRequest.put("start_at", startAt);
 
-        log.info("subs object {}",subRequest);
+        log.info("subs object {}", subRequest);
 
         Subscription razorSub =
                 razorpayClient.subscriptions.create(subRequest);
@@ -133,6 +137,7 @@ public class RazorpayPaymentService {
         return razorSub.get("id").toString();
     }
 
+    @Async
     public ResponseEntity<?> getWebHookResponse(String payload, HttpServletRequest request) {
         String signature = request.getHeader("X-Razorpay-Signature");
         // 🔐 Step 1: Verify signature (VERY IMPORTANT)
@@ -152,7 +157,15 @@ public class RazorpayPaymentService {
                     handleSubscriptionActivated(payload);
                     break;
 
+                case "subscription.authenticated":
+                    handleSubscriptionActivated(payload);
+                    break;
+
                 case "payment.captured":
+                    handlePaymentCaptured(payload);
+                    break;
+
+                case "payment.authorized":
                     handlePaymentCaptured(payload);
                     break;
 
@@ -198,7 +211,7 @@ public class RazorpayPaymentService {
     }
 
     private void handlePaymentCaptured(String payload) throws Exception {
-        log.info("payment response {payload}", payload);
+        log.info("payment response {}", payload);
         PaymentCaptureEvent event =
                 objectMapper.readValue(payload, PaymentCaptureEvent.class);
 

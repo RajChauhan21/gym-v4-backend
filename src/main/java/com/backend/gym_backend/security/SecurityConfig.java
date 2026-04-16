@@ -40,7 +40,7 @@ public class SecurityConfig {
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
 
         return http.authorizeHttpRequests(h ->
-                        h.requestMatchers("/owner/signup", "/owner/login", "/owner/auth/refresh").permitAll() // remove security for signup and login requests
+                        h.requestMatchers("/owner/signup", "/owner/login","/razorpay/webhook", "/owner/auth/refresh").permitAll() // remove security for signup and login requests
                                 .anyRequest().authenticated())
                 .csrf(c -> c.disable())
                 .httpBasic(Customizer.withDefaults())
