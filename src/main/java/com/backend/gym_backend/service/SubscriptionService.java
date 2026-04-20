@@ -186,7 +186,7 @@ public class SubscriptionService {
         subscriptionRepository.save(subscription); //save the updated subscription
     }
 
-    public LocalDate convertEpochToLocalDate(Long epochSeconds) {
+    public static LocalDate convertEpochToLocalDate(Long epochSeconds) {
         if (epochSeconds == null) {
             return null;
         }

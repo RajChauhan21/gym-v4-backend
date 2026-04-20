@@ -57,6 +57,8 @@ public class RazorpayWebhookEvent {
         private String email;
         private String contact;
         private String upi_transaction_id;
+        private String currency;
+        private String created_at;
     }
 
     // Add InvoiceEntity similarly
@@ -64,11 +66,35 @@ public class RazorpayWebhookEvent {
     @JsonIgnoreProperties(ignoreUnknown = true)
     public static class InvoiceEntity {
         private String id;
-        private Long amount;
+        private Integer amount;
         private String status;
         private String method;
+        private String currency;
         private String short_url;
-        private String paid_at;
+        private Long paid_at;      // Changed to Long for epoch
+        private Long issued_at;      // Changed to Long for epoch
+        private Long created_at;   // Changed to Long for epoch
+        private String subscription_id;
+        private String billing_start;
+        private String billing_end;
+
+        // Nested object for customer details
+        private CustomerDetails customer_details;
+
+        @Data
+        @JsonIgnoreProperties(ignoreUnknown = true)
+        public static class CustomerDetails {
+            private String id;
+            private String name;
+            private String email;
+            private String contact;
+            private String gstin;
+            private String customer_name;
+            private String customer_email;
+            private String customer_contact;
+            // Billing/Shipping address would be Maps or specific DTOs if needed
+        }
     }
+
 }
 

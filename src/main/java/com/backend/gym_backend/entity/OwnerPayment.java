@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 
 @Entity
@@ -54,8 +55,8 @@ public class OwnerPayment {
     private String contact;
 
     // Razorpay timestamps
-    private Long createdAtEpoch;  // from webhook
-    private Long capturedAt;      // when success
+//    private Long createdAtEpoch;  // from webhook
+    private LocalDate capturedAt;      // when success
 
     // Audit
     private LocalDateTime createdAt;

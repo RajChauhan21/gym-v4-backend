@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.util.List;
 
@@ -49,12 +50,12 @@ public class Invoice {
     private com.backend.gym_backend.enums.Invoice status;        // CREATED, PAID, FAILED
 
     // Billing cycle
-    private Long billingStart;    // epoch (nullable initially)
-    private Long billingEnd;      // ⭐ next billing date
+    private LocalDate billingStart;    // epoch (nullable initially)
+    private LocalDate billingEnd;      // ⭐ next billing date
 
     // Razorpay timestamps
-    private Long issuedAt;        // created_at / issued_at
-    private Long paidAt;          // paid_at
+    private LocalDate issuedAt;        // created_at / issued_at
+    private LocalDate paidAt;          // paid_at
 
     // Invoice access
     private String invoiceUrl;    // short_url (for download)

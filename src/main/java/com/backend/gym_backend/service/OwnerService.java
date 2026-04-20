@@ -74,11 +74,20 @@ public class OwnerService {
             rt.setToken(refreshToken);
             rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(rt);
-            Subscription subscription = owner.getSubscription().get(0);
-            Plan plan = subscription.getPlan();
+            Subscription subscription = Optional.ofNullable(owner.getSubscription())
+                    .filter(subs -> !subs.isEmpty())
+                    .map(subs -> subs.get(0))
+                    .orElse(null);
+
+// 2. Safely extract the plan from the subscription
+            Plan plan = (subscription != null) ? subscription.getPlan() : null;
+
+// 3. Build the response with null-safety for subscription fields
             OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                     .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
                     .email(owner.getEmail())
+                    .ownerImage(owner.getImage())
+                    .gymImage(owner.getGym() != null ? owner.getGym().getImage() : "")
                     .phone(owner.getPhone())
                     .googleMapUrl(owner.getGym() != null ? owner.getGym().getGoogleMapUrl() : "")
                     .ownerName(owner.getName())
@@ -86,14 +95,14 @@ public class OwnerService {
                     .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
                     .ownerId(owner.getId())
                     .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
-                    .gymImage(owner.getGym() !=null ? owner.getGym().getImage() : "")
-                    .ownerImage(owner.getImage())
-                    .price(subscription.getPrice())
-                    .endDate(subscription.getEndDate())
-                    .startDate(subscription.getStartDate())
-                    .planName(subscription.getName())
-                    .status(subscription.getStatus())
-                    .memberLimitCount(plan.getMemberLimit())
+                    // Subscription fields (null-safe)
+                    .price(subscription != null ? subscription.getPrice() : 0)
+                    .endDate(subscription != null ? subscription.getEndDate() : null)
+                    .startDate(subscription != null ? subscription.getStartDate() : null)
+                    .planName(subscription != null ? subscription.getName() : "No Active Plan")
+                    .status(subscription != null ? subscription.getStatus() : null)
+                    // Plan fields (null-safe)
+                    .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
                     .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
                     .build();
 
@@ -113,7 +122,7 @@ public class OwnerService {
         String password = bCryptPasswordEncoder.encode(userRequest.getPassword());
         Owner owner = new Owner();
         Plan trial = planRepository.findByName("Trial").get();
-        subscriptionService.ownerSubscribesToPlan(owner.getId(),trial.getId(), password, password);
+        subscriptionService.ownerSubscribesToPlan(owner.getId(), trial.getId(), password, password);
         owner.setProvider(OAuthProvider.LOCAL);
         owner.setName(userRequest.getName());
         owner.setPassword(password);
@@ -164,8 +173,11 @@ public class OwnerService {
             throw new RuntimeException("User not found");
         }
         Owner owner = ownerRepository.findById(id).get();
-        Subscription subscription = owner.getSubscription().get(0);
-        Plan plan = subscription.getPlan();
+        Subscription subscription = Optional.ofNullable(owner.getSubscription())
+                .filter(subs -> !subs.isEmpty())
+                .map(subs -> subs.get(0))
+                .orElse(null);
+        Plan plan = (subscription != null) ? subscription.getPlan() : null;
         OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                 .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
                 .email(owner.getEmail())
@@ -178,12 +190,14 @@ public class OwnerService {
                 .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
                 .ownerId(owner.getId())
                 .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
-                .price(subscription.getPrice())
-                .endDate(subscription.getEndDate())
-                .startDate(subscription.getStartDate())
-                .planName(subscription.getName())
-                .status(subscription.getStatus())
-                .memberLimitCount(plan.getMemberLimit())
+                // Subscription fields (null-safe)
+                .price(subscription != null ? subscription.getPrice() : 0)
+                .endDate(subscription != null ? subscription.getEndDate() : null)
+                .startDate(subscription != null ? subscription.getStartDate() : null)
+                .planName(subscription != null ? subscription.getName() : "No Active Plan")
+                .status(subscription != null ? subscription.getStatus() : null)
+                // Plan fields (null-safe)
+                .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
                 .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
                 .build();
 
@@ -218,13 +232,13 @@ public class OwnerService {
         List<Member> byOwnerId = memberRepository.findByOwnerId(ownerId);
         Integer sum = 0;
         for (Member m : byOwnerId) {
-           sum+= m.getDueAmount();
+            sum += m.getDueAmount();
         }
         return sum;
     }
 
-    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom,LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo,String plan, Pageable pageable){
-        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId),name,dueAmount,joinedFrom,joinedTo, expiryFrom,expiryTo,plan, pageable);
+    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom, LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, String plan, Pageable pageable) {
+        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId), name, dueAmount, joinedFrom, joinedTo, expiryFrom, expiryTo, plan, pageable);
     }
 
     public OwnerDetailsResponse findByEmail(String email) {

@@ -1,8 +1,12 @@
 package com.backend.gym_backend.service;
 
 import com.backend.gym_backend.dto.RazorpayWebhookEvent;
+import com.backend.gym_backend.entity.Invoice;
+import com.backend.gym_backend.entity.Owner;
+import com.backend.gym_backend.entity.OwnerPayment;
 import com.backend.gym_backend.entity.Plan;
-import com.backend.gym_backend.repo.PlanRepository;
+import com.backend.gym_backend.enums.Payment;
+import com.backend.gym_backend.repo.*;
 import com.backend.gym_backend.response.InvoicePaidEvent;
 import com.backend.gym_backend.response.PaymentCaptureEvent;
 import com.backend.gym_backend.response.SubscriptionActivatedEvent;
@@ -16,10 +20,16 @@ import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
+import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
+
+import java.time.Instant;
+import java.time.LocalDate;
+import java.time.LocalDateTime;
+import java.time.ZoneId;
 
 @Service
 @Slf4j
@@ -39,6 +49,18 @@ public class RazorpayPaymentService {
 
     @Autowired
     private SubscriptionService subscriptionService;
+
+    @Autowired
+    private OwnerPaymentRepository ownerPaymentRepository;
+
+    @Autowired
+    private OwnerRepository ownerRepository;
+
+    @Autowired
+    private InvoiceRepository invoiceRepository;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
 
     public String createSubscriptions(int planId, int ownerId) throws RazorpayException {
         if (!planRepository.existsById(planId)) {
@@ -140,7 +162,7 @@ public class RazorpayPaymentService {
     }
 
     @Async
-    public void getWebHookResponse(String payload, String signature) { // Changed to void and String signature
+    public void getWebHookResponses(String payload, String signature) { // Changed to void and String signature
 
         // 🔐 Step 1: Verify signature
         boolean isValid = verifySignature(payload, signature);
@@ -176,10 +198,10 @@ public class RazorpayPaymentService {
     @Async
     public void getWebHookResponse(String payload, String signature) {
         // 1. Verify signature first
-        if (!verifySignature(payload, signature)) {
-            log.error("Invalid Razorpay signature");
-            return;
-        }
+//        if (!verifySignature(payload, signature)) {
+//            log.error("Invalid Razorpay signature");
+//            return;
+//        }
 
         try {
             // 2. Parse using Jackson into the Unified DTO
@@ -188,6 +210,7 @@ public class RazorpayPaymentService {
 
             log.info("Processing event: {}", event.getEvent());
             RazorpayWebhookEvent.Payload data = event.getPayload();
+            log.info("class {}", event);
 
             // 3. Process entities independently (Handles multiple entities in one event)
 
@@ -209,6 +232,81 @@ public class RazorpayPaymentService {
         } catch (Exception e) {
             log.error("Error processing webhook payload: ", e);
         }
+    }
+
+    private void handleInvoiceLogic(RazorpayWebhookEvent.InvoiceEntity entity, String event) {
+        Invoice invoice = invoiceRepository.findByRazorpayInvoiceId(entity.getId()).orElseGet(
+                () -> {
+                    Invoice newInvoice = new Invoice();
+                    newInvoice.setRazorpayInvoiceId(entity.getId());
+                    newInvoice.setCreatedAt(LocalDateTime.now());
+                    return newInvoice;
+                }
+        );
+
+        if (invoice.getStatus() != null && invoice.getStatus().equals(com.backend.gym_backend.enums.Invoice.PAID)) {
+            log.info("Skipping status update: Already paid.");
+            return;
+        }
+
+        com.backend.gym_backend.entity.Subscription subscription = subscriptionRepository.findByRazorpaySubscriptionId(entity.getSubscription_id()).orElse(null);
+
+        invoice.setCurrency(entity.getCurrency());
+        invoice.setAmount(entity.getAmount());
+        invoice.setInvoiceUrl(entity.getShort_url());
+        invoice.setAmountPaid(entity.getAmount());
+        invoice.setBillingEnd(convertEpochToLocalDate(Long.valueOf(entity.getBilling_end())));
+        invoice.setBillingStart(convertEpochToLocalDate(Long.valueOf(entity.getBilling_start())));
+        invoice.setStatus(com.backend.gym_backend.enums.Invoice.PAID);
+        invoice.setIssuedAt(convertEpochToLocalDate(entity.getIssued_at()));
+        invoice.setPaidAt(convertEpochToLocalDate(entity.getPaid_at()));
+        invoice.setUpdatedAt(LocalDateTime.now());
+        invoice.setSubscription(subscription);
+
+    }
+
+    private void handlePaymentLogic(RazorpayWebhookEvent.PaymentEntity entity, String event) {
+        OwnerPayment ownerPayment = ownerPaymentRepository.findByRazorpayPaymentId(entity.getId()).orElseGet(
+                () -> {
+                    OwnerPayment newPayment = new OwnerPayment();
+                    newPayment.setRazorpayPaymentId(entity.getId());
+                    newPayment.setCreatedAt(LocalDateTime.now());
+                    return newPayment;
+                }
+        );
+
+        if (ownerPayment.getStatus() != null && ownerPayment.getStatus().equals(Payment.ACTIVE)) {
+            log.info("Skipping status update: Already active.");
+            return;
+        }
+        Owner owner = ownerRepository.findByEmail(entity.getEmail()).get();
+        Invoice invoice = null;
+        if (entity.getInvoice_id() != null) {
+            invoice = invoiceRepository.findByRazorpayInvoiceId(entity.getInvoice_id()).orElse(null);
+        }
+        ownerPayment.setAmount(entity.getAmount());
+        ownerPayment.setEmail(entity.getEmail());
+        if (entity.getCreated_at() != null) {
+            ownerPayment.setCapturedAt(convertEpochToLocalDate(Long.valueOf(entity.getCreated_at())));
+        }
+        ownerPayment.setUpdatedAt(LocalDateTime.now());
+        ownerPayment.setCurrency(entity.getCurrency());
+        ownerPayment.setStatus(entity.getStatus().equals("authorized") ? Payment.AUTHORIZED : entity.getStatus().equals("failed") ? Payment.FAILED : entity.getStatus().equals("captured") ? Payment.ACTIVE : Payment.CREATED);
+        ownerPayment.setContact(entity.getContact());
+//        ownerPayment.setSubscription();
+        ownerPayment.setOwner(owner);
+        ownerPayment.setInvoice(invoice);
+
+        try {
+            ownerPaymentRepository.save(ownerPayment);
+            log.info("payment record saved successfully of event {}", event);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Concurrent update blocked for payment: {}", ownerPayment.getId());
+        }
+
+    }
+
+    private void handleSubscriptionLogic(RazorpayWebhookEvent.SubscriptionEntity entity, String event) {
     }
 
 
@@ -267,4 +365,15 @@ public class RazorpayPaymentService {
 //                entity.getSubscription_id()
 //        );
     }
+
+    public LocalDate convertEpochToLocalDate(Long epochSeconds) {
+        if (epochSeconds == null) {
+            return null;
+        }
+        return Instant.ofEpochSecond(epochSeconds)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+    }
+
+
 }
