@@ -49,6 +49,14 @@ public class Owner {
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<Member> members;
 
+    @JsonManagedReference("invoice")
+    @OneToMany(mappedBy = "owner")
+    private List<Invoice> invoices;
+
+    @JsonManagedReference("payments")
+    @OneToMany(mappedBy = "owner")
+    private List<OwnerPayment> payments;
+
     @JsonManagedReference("ref")
     @OneToOne(mappedBy = "owner")
     private RefreshToken refreshToken;

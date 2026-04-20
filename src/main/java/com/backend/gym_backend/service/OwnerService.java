@@ -164,6 +164,8 @@ public class OwnerService {
             throw new RuntimeException("User not found");
         }
         Owner owner = ownerRepository.findById(id).get();
+        Subscription subscription = owner.getSubscription().get(0);
+        Plan plan = subscription.getPlan();
         OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                 .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
                 .email(owner.getEmail())
@@ -176,6 +178,13 @@ public class OwnerService {
                 .location(owner.getGym() != null ? owner.getGym().getLocation() : "")
                 .ownerId(owner.getId())
                 .gymId(owner.getGym() != null ? owner.getGym().getId() : null)
+                .price(subscription.getPrice())
+                .endDate(subscription.getEndDate())
+                .startDate(subscription.getStartDate())
+                .planName(subscription.getName())
+                .status(subscription.getStatus())
+                .memberLimitCount(plan.getMemberLimit())
+                .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
                 .build();
 
         return responseDto;

@@ -21,5 +21,11 @@ public class PaymentCaptureEvent {
     public static class Entity {
         private String id;
         private int amount;
+        private String method;
+        private String status;
+        private String invoice_id;
+        private String email;
+        private String contact;
+        private String upi_transaction_id;
     }
 }

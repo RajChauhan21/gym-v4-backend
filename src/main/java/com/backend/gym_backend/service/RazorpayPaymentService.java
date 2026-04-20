@@ -1,5 +1,6 @@
 package com.backend.gym_backend.service;
 
+import com.backend.gym_backend.dto.RazorpayWebhookEvent;
 import com.backend.gym_backend.entity.Plan;
 import com.backend.gym_backend.repo.PlanRepository;
 import com.backend.gym_backend.response.InvoicePaidEvent;
@@ -10,7 +11,6 @@ import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Subscription;
 import com.razorpay.Utils;
-import jakarta.servlet.http.HttpServletRequest;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -27,6 +27,7 @@ import org.springframework.stereotype.Service;
 public class RazorpayPaymentService {
 
 
+    private final ObjectMapper objectMapper;
     @Value("${razorpay.api.key}")
     private String apiKey;
 
@@ -38,8 +39,6 @@ public class RazorpayPaymentService {
 
     @Autowired
     private SubscriptionService subscriptionService;
-
-    private final ObjectMapper objectMapper;
 
     public String createSubscriptions(int planId, int ownerId) throws RazorpayException {
         if (!planRepository.existsById(planId)) {
@@ -133,57 +132,89 @@ public class RazorpayPaymentService {
                 "CREATE"
         );
 
+        Subscription fetchSubs = razorpayClient.subscriptions.fetch(razorSub.get("id").toString());
+        log.info("subs fetch response {}", fetchSubs);
+
         // ✅ STEP 4: Return subscription_id
         return razorSub.get("id").toString();
     }
 
     @Async
-    public ResponseEntity<?> getWebHookResponse(String payload, HttpServletRequest request) {
-        String signature = request.getHeader("X-Razorpay-Signature");
-        // 🔐 Step 1: Verify signature (VERY IMPORTANT)
+    public void getWebHookResponse(String payload, String signature) { // Changed to void and String signature
+
+        // 🔐 Step 1: Verify signature
         boolean isValid = verifySignature(payload, signature);
 
         if (!isValid) {
-            return ResponseEntity.status(400).body("Invalid signature");
+            log.error("Invalid Razorpay signature");
+            return;
         }
 
         try {
             JSONObject json = new JSONObject(payload);
             String eventType = json.getString("event");
+            log.info("Processing event: {}", eventType);
 
             switch (eventType) {
-
-                case "subscription.activated":
-                    handleSubscriptionActivated(payload);
-                    break;
-
+                case "subscription.activated": //imp event
                 case "subscription.authenticated":
                     handleSubscriptionActivated(payload);
                     break;
-
-                case "payment.captured":
-                    handlePaymentCaptured(payload);
-                    break;
-
+                case "payment.captured": //imp event
                 case "payment.authorized":
                     handlePaymentCaptured(payload);
                     break;
-
                 case "invoice.paid":
                     handleInvoicePaid(payload);
                     break;
             }
-
         } catch (Exception e) {
-            e.printStackTrace();
+            log.error("Error processing webhook: ", e);
+        }
+    }
+
+    @Async
+    public void getWebHookResponse(String payload, String signature) {
+        // 1. Verify signature first
+        if (!verifySignature(payload, signature)) {
+            log.error("Invalid Razorpay signature");
+            return;
         }
 
-        return ResponseEntity.ok().build();
+        try {
+            // 2. Parse using Jackson into the Unified DTO
+            ObjectMapper mapper = new ObjectMapper();
+            RazorpayWebhookEvent event = mapper.readValue(payload, RazorpayWebhookEvent.class);
+
+            log.info("Processing event: {}", event.getEvent());
+            RazorpayWebhookEvent.Payload data = event.getPayload();
+
+            // 3. Process entities independently (Handles multiple entities in one event)
+
+            // Handle Subscription if present
+            if (data.getSubscription() != null) {
+                handleSubscriptionLogic(data.getSubscription().getEntity(), event.getEvent());
+            }
+
+            // Handle Payment if present (even if it's inside a subscription event)
+            if (data.getPayment() != null) {
+                handlePaymentLogic(data.getPayment().getEntity(), event.getEvent());
+            }
+
+            // Handle Invoice if present
+            if (data.getInvoice() != null) {
+                handleInvoiceLogic(data.getInvoice().getEntity(), event.getEvent());
+            }
+
+        } catch (Exception e) {
+            log.error("Error processing webhook payload: ", e);
+        }
     }
 
-    public ResponseEntity<?> sendWebHookResponse() {
-        return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
-    }
+
+//    public ResponseEntity<?> sendWebHookResponse() {
+//        return new ResponseEntity<>(null, HttpStatus.ACCEPTED);
+//    }
 
     private boolean verifySignature(String payload, String signature) {
         try {
@@ -198,7 +229,7 @@ public class RazorpayPaymentService {
     }
 
     private void handleSubscriptionActivated(String payload) throws Exception {
-        log.info("subscription response {payload}", payload);
+        log.info("subscription response {}", payload);
         SubscriptionActivatedEvent event =
                 objectMapper.readValue(payload, SubscriptionActivatedEvent.class);
 
@@ -207,7 +238,7 @@ public class RazorpayPaymentService {
                 .getEntity()
                 .getId();
 
-//        subscriptionService.activateSubscription(subId);
+        subscriptionService.activateSubscription(event);
     }
 
     private void handlePaymentCaptured(String payload) throws Exception {
@@ -225,7 +256,7 @@ public class RazorpayPaymentService {
     }
 
     private void handleInvoicePaid(String payload) throws Exception {
-        log.info("invoice response {payload}", payload);
+        log.info("invoice response {}", payload);
         InvoicePaidEvent event =
                 objectMapper.readValue(payload, InvoicePaidEvent.class);
 

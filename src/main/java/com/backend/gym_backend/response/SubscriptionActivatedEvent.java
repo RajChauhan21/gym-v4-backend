@@ -1,8 +1,10 @@
 package com.backend.gym_backend.response;
 
+import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
 import lombok.Data;
 
 @Data
+@JsonIgnoreProperties(ignoreUnknown = true)
 public class SubscriptionActivatedEvent {
 
     private Payload payload;
@@ -20,5 +22,11 @@ public class SubscriptionActivatedEvent {
     @Data
    public static class Entity {
         private String id;
+        private String customer_email;
+        private String customer_contact;
+        private Long start_at;
+        private Long end_at;
+        private Long current_end;  //when the payment attempt was made
+        private String payment_method;
     }
 }

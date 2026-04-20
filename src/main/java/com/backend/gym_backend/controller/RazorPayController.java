@@ -17,12 +17,20 @@ public class RazorPayController {
 
     @PostMapping("/create-subscription")
     public ResponseEntity<String> createSubscription(@RequestParam("o") Integer ownerId, @RequestParam("p") Integer planId) throws RazorpayException {
-        return new ResponseEntity<>(razorpayPaymentService.createSubscription(planId,ownerId), HttpStatus.ACCEPTED);
+        return new ResponseEntity<>(razorpayPaymentService.createSubscription(planId, ownerId), HttpStatus.ACCEPTED);
     }
 
     @PostMapping("/webhook")
-    public ResponseEntity<?> receiveWebHookResponse(@RequestBody String payload, HttpServletRequest request){
-        return new ResponseEntity<>(razorpayPaymentService.getWebHookResponse(payload,request), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> captureWebHookResponse(@RequestBody String payload, HttpServletRequest request) {
+        // Extract signature while still in the request thread
+        String signature = request.getHeader("X-Razorpay-Signature");
+
+        // Hand off values to async service
+        razorpayPaymentService.getWebHookResponse(payload, signature);
+
+        // Return 202 Accepted immediately so Razorpay doesn't time out
+        return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
+
 }
 

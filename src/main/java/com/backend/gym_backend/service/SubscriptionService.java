@@ -9,11 +9,14 @@ import com.backend.gym_backend.repo.OwnerRepository;
 import com.backend.gym_backend.repo.PlanFeatureRepository;
 import com.backend.gym_backend.repo.PlanRepository;
 import com.backend.gym_backend.repo.SubscriptionRepository;
+import com.backend.gym_backend.response.SubscriptionActivatedEvent;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.Instant;
 import java.time.LocalDate;
+import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -166,4 +169,29 @@ public class SubscriptionService {
         return subscriptions;
     }
 
+    public void activateSubscription(SubscriptionActivatedEvent event) {
+        SubscriptionActivatedEvent.Entity entity = event.getPayload().getSubscription().getEntity();
+
+        Subscription subscription = subscriptionRepository.findByRazorpaySubscriptionId(entity.getId()).orElseThrow();
+
+        LocalDate startDate = convertEpochToLocalDate(entity.getStart_at());
+        LocalDate endDate = convertEpochToLocalDate(entity.getEnd_at());
+        LocalDate nextBillingDate = convertEpochToLocalDate(entity.getCurrent_end());
+
+        subscription.setStatus(Status.ACTIVE);
+        subscription.setStartDate(startDate);
+        subscription.setNextBillingDate(nextBillingDate);
+        subscription.setEndDate(endDate);
+
+        subscriptionRepository.save(subscription); //save the updated subscription
+    }
+
+    public LocalDate convertEpochToLocalDate(Long epochSeconds) {
+        if (epochSeconds == null) {
+            return null;
+        }
+        return Instant.ofEpochSecond(epochSeconds)
+                .atZone(ZoneId.systemDefault())
+                .toLocalDate();
+    }
 }
