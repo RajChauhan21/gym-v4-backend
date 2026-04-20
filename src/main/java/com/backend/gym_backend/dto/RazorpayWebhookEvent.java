@@ -40,8 +40,11 @@ public class RazorpayWebhookEvent {
         private String customer_email;
         private String customer_contact;
         private Long start_at;
+        private String status;
         private Long end_at;
-        private Long current_end;  //when the payment attempt was made
+        private Long charge_at;
+        private Long current_end;
+        private Long current_start;  //when the payment attempt was made
         private String payment_method;
         // ... other fields
     }
@@ -75,6 +78,7 @@ public class RazorpayWebhookEvent {
         private Long issued_at;      // Changed to Long for epoch
         private Long created_at;   // Changed to Long for epoch
         private String subscription_id;
+        private String payment_id;
         private String billing_start;
         private String billing_end;
 

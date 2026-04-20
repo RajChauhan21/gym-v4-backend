@@ -8,6 +8,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -27,9 +28,17 @@ public class Subscription {
 
     private LocalDate endDate;
 
+    private LocalDate subscriptionStartDate;
+
+    private LocalDate subscriptionEndDate;
+
     private String razorpaySubscriptionId;
 
     private LocalDate nextBillingDate;
+
+    private String email;
+
+    private String contact;
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
@@ -50,5 +59,9 @@ public class Subscription {
     @JsonBackReference("subs")
     @ManyToOne
     private Plan plan;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 
 }
