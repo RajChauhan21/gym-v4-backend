@@ -70,6 +70,7 @@ public class RazorpayWebhookEvent {
     public static class InvoiceEntity {
         private String id;
         private Integer amount;
+        private Integer amount_paid;
         private String status;
         private String method;
         private String currency;

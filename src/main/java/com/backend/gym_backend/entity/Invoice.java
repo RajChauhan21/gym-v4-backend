@@ -24,7 +24,6 @@ public class Invoice {
     // Razorpay IDs
     @Column(unique = true)
     private String razorpayInvoiceId;     // inv_xxx (UNIQUE)
-//    private String razorpaySubscriptionId; // sub_xxx
 
     // Relations
     @JsonManagedReference("inv")

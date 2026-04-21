@@ -5,6 +5,7 @@ import com.fasterxml.jackson.annotation.JsonBackReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.math.BigDecimal;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
 
@@ -41,7 +42,7 @@ public class OwnerPayment {
     private Subscription subscription;
 
     // Financials
-    private Integer amount;       // in paise
+    private BigDecimal amount;       // in paise
     private String currency;      // INR
 
     // Status

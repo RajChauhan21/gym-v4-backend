@@ -25,6 +25,7 @@ import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
 import java.time.LocalDateTime;
@@ -245,32 +246,71 @@ public class RazorpayPaymentService {
                 }
         );
 
-        if (invoice.getStatus() != null && invoice.getStatus().equals(com.backend.gym_backend.enums.Invoice.PAID)) {
+        if (invoice.getStatus() != null && com.backend.gym_backend.enums.Invoice.PAID.equals(invoice.getStatus()) && "invoice.paid".equals(event)) {
             log.info("Skipping status update: Already paid.");
             return;
         }
-        Owner owner = ownerRepository.findByEmail(entity.getCustomer_details().getEmail() != null ? entity.getCustomer_details().getEmail() : null).orElse(null);
+        String email = null;
 
-        com.backend.gym_backend.entity.Subscription subscription = subscriptionRepository.findByRazorpaySubscriptionId(entity.getSubscription_id()).orElse(null);
+        if (entity.getCustomer_details() != null) {
+            email = entity.getCustomer_details().getEmail();
+        }
 
+        Owner owner = null;
+        if (email != null) {
+            owner = ownerRepository.findByEmail(email)
+                    .orElseThrow(() -> new RuntimeException("Owner not found"));
+            if (owner == null) {
+                log.warn("Owner not found for subscription {}", entity.getId());
+            }
+        }
+
+        com.backend.gym_backend.entity.Subscription subscription = null;
+
+        if (entity.getSubscription_id() != null) {
+            subscription = subscriptionRepository
+                    .findByRazorpaySubscriptionId(entity.getSubscription_id())
+                    .orElse(null);
+        } else {
+            log.warn("No subscription_id found for invoice {}", entity.getId());
+        }
         invoice.setCurrency(entity.getCurrency());
         invoice.setAmount(entity.getAmount());
         invoice.setInvoiceUrl(entity.getShort_url());
-        invoice.setAmountPaid(entity.getAmount());
+        invoice.setAmountPaid(entity.getAmount_paid() != null ? entity.getAmount_paid() : entity.getAmount());
         invoice.setOwner(owner);
-        invoice.setBillingEnd(convertEpochToLocalDate(Long.valueOf(entity.getBilling_end())));
-        invoice.setBillingStart(convertEpochToLocalDate(Long.valueOf(entity.getBilling_start())));
-        invoice.setStatus(com.backend.gym_backend.enums.Invoice.PAID);
-        invoice.setIssuedAt(convertEpochToLocalDate(entity.getIssued_at()));
-        invoice.setPaidAt(convertEpochToLocalDate(entity.getPaid_at()));
+        if (entity.getBilling_end() != null) {
+            invoice.setBillingEnd(convertEpochToLocalDate(Long.parseLong(entity.getBilling_end())));
+        }
+        if (entity.getBilling_start() != null) {
+            invoice.setBillingStart(convertEpochToLocalDate(Long.valueOf(entity.getBilling_start())));
+        }
+        switch (event) {
+            case "invoice.paid" -> invoice.setStatus(com.backend.gym_backend.enums.Invoice.PAID);
+            case "invoice.failed" -> invoice.setStatus(com.backend.gym_backend.enums.Invoice.FAILED);
+        }
+
+        if (entity.getIssued_at()!=null){
+            invoice.setIssuedAt(convertEpochToLocalDate(entity.getIssued_at()));
+        }
+        if (entity.getPaid_at()!=null){
+            invoice.setPaidAt(convertEpochToLocalDate(entity.getPaid_at()));
+        }
         invoice.setUpdatedAt(LocalDateTime.now());
         invoice.setSubscription(subscription);
-        Optional<OwnerPayment> payment = ownerPaymentRepository.findByRazorpayPaymentId(entity.getPayment_id());
-        if (payment.isPresent()) {
-            if (invoice.getPayments() == null) {
-                invoice.setPayments(new ArrayList<>());
-            }
-            invoice.getPayments().add(payment.get());
+        if (entity.getPayment_id() != null) {
+            ownerPaymentRepository.findByRazorpayPaymentId(entity.getPayment_id())
+                    .ifPresent(payment -> {
+                        if (invoice.getPayments() == null) {
+                            invoice.setPayments(new ArrayList<>());
+                        }
+
+                        if (!invoice.getPayments().contains(payment)) {
+                            invoice.getPayments().add(payment);
+                        }
+
+                        payment.setInvoice(invoice);
+                    });
         }
         try {
             invoiceRepository.save(invoice);
@@ -295,18 +335,37 @@ public class RazorpayPaymentService {
             log.info("Already captured. Skipping duplicate webhook.");
             return;
         }
-        Owner owner = ownerRepository.findByEmail(entity.getEmail()).get();
+//        Owner owner = ownerRepository.findByEmail(entity.getEmail()).get();
+
+        String email = null;
+
+        if (entity.getEmail() != null) {
+            email = entity.getEmail();
+        }
+
+        Owner owner = null;
+        if (email != null) {
+            owner = ownerRepository.findByEmail(email)
+                    .orElse(null);
+            if (owner == null) {
+                log.warn("Owner not found for subscription {}", entity.getId());
+            }
+        }
+
         Invoice invoice = null;
         if (entity.getInvoice_id() != null) {
             invoice = invoiceRepository.findByRazorpayInvoiceId(entity.getInvoice_id()).orElse(null);
         }
-        ownerPayment.setAmount(entity.getAmount() / 100);
+        ownerPayment.setAmount(BigDecimal.valueOf(entity.getAmount())
+                .divide(BigDecimal.valueOf(100)));
         ownerPayment.setEmail(entity.getEmail());
         if (entity.getCreated_at() != null) {
             ownerPayment.setCapturedAt(convertEpochToLocalDate(Long.valueOf(entity.getCreated_at())));
         }
         ownerPayment.setUpdatedAt(LocalDateTime.now());
-        ownerPayment.setCurrency(entity.getCurrency());
+        if (entity.getCurrency()!=null){
+            ownerPayment.setCurrency(entity.getCurrency());
+        }
         switch (event) {
             case "payment.captured":
                 ownerPayment.setStatus(Payment.ACTIVE);
@@ -320,7 +379,9 @@ public class RazorpayPaymentService {
             default:
                 ownerPayment.setStatus(Payment.CREATED);
         }
-        ownerPayment.setContact(entity.getContact());
+        if (entity.getContact()!=null){
+            ownerPayment.setContact(entity.getContact());
+        }
         ownerPayment.setOwner(owner);
         if (invoice != null) {
             ownerPayment.setInvoice(invoice);
@@ -348,17 +409,62 @@ public class RazorpayPaymentService {
                     return newSub;
                 });
 
-        Owner owner = ownerRepository.findByEmail(entity.getCustomer_email()).get();
-        subscription.setNextBillingDate(convertEpochToLocalDate(entity.getCharge_at()));
-        subscription.setStartDate(convertEpochToLocalDate(entity.getCurrent_start()));
-        subscription.setEndDate(convertEpochToLocalDate(entity.getCurrent_end()));
-        subscription.setSubscriptionStartDate(convertEpochToLocalDate(entity.getStart_at()));
-        subscription.setSubscriptionEndDate(convertEpochToLocalDate(entity.getEnd_at()));
-        subscription.setContact(entity.getCustomer_contact());
-        subscription.setEmail(entity.getCustomer_email());
-        subscription.setStatus(entity.getStatus().equals("authenticated")? Status.AUTHENTICATED:entity.getStatus().equals("active")?Status.ACTIVE:entity.getStatus().equals("created")?Status.CREATED:Status.AUTHENTICATED);
+        if (Status.CANCELLED.equals(subscription.getStatus())) {
+            log.info("Subscription already cancelled, ignoring updates");
+            return;
+        }
+        if (Status.ACTIVE.equals(subscription.getStatus())
+                && "active".equals(entity.getStatus())) {
+            log.info("Already active subscription, skipping");
+            return;
+        }
+        String email = null;
+
+        if (entity.getCustomer_email() != null) {
+            email = entity.getCustomer_email();
+        }
+
+        Owner owner = null;
+        if (email != null) {
+            owner = ownerRepository.findByEmail(email)
+                    .orElse(null);
+            if (owner == null) {
+                log.warn("Owner not found for subscription {}", entity.getId());
+            }
+        }
+        if (entity.getCharge_at() != null) {
+            subscription.setNextBillingDate(convertEpochToLocalDate(entity.getCharge_at()));
+        }
+        if (entity.getCurrent_start() != null) {
+            subscription.setStartDate(convertEpochToLocalDate(entity.getCurrent_start()));
+        }
+        if (entity.getCurrent_end() != null) {
+            subscription.setEndDate(convertEpochToLocalDate(entity.getCurrent_end()));
+        }
+        if (entity.getStart_at() != null) {
+            subscription.setSubscriptionStartDate(convertEpochToLocalDate(entity.getStart_at()));
+        }
+        if (entity.getEnd_at() != null) {
+            subscription.setSubscriptionEndDate(convertEpochToLocalDate(entity.getEnd_at()));
+        }
+        if (entity.getCustomer_contact() != null) {
+            subscription.setContact(entity.getCustomer_contact());
+        }
+        if (entity.getCustomer_email() != null) {
+            subscription.setEmail(entity.getCustomer_email());
+        }
+        String status = entity.getStatus();
+
+        switch (status) {
+            case "created" -> subscription.setStatus(Status.CREATED);
+            case "authenticated" -> subscription.setStatus(Status.AUTHENTICATED);
+            case "active" -> subscription.setStatus(Status.ACTIVE);
+            case "cancelled" -> subscription.setStatus(Status.CANCELLED);
+            case "completed" -> subscription.setStatus(Status.COMPLETED);
+            default -> subscription.setStatus(Status.CREATED);
+        }
         subscription.setUpdatedAt(LocalDateTime.now());
-//        subscription.setOwner(owner);
+        subscription.setOwner(owner);
         try {
             subscriptionRepository.save(subscription);
             log.info("subscription record saved successfully of event {}", event);
