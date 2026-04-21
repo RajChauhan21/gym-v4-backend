@@ -13,5 +13,6 @@ public interface SubscriptionRepository extends JpaRepository<Subscription,Integ
     List<Subscription> findByPlanId(Integer planId);
 
     Optional<Subscription> findByRazorpaySubscriptionId(String razorpaySubscriptionId);
+    Optional<Subscription> findTopByEmailOrderByCreatedAtDesc(String email);
 
 }

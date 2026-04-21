@@ -16,6 +16,7 @@ import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import com.razorpay.Subscription;
 import com.razorpay.Utils;
+import jakarta.transaction.Transactional;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
 import org.json.JSONObject;
@@ -236,6 +237,7 @@ public class RazorpayPaymentService {
         }
     }
 
+    @Transactional
     private void handleInvoiceLogic(RazorpayWebhookEvent.InvoiceEntity entity, String event) {
         Invoice invoice = invoiceRepository.findByRazorpayInvoiceId(entity.getId()).orElseGet(
                 () -> {
@@ -248,6 +250,7 @@ public class RazorpayPaymentService {
 
         if (invoice.getStatus() != null && com.backend.gym_backend.enums.Invoice.PAID.equals(invoice.getStatus()) && "invoice.paid".equals(event)) {
             log.info("Skipping status update: Already paid.");
+            //can i add update logic here
             return;
         }
         String email = null;
@@ -275,9 +278,12 @@ public class RazorpayPaymentService {
             log.warn("No subscription_id found for invoice {}", entity.getId());
         }
         invoice.setCurrency(entity.getCurrency());
-        invoice.setAmount(entity.getAmount());
+        invoice.setAmount(BigDecimal.valueOf(entity.getAmount())
+                .divide(BigDecimal.valueOf(100)));
         invoice.setInvoiceUrl(entity.getShort_url());
-        invoice.setAmountPaid(entity.getAmount_paid() != null ? entity.getAmount_paid() : entity.getAmount());
+        invoice.setAmountPaid(entity.getAmount_paid() != null ? BigDecimal.valueOf(entity.getAmount_paid())
+                .divide(BigDecimal.valueOf(100)) : BigDecimal.valueOf(entity.getAmount())
+                .divide(BigDecimal.valueOf(100)));
         invoice.setOwner(owner);
         if (entity.getBilling_end() != null) {
             invoice.setBillingEnd(convertEpochToLocalDate(Long.parseLong(entity.getBilling_end())));
@@ -309,7 +315,16 @@ public class RazorpayPaymentService {
                             invoice.getPayments().add(payment);
                         }
 
-                        payment.setInvoice(invoice);
+                        if (invoice.getSubscription() != null) {
+                            if (payment.getSubscription()==null){
+                                payment.setSubscription(invoice.getSubscription());
+                            }
+                        }
+
+                        if (payment.getInvoice() == null) {
+                            payment.setInvoice(invoice);
+                        }
+                        ownerPaymentRepository.save(payment);
                     });
         }
         try {
@@ -321,6 +336,7 @@ public class RazorpayPaymentService {
 
     }
 
+    @Transactional
     private void handlePaymentLogic(RazorpayWebhookEvent.PaymentEntity entity, String event) {
         OwnerPayment ownerPayment = ownerPaymentRepository.findByRazorpayPaymentId(entity.getId()).orElseGet(
                 () -> {
@@ -391,6 +407,18 @@ public class RazorpayPaymentService {
             }
         }
 
+        if (entity.getMethod()!=null){
+            ownerPayment.setMethod(entity.getMethod());
+        }
+        if (ownerPayment.getSubscription() == null) {
+            com.backend.gym_backend.entity.Subscription subscription = subscriptionRepository
+                    .findTopByEmailOrderByCreatedAtDesc(entity.getEmail()) // or contact
+                    .orElse(null);
+
+            if (subscription != null) {
+                ownerPayment.setSubscription(subscription);
+            }
+        }
         try {
             ownerPaymentRepository.save(ownerPayment);
             log.info("payment record saved successfully of event {}", event);
@@ -400,6 +428,7 @@ public class RazorpayPaymentService {
 
     }
 
+    @Transactional
     private void handleSubscriptionLogic(RazorpayWebhookEvent.SubscriptionEntity entity, String event) {
         com.backend.gym_backend.entity.Subscription subscription = subscriptionRepository.findByRazorpaySubscriptionId(entity.getId())
                 .orElseGet(() -> {

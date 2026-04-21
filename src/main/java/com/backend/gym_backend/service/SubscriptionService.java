@@ -16,6 +16,7 @@ import org.springframework.stereotype.Service;
 
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
@@ -56,6 +57,7 @@ public class SubscriptionService {
         subscription.setStatus(status.equals("ACTIVE")?Status.ACTIVE:Status.CREATED);
         subscription.setRazorpaySubscriptionId(razorPaySubsId);
         subscription.setId(null);
+        subscription.setCreatedAt(LocalDateTime.now());
         subscription.setStartDate(LocalDate.now());
         long daysToAdd = (plan.getDays() != null && !plan.getDays().isEmpty()) ? Long.parseLong(plan.getDays()) : 0L;
         subscription.setEndDate(LocalDate.now().plusDays(daysToAdd));
