@@ -32,7 +32,6 @@ import java.time.LocalDate;
 import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
-import java.util.Optional;
 
 @Service
 @Slf4j
@@ -250,7 +249,6 @@ public class RazorpayPaymentService {
 
         if (invoice.getStatus() != null && com.backend.gym_backend.enums.Invoice.PAID.equals(invoice.getStatus()) && "invoice.paid".equals(event)) {
             log.info("Skipping status update: Already paid.");
-            //can i add update logic here
             return;
         }
         String email = null;
@@ -278,12 +276,16 @@ public class RazorpayPaymentService {
             log.warn("No subscription_id found for invoice {}", entity.getId());
         }
         invoice.setCurrency(entity.getCurrency());
-        invoice.setAmount(BigDecimal.valueOf(entity.getAmount())
-                .divide(BigDecimal.valueOf(100)));
+        BigDecimal amount = BigDecimal.valueOf(entity.getAmount())
+                .divide(BigDecimal.valueOf(100));
+
+        invoice.setAmount(amount);
         invoice.setInvoiceUrl(entity.getShort_url());
-        invoice.setAmountPaid(entity.getAmount_paid() != null ? BigDecimal.valueOf(entity.getAmount_paid())
-                .divide(BigDecimal.valueOf(100)) : BigDecimal.valueOf(entity.getAmount())
-                .divide(BigDecimal.valueOf(100)));
+        BigDecimal paidAmount = entity.getAmount_paid() != null
+                ? BigDecimal.valueOf(entity.getAmount_paid()).divide(BigDecimal.valueOf(100))
+                : amount;
+
+        invoice.setAmountPaid(paidAmount);
         invoice.setOwner(owner);
         if (entity.getBilling_end() != null) {
             invoice.setBillingEnd(convertEpochToLocalDate(Long.parseLong(entity.getBilling_end())));
@@ -296,14 +298,20 @@ public class RazorpayPaymentService {
             case "invoice.failed" -> invoice.setStatus(com.backend.gym_backend.enums.Invoice.FAILED);
         }
 
-        if (entity.getIssued_at()!=null){
+        if (entity.getIssued_at() != null) {
             invoice.setIssuedAt(convertEpochToLocalDate(entity.getIssued_at()));
         }
-        if (entity.getPaid_at()!=null){
+        if (entity.getPaid_at() != null) {
             invoice.setPaidAt(convertEpochToLocalDate(entity.getPaid_at()));
         }
         invoice.setUpdatedAt(LocalDateTime.now());
         invoice.setSubscription(subscription);
+        try {
+            invoiceRepository.save(invoice);
+            log.info("invoice record saved successfully of event {}", event);
+        } catch (DataIntegrityViolationException e) {
+            log.warn("Concurrent update blocked for invoice: {}", invoice.getId());
+        }
         if (entity.getPayment_id() != null) {
             ownerPaymentRepository.findByRazorpayPaymentId(entity.getPayment_id())
                     .ifPresent(payment -> {
@@ -316,24 +324,17 @@ public class RazorpayPaymentService {
                         }
 
                         if (invoice.getSubscription() != null) {
-                            if (payment.getSubscription()==null){
+                            if (payment.getSubscription() == null) {
                                 payment.setSubscription(invoice.getSubscription());
                             }
                         }
-
+                        log.info("Linked payment {} with invoice {}", payment.getId(), invoice.getId());
                         if (payment.getInvoice() == null) {
                             payment.setInvoice(invoice);
                         }
                         ownerPaymentRepository.save(payment);
                     });
         }
-        try {
-            invoiceRepository.save(invoice);
-            log.info("invoice record saved successfully of event {}", event);
-        } catch (DataIntegrityViolationException e) {
-            log.warn("Concurrent update blocked for invoice: {}", invoice.getId());
-        }
-
     }
 
     @Transactional
@@ -347,19 +348,24 @@ public class RazorpayPaymentService {
                 }
         );
 
-        if (Payment.ACTIVE.equals(ownerPayment.getStatus())) {
-            log.info("Already captured. Skipping duplicate webhook.");
-            return;
-        }
+        boolean isDuplicateCaptured =
+                Payment.CAPTURED.equals(ownerPayment.getStatus())
+                        && "payment.captured".equals(event);
+
+//        if (Payment.ACTIVE.equals(ownerPayment.getStatus())) {
+//            log.info("Already captured. Skipping duplicate webhook.");
+//            return;
+//        }
 //        Owner owner = ownerRepository.findByEmail(entity.getEmail()).get();
 
         String email = null;
+        Owner owner = null;
+        Invoice invoice = null;
 
         if (entity.getEmail() != null) {
             email = entity.getEmail();
         }
 
-        Owner owner = null;
         if (email != null) {
             owner = ownerRepository.findByEmail(email)
                     .orElse(null);
@@ -368,7 +374,6 @@ public class RazorpayPaymentService {
             }
         }
 
-        Invoice invoice = null;
         if (entity.getInvoice_id() != null) {
             invoice = invoiceRepository.findByRazorpayInvoiceId(entity.getInvoice_id()).orElse(null);
         }
@@ -379,12 +384,12 @@ public class RazorpayPaymentService {
             ownerPayment.setCapturedAt(convertEpochToLocalDate(Long.valueOf(entity.getCreated_at())));
         }
         ownerPayment.setUpdatedAt(LocalDateTime.now());
-        if (entity.getCurrency()!=null){
+        if (entity.getCurrency() != null) {
             ownerPayment.setCurrency(entity.getCurrency());
         }
         switch (event) {
             case "payment.captured":
-                ownerPayment.setStatus(Payment.ACTIVE);
+                if (!isDuplicateCaptured) ownerPayment.setStatus(Payment.CAPTURED);
                 break;
             case "payment.failed":
                 ownerPayment.setStatus(Payment.FAILED);
@@ -392,10 +397,10 @@ public class RazorpayPaymentService {
             case "payment.authorized":
                 ownerPayment.setStatus(Payment.AUTHORIZED);
                 break;
-            default:
-                ownerPayment.setStatus(Payment.CREATED);
+//            default:
+//                ownerPayment.setStatus(Payment.CREATED);
         }
-        if (entity.getContact()!=null){
+        if (entity.getContact() != null) {
             ownerPayment.setContact(entity.getContact());
         }
         ownerPayment.setOwner(owner);
@@ -407,7 +412,7 @@ public class RazorpayPaymentService {
             }
         }
 
-        if (entity.getMethod()!=null){
+        if (entity.getMethod() != null) {
             ownerPayment.setMethod(entity.getMethod());
         }
         if (ownerPayment.getSubscription() == null) {
@@ -427,7 +432,6 @@ public class RazorpayPaymentService {
         }
 
     }
-
     @Transactional
     private void handleSubscriptionLogic(RazorpayWebhookEvent.SubscriptionEntity entity, String event) {
         com.backend.gym_backend.entity.Subscription subscription = subscriptionRepository.findByRazorpaySubscriptionId(entity.getId())
@@ -438,15 +442,19 @@ public class RazorpayPaymentService {
                     return newSub;
                 });
 
-        if (Status.CANCELLED.equals(subscription.getStatus())) {
-            log.info("Subscription already cancelled, ignoring updates");
-            return;
-        }
-        if (Status.ACTIVE.equals(subscription.getStatus())
-                && "active".equals(entity.getStatus())) {
-            log.info("Already active subscription, skipping");
-            return;
-        }
+        boolean isDuplicateActive =
+                Status.ACTIVE.equals(subscription.getStatus())
+                        && "active".equals(entity.getStatus());
+
+//        if (Status.CANCELLED.equals(subscription.getStatus())) {
+//            log.info("Subscription already cancelled, ignoring updates");
+//            return;
+//        }
+//        if (Status.ACTIVE.equals(subscription.getStatus())
+//                && "active".equals(entity.getStatus())) {
+//            log.info("Already active subscription, skipping");
+//            return;
+//        }
         String email = null;
 
         if (entity.getCustomer_email() != null) {
@@ -487,7 +495,9 @@ public class RazorpayPaymentService {
         switch (status) {
             case "created" -> subscription.setStatus(Status.CREATED);
             case "authenticated" -> subscription.setStatus(Status.AUTHENTICATED);
-            case "active" -> subscription.setStatus(Status.ACTIVE);
+            case "active" -> {
+                if(!isDuplicateActive) subscription.setStatus(Status.ACTIVE);
+            }
             case "cancelled" -> subscription.setStatus(Status.CANCELLED);
             case "completed" -> subscription.setStatus(Status.COMPLETED);
             default -> subscription.setStatus(Status.CREATED);

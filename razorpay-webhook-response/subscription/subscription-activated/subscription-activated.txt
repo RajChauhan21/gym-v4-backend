@@ -1,0 +1,82 @@
+{
+  "entity": "event",
+  "account_id": "acc_Qeet7Q4yotpNLG",
+  "event": "subscription.activated",
+  "contains": [
+    "subscription",
+    "payment"
+  ],
+  "payload": {
+    "subscription": {
+      "entity": {
+        "id": "sub_SetDuo1mBauaQW",
+        "entity": "subscription",
+        "plan_id": "plan_SeEHwq49uixRvn",
+        "customer_id": null,
+        "customer_email": "craj47577@gmail.com",
+        "customer_contact": "+919321834217",
+        "status": "active",
+        "current_start": 1776579578,
+        "current_end": 1779129000,
+        "ended_at": null,
+        "quantity": 1,
+        "notes": [],
+        "charge_at": 1779129000,
+        "start_at": 1776579578,
+        "end_at": 1805394600,
+        "auth_attempts": 0,
+        "total_count": 12,
+        "paid_count": 1,
+        "customer_notify": true,
+        "created_at": 1776500906,
+        "expire_by": null,
+        "short_url": null,
+        "has_scheduled_changes": false,
+        "change_scheduled_at": null,
+        "source": "api",
+        "payment_method": "upi",
+        "offer_id": null,
+        "remaining_count": 11
+      }
+    },
+    "payment": {
+      "entity": {
+        "id": "pay_SfFYxLgrwcVto1",
+        "entity": "payment",
+        "amount": 79900,
+        "currency": "INR",
+        "status": "captured",
+        "order_id": "order_SetDvRO9TQxebl",
+        "invoice_id": "inv_SetDvKM0tTY7JY",
+        "international": false,
+        "method": "upi",
+        "amount_refunded": 0,
+        "amount_transferred": 0,
+        "refund_status": null,
+        "captured": "1",
+        "description": "Start Subscription",
+        "card_id": null,
+        "bank": null,
+        "wallet": null,
+        "vpa": "failed@okhdfcbank",
+        "email": "craj47577@gmail.com",
+        "contact": "+919321834217",
+        "customer_id": null,
+        "token_id": "token_SfFYxiQaB3js57",
+        "notes": {
+          "dashboard": "true"
+        },
+        "fee": 826,
+        "tax": 126,
+        "error_code": null,
+        "error_description": null,
+        "acquirer_data": {
+          "rrn": "001000100002",
+          "upi_transaction_id": "npci_txn_id_for_SfFYxLgrwcVto1"
+        },
+        "created_at": 1776579578
+      }
+    }
+  },
+  "created_at": 1776579587
+}
