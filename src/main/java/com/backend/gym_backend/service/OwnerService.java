@@ -100,7 +100,7 @@ public class OwnerService {
                     .endDate(subscription != null ? subscription.getEndDate() : null)
                     .startDate(subscription != null ? subscription.getStartDate() : null)
                     .planName(subscription != null ? subscription.getName() : "No Active Plan")
-                    .status(subscription != null ? subscription.getStatus() : null)
+                    .subscription(subscription != null ? subscription.getStatus() : null)
                     // Plan fields (null-safe)
                     .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
                     .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
@@ -122,12 +122,13 @@ public class OwnerService {
         String password = bCryptPasswordEncoder.encode(userRequest.getPassword());
         Owner owner = new Owner();
         Plan trial = planRepository.findByName("Trial").get();
-        subscriptionService.ownerSubscribesToPlan(owner.getId(), trial.getId(), password, password);
         owner.setProvider(OAuthProvider.LOCAL);
         owner.setName(userRequest.getName());
         owner.setPassword(password);
         owner.setEmail(userRequest.getEmail());
-        ownerRepository.save(owner);
+        Owner save = ownerRepository.save(owner);
+
+//        subscriptionService.ownerSubscribesToPlan(save.getId(), trial.getId(), password, password);
 
         return "Account created successfully";
     }
@@ -195,7 +196,7 @@ public class OwnerService {
                 .endDate(subscription != null ? subscription.getEndDate() : null)
                 .startDate(subscription != null ? subscription.getStartDate() : null)
                 .planName(subscription != null ? subscription.getName() : "No Active Plan")
-                .status(subscription != null ? subscription.getStatus() : null)
+                .subscription(subscription != null ? subscription.getStatus() : null)
                 // Plan fields (null-safe)
                 .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
                 .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))

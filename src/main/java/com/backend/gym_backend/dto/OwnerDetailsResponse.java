@@ -1,6 +1,6 @@
 package com.backend.gym_backend.dto;
 
-import com.backend.gym_backend.enums.Status;
+import com.backend.gym_backend.enums.Subscription;
 import lombok.Builder;
 import lombok.Data;
 
@@ -40,7 +40,7 @@ public class OwnerDetailsResponse {
 
     private LocalDate endDate;
 
-    private Status status;
+    private Subscription subscription;
 
     private Integer memberLimitCount;
 

@@ -1,6 +1,5 @@
 package com.backend.gym_backend.entity;
 
-import com.backend.gym_backend.enums.Status;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -28,10 +27,14 @@ public class Subscription {
 
     private LocalDate endDate;
 
+    @Version
+    private Long version;
+
     private LocalDate subscriptionStartDate;
 
     private LocalDate subscriptionEndDate;
 
+    @Column(unique = true)
     private String razorpaySubscriptionId;
 
     private LocalDate nextBillingDate;
@@ -42,7 +45,7 @@ public class Subscription {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private Status status;
+    private com.backend.gym_backend.enums.Subscription status;
 
     @JsonBackReference("own")
     @ManyToOne

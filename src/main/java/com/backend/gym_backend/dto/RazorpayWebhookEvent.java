@@ -1,7 +1,11 @@
 package com.backend.gym_backend.dto;
 
 import com.fasterxml.jackson.annotation.JsonIgnoreProperties;
+import com.fasterxml.jackson.annotation.JsonProperty;
 import lombok.Data;
+
+import java.util.HashMap;
+import java.util.Map;
 
 @Data
 @JsonIgnoreProperties(ignoreUnknown = true)
@@ -46,7 +50,17 @@ public class RazorpayWebhookEvent {
         private Long current_end;
         private Long current_start;  //when the payment attempt was made
         private String payment_method;
+        private Map<String, String> notes;
         // ... other fields
+
+        @JsonProperty("notes")
+        public void setNotes(Object notes) {
+            if (notes instanceof Map) {
+                this.notes = (Map<String, String>) notes;
+            } else {
+                this.notes = new HashMap<>(); // Handles the [] case
+            }
+        }
     }
 
     @Data
@@ -62,6 +76,16 @@ public class RazorpayWebhookEvent {
         private String upi_transaction_id;
         private String currency;
         private String created_at;
+        private Map<String, String> notes;
+
+        @JsonProperty("notes")
+        public void setNotes(Object notes) {
+            if (notes instanceof Map) {
+                this.notes = (Map<String, String>) notes;
+            } else {
+                this.notes = new HashMap<>(); // Handles the [] case
+            }
+        }
     }
 
     // Add InvoiceEntity similarly

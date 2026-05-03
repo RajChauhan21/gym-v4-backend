@@ -39,12 +39,16 @@ public class Invoice {
     @ManyToOne
     private Subscription subscription;
 
+    //save id's separately to help link subscription and Ownerpayments
+    private String razorpaySubscriptionId;
+    private String razorpayPaymentId;
+
     // Financials
     private BigDecimal amount;       // in paise
     private BigDecimal amountPaid;   // in paise
     private String currency;      // INR
 
-    // Status
+    // Subscription
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private com.backend.gym_backend.enums.Invoice status;        // CREATED, PAID, FAILED

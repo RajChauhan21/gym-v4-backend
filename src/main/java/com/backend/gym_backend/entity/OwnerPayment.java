@@ -45,7 +45,10 @@ public class OwnerPayment {
     private BigDecimal amount;       // in paise
     private String currency;      // INR
 
-    // Status
+    @Version
+    private Long version;
+
+    // Subscription
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
     private Payment status;       // AUTHORIZED, CAPTURED, FAILED

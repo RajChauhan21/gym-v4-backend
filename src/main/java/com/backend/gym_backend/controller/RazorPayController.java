@@ -1,6 +1,8 @@
 package com.backend.gym_backend.controller;
 
 import com.backend.gym_backend.service.RazorpayPaymentService;
+import com.backend.gym_backend.service.SubscriptionEventListenerService;
+import com.backend.gym_backend.service.WebhookTestRunner;
 import com.razorpay.RazorpayException;
 import jakarta.servlet.http.HttpServletRequest;
 import org.springframework.beans.factory.annotation.Autowired;
@@ -14,6 +16,12 @@ public class RazorPayController {
 
     @Autowired
     private RazorpayPaymentService razorpayPaymentService;
+
+    @Autowired
+    private SubscriptionEventListenerService eventListenerService;
+
+    @Autowired
+    private WebhookTestRunner webhookTestRunner;
 
     @PostMapping("/create-subscription")
     public ResponseEntity<String> createSubscription(@RequestParam("o") Integer ownerId, @RequestParam("p") Integer planId) throws RazorpayException {
@@ -32,5 +40,16 @@ public class RazorPayController {
         return new ResponseEntity<>(HttpStatus.ACCEPTED);
     }
 
+    @GetMapping("/simulate/fail")
+    public ResponseEntity<?> simulateRazorpayCancelApiFail(@RequestParam("s") String subsId) {
+        eventListenerService.cancelSubscriptionInRazorpay(subsId);
+        return ResponseEntity.ok("Simulation completed");
+    }
+
+    @GetMapping("/test")
+    public String runTest() {
+        webhookTestRunner.runParallelTest();
+        return "Triggered";
+    }
 }
 
