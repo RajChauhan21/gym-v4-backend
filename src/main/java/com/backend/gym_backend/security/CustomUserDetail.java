@@ -40,7 +40,7 @@ public class CustomUserDetail implements UserDetailsService {
         return User
                 .builder()
                 .username(String.valueOf(owner.get().getId()))
-                .password(owner.get().getPassword() != null ? owner.get().getPassword() : "null")
+                .password(owner.get().getPassword() != null ? owner.get().getPassword() : "")
                 .build();
     }
 }

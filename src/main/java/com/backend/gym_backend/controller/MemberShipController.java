@@ -24,8 +24,8 @@ public class MemberShipController {
     }
 
     @GetMapping("/getAll")
-    public ResponseEntity<?> getAll(){
-        return new ResponseEntity<>(memberShipService.getAll(), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> getAll(@RequestParam(value = "q",required = false) Integer gymId){
+        return new ResponseEntity<>(memberShipService.getAllByGymId(gymId), HttpStatus.ACCEPTED);
     }
 
     @GetMapping("/findById")

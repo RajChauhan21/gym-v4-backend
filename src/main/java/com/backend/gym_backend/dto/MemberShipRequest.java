@@ -7,9 +7,13 @@ public class MemberShipRequest {
 
     private Integer id;
 
+    private Integer gymId;
+
     private String name;
 
     private Integer validity;
 
     private Integer price;
+
+    private Integer ownerId;
 }

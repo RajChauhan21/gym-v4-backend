@@ -1,6 +1,6 @@
 package com.backend.gym_backend.dto;
 
-import com.backend.gym_backend.enums.Subscription;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
 import lombok.Builder;
@@ -22,7 +22,7 @@ public class SubscriptionResponse {
 
     private LocalDate endDate;
 
-    private Subscription subscription;
+    private SubscriptionStatus subscriptionStatus;
 
     private Owner owner;
 

@@ -1,5 +1,6 @@
 package com.backend.gym_backend.entity;
 
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
@@ -45,7 +46,7 @@ public class Subscription {
 
     @Enumerated(EnumType.STRING)
     @Column(length = 50)
-    private com.backend.gym_backend.enums.Subscription status;
+    private SubscriptionStatus status;
 
     @JsonBackReference("own")
     @ManyToOne

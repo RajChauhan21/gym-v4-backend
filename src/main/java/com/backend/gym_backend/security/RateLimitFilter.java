@@ -1,15 +1,18 @@
 package com.backend.gym_backend.security;
 
+import com.backend.gym_backend.exception.RateLimitExceededException;
 import com.backend.gym_backend.service.RateLimitService;
 import io.github.bucket4j.Bucket;
 import jakarta.servlet.*;
 import jakarta.servlet.http.*;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.security.authentication.AnonymousAuthenticationToken;
 import org.springframework.security.core.Authentication;
 import org.springframework.security.core.context.SecurityContext;
 import org.springframework.security.core.context.SecurityContextHolder;
 import org.springframework.stereotype.Component;
+import org.springframework.web.servlet.HandlerExceptionResolver;
 
 import java.io.IOException;
 
@@ -17,10 +20,12 @@ import java.io.IOException;
 public class RateLimitFilter implements Filter {
 
     private final RateLimitService rateLimitService;
+    private final HandlerExceptionResolver resolver;
 
     @Autowired
-    public RateLimitFilter(RateLimitService rateLimitService) {
+    public RateLimitFilter(RateLimitService rateLimitService,  @Qualifier("handlerExceptionResolver") HandlerExceptionResolver resolver) {
         this.rateLimitService = rateLimitService;
+        this.resolver = resolver;
     }
 
     @Override
@@ -62,9 +67,16 @@ public class RateLimitFilter implements Filter {
 
         } else {
 
-//            httpResponse.setSubscription(429);
-//            httpResponse.getWriter().write("Too many requests");
-            throw new RuntimeException("Too many requests");
+            resolver.resolveException(
+                    httpRequest,
+                    httpResponse,
+                    null,
+                    new RateLimitExceededException(
+                            "Too many requests. Please try again later."
+                    )
+            );
+
+            return;
         }
     }
 }

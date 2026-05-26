@@ -20,9 +20,9 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
 
     List<Member> findByMemberShipId(Integer memberShipId);
 
-    boolean existsByNameAndIdNot(String name, Integer id);
+    boolean existsByNameAndOwnerIdAndIdNot(String name,Integer ownerId, Integer id);
 
-    boolean existsByName(String name);
+    boolean existsByNameAndOwnerId(String name,Integer ownerId);
 
     @Query(
             value = "SELECT m.id AS id, m.name AS name, m.email AS email, m.phone AS phone, " +

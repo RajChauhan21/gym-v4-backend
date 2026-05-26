@@ -5,7 +5,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Component;
 import org.springframework.web.client.RestTemplate;
 
-import java.util.Map;
+import java.util.Random;
+import java.util.concurrent.CountDownLatch;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 
@@ -16,8 +17,14 @@ public class WebhookTestRunner {
     @Autowired
     private RestTemplate restTemplate;
 
-    public void sendInvoice() {
+    public void sendInvoice(String subsId, String payId, String invId, String email) {
         log.info("Invoice Thread: {}", Thread.currentThread().getName());
+
+        try {
+            Thread.sleep(new Random().nextInt(30)); // ✅ add here
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
         String url = "https://moralistically-unregretted-brice.ngrok-free.dev/razorpay/webhook";
 
@@ -39,14 +46,14 @@ public class WebhookTestRunner {
                     "payload": {
                         "payment": {
                             "entity": {
-                                "id": "paymentvivek8",
+                                "id": "%s",
                                 "entity": "payment",
                                 "amount": 79900,
                                 "currency": "INR",
                                 "base_amount": 79900,
                                 "status": "captured",
                                 "order_id": "order_SkRrtoWixXer6n",
-                                "invoice_id": "invoicevivek5",
+                                "invoice_id": "%s",
                                 "international": false,
                                 "method": "upi",
                                 "amount_refunded": 0,
@@ -58,7 +65,7 @@ public class WebhookTestRunner {
                                 "bank": null,
                                 "wallet": null,
                                 "vpa": "testuser@razorpay",
-                                "email": "vivek@gmail.com",
+                                "email": "%s",
                                 "contact": "+918878784874",
                                 "token_id": "token_SjmAhQRRZ7WZK8",
                                 "notes": [],
@@ -100,7 +107,7 @@ public class WebhookTestRunner {
                         },
                         "invoice": {
                             "entity": {
-                                "id": "invoicevivek5",
+                                "id": "%s",
                                 "entity": "invoice",
                                 "receipt": null,
                                 "invoice_number": null,
@@ -118,8 +125,8 @@ public class WebhookTestRunner {
                                     "customer_contact": "+918878784874"
                                 },
                                 "order_id": "order_SkRrtoWixXer6n",
-                                "subscription_id": "subscriptionvivek5",
-                                "payment_id": "paymentvivek8",
+                                "subscription_id": "%s",
+                                "payment_id": "%s",
                                 "status": "paid",
                                 "expire_by": null,
                                 "issued_at": 1777714613,
@@ -161,21 +168,21 @@ public class WebhookTestRunner {
                     },
                     "created_at": 1777714800
                 }
-                """;
+                """.formatted(payId, invId, email, invId, subsId, payId);
 
         restTemplate.postForObject(url, body, String.class);
     }
 
-    public void sendPayment() {
+    public void sendPayment(String paymentId, String invoiceId, String email) {
         log.info("Payment Thread: {}", Thread.currentThread().getName());
 
+        try {
+            Thread.sleep(new Random().nextInt(30)); // ✅ add here
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
+
         String url = "https://moralistically-unregretted-brice.ngrok-free.dev/razorpay/webhook";
-
-//        Map<String, Object> body = Map.of(
-//                "event", "payment.captured",
-//                "payload", Map.of("payment", Map.of("entity", Map.of("id", "pay_test_1")))
-//        );
-
         String body = """
                 {
                     "entity": "event",
@@ -187,14 +194,14 @@ public class WebhookTestRunner {
                     "payload": {
                         "payment": {
                             "entity": {
-                                "id": "paymentvivek8",
+                                "id": "%s",
                                 "entity": "payment",
                                 "amount": 79900,
                                 "currency": "INR",
                                 "base_amount": 79900,
                                 "status": "captured",
                                 "order_id": "order_SkRrtoWixXer6n",
-                                "invoice_id": "invoicevivek5",
+                                "invoice_id": "%s",
                                 "international": false,
                                 "method": "upi",
                                 "amount_refunded": 0,
@@ -206,7 +213,7 @@ public class WebhookTestRunner {
                                 "bank": null,
                                 "wallet": null,
                                 "vpa": "testuser@razorpay",
-                                "email": "vivek@gmail.com",
+                                "email": "%s",
                                 "contact": "+918878784874",
                                 "token_id": "token_SjmAhQRRZ7WZK8",
                                 "notes": [],
@@ -231,20 +238,21 @@ public class WebhookTestRunner {
                     },
                     "created_at": 1777714800
                 }
-                """;
+                """.formatted(paymentId, invoiceId, email);
 
         restTemplate.postForObject(url, body, String.class);
     }
 
-    public void sendSubscription() {
+    public void sendSubscription(String subsId, String email, String payId, String invId) {
         log.info("Subscription Thread: {}", Thread.currentThread().getName());
 
-        String url = "https://moralistically-unregretted-brice.ngrok-free.dev/razorpay/webhook";
+        try {
+            Thread.sleep(new Random().nextInt(30)); // ✅ add here
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        }
 
-//        Map<String, Object> body = Map.of(
-//                "event", "subscription.activated",
-//                "payload", Map.of("subscription", Map.of("entity", Map.of("id", "sub_test_1")))
-//        );
+        String url = "https://moralistically-unregretted-brice.ngrok-free.dev/razorpay/webhook";
 
         String body = """
                 {
@@ -258,11 +266,11 @@ public class WebhookTestRunner {
                     "payload": {
                         "subscription": {
                             "entity": {
-                                "id": "subscriptionvivek5",
+                                "id": "%s",
                                 "entity": "subscription",
                                 "plan_id": "plan_SeEHwq49uixRvn",
                                 "customer_id": null,
-                                "customer_email": "vivek@gmail.com",
+                                "customer_email": "%s",
                                 "customer_contact": "+919321834217",
                                 "status": "active",
                                 "current_start": 1776579578,
@@ -293,13 +301,13 @@ public class WebhookTestRunner {
                         },
                         "payment": {
                             "entity": {
-                                "id": "paymentvivek8",
+                                "id": "%s",
                                 "entity": "payment",
                                 "amount": 79900,
                                 "currency": "INR",
                                 "status": "captured",
                                 "order_id": "order_SetDvRO9TQxebl",
-                                "invoice_id": "invoicevivek5",
+                                "invoice_id": "%s",
                                 "international": false,
                                 "method": "upi",
                                 "amount_refunded": 0,
@@ -311,7 +319,7 @@ public class WebhookTestRunner {
                                 "bank": null,
                                 "wallet": null,
                                 "vpa": "failed@okhdfcbank",
-                                "email": "vivek@gmail.com",
+                                "email": "%s",
                                 "contact": "+919321834217",
                                 "customer_id": null,
                                 "token_id": "token_SfFYxiQaB3js57",
@@ -332,23 +340,155 @@ public class WebhookTestRunner {
                     },
                     "created_at": 1776579587
                 }
-                """;
+                """.formatted(subsId, email, payId, invId, email);
 
         restTemplate.postForObject(url, body, String.class);
     }
 
-    public void runParallelTest() {
+    public void runParallelTests() {
 
         ExecutorService executor = Executors.newFixedThreadPool(5);
 
-        executor.submit(this::sendInvoice);
+        executor.submit(() -> sendInvoice("subsid", "payId", "invId", "vivek@gmail.com"));
 
         for (int i = 0; i < 5; i++) {
-            executor.submit(this::sendPayment);
+            executor.submit(() -> sendPayment("payId", "invId", "vivek@gmail.com"));
         }
         for (int i = 0; i < 5; i++) {
-            executor.submit(this::sendSubscription);
+            executor.submit(() -> sendSubscription("subsId", "vivek@gmail.com", "PayId", "InvId"));
         }
         executor.shutdown();
     }
+
+    public void runParallelTesty() {
+        int threadCount = 11;
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+        // Use a local helper to wrap tasks with latch logic
+        java.util.function.Consumer<Runnable> submitTask = (task) -> {
+            executor.submit(() -> {
+                try {
+                    readyLatch.countDown();   // I'm at the starting line
+                    startLatch.await();      // Wait for the gunshot 🔫
+                    task.run();
+                } catch (Exception e) {
+                    log.warn("Error in thread {}: {}", Thread.currentThread().getName(), e.getMessage());
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        };
+
+        // 1. Queue all tasks
+        submitTask.accept(() -> sendInvoice("subsid", "payId", "invId", "vivek@gmail.com"));
+
+        for (int i = 0; i < 5; i++) {
+            submitTask.accept(() -> sendInvoice("subsid", "payId", "invId", "vivek@gmail.com"));
+            submitTask.accept(() -> sendSubscription("subsId", "vivek@gmail.com", "PayId", "InvId"));
+        }
+
+        try {
+            // 2. Wait for all 11 threads to be blocked at startLatch.await()
+            readyLatch.await();
+
+            log.info("🔥 Releasing all threads at once for true concurrency...");
+
+            // 3. The Gunshot: All threads proceed at the same microsecond
+            startLatch.countDown();
+
+            // 4. Wait for the dust to settle
+            doneLatch.await();
+            log.info("✅ All parallel tasks completed.");
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            executor.shutdown();
+        }
+    }
+
+    public void runParallelTest() {
+
+        int groups = 2; // number of different ID sets
+        int perGroupTasks = 7; // 1 invoice + 3 payment + 3 subscription
+        int threadCount = groups * perGroupTasks;
+
+        ExecutorService executor = Executors.newFixedThreadPool(threadCount);
+
+        CountDownLatch readyLatch = new CountDownLatch(threadCount);
+        CountDownLatch startLatch = new CountDownLatch(1);
+        CountDownLatch doneLatch = new CountDownLatch(threadCount);
+
+        java.util.function.Consumer<Runnable> submitTask = (task) -> {
+            executor.submit(() -> {
+                try {
+                    readyLatch.countDown();
+                    startLatch.await();
+
+                    log.info("Thread: {}", Thread.currentThread().getName());
+
+                    task.run();
+
+                } catch (Exception e) {
+                    log.warn("Error in thread {}: {}", Thread.currentThread().getName(), e.getMessage());
+                } finally {
+                    doneLatch.countDown();
+                }
+            });
+        };
+
+        // 🔹 Create multiple groups
+        for (int g = 1; g <= groups; g++) {
+
+            String subId = "sub_" + g;
+            String payId = "pay_" + g;
+            String invId = "inv_" + g;
+            String email = "";
+            if (g == 1) {
+                email = "vivek@gmail.com";
+            } else {
+                email = "yadav@gmail.com";
+            }
+
+            // 1 invoice per group
+            String finalEmail = email;
+            submitTask.accept(() ->
+                    sendInvoice(subId, payId, invId, finalEmail)
+            );
+
+            // 5 payments + 5 subscriptions per group
+            for (int i = 0; i < 5; i++) {
+
+                submitTask.accept(() ->
+                        sendPayment(payId, invId, finalEmail)
+                );
+
+                submitTask.accept(() ->
+                        sendSubscription(subId, finalEmail, payId, invId)
+                );
+            }
+        }
+
+        try {
+            readyLatch.await();
+
+            log.info("🔥 Releasing all threads at once...");
+
+            startLatch.countDown();
+
+            doneLatch.await();
+
+            log.info("✅ All parallel tasks completed.");
+
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+        } finally {
+            executor.shutdown();
+        }
+    }
+
 }

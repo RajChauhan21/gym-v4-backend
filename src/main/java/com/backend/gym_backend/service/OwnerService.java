@@ -3,6 +3,7 @@ package com.backend.gym_backend.service;
 import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.*;
 import com.backend.gym_backend.enums.OAuthProvider;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.*;
 import com.backend.gym_backend.security.CookieUtil;
 import jakarta.servlet.http.HttpServletResponse;
@@ -17,8 +18,10 @@ import org.springframework.security.core.Authentication;
 import org.springframework.security.crypto.bcrypt.BCryptPasswordEncoder;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
 import java.time.Instant;
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.ArrayList;
 import java.util.List;
@@ -51,6 +54,15 @@ public class OwnerService {
     @Autowired
     private PlanRepository planRepository;
 
+    @Autowired
+    private OwnerPaymentRepository ownerPaymentRepository;
+
+    @Autowired
+    private OtpRepository otpRepository;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
 
     public ResponseEntity<?> logIn(AuthRequest userRequest, HttpServletResponse response) throws Exception {
         if (ownerRepository.findByEmail(userRequest.getEmail()).isEmpty()) {
@@ -74,10 +86,7 @@ public class OwnerService {
             rt.setToken(refreshToken);
             rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(rt);
-            Subscription subscription = Optional.ofNullable(owner.getSubscription())
-                    .filter(subs -> !subs.isEmpty())
-                    .map(subs -> subs.get(0))
-                    .orElse(null);
+            Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.getId(), SubscriptionStatus.ACTIVE).orElse(null);
 
 // 2. Safely extract the plan from the subscription
             Plan plan = (subscription != null) ? subscription.getPlan() : null;
@@ -100,7 +109,7 @@ public class OwnerService {
                     .endDate(subscription != null ? subscription.getEndDate() : null)
                     .startDate(subscription != null ? subscription.getStartDate() : null)
                     .planName(subscription != null ? subscription.getName() : "No Active Plan")
-                    .subscription(subscription != null ? subscription.getStatus() : null)
+                    .subscriptionStatus(subscription != null ? subscription.getStatus() : null)
                     // Plan fields (null-safe)
                     .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
                     .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
@@ -154,19 +163,27 @@ public class OwnerService {
     }
 
     @Transactional
-    public OwnerDetailsRequest update(OwnerDetailsRequest ownerDetailsRequestDto) {
-        if (!ownerRepository.existsById(ownerDetailsRequestDto.getOwnerId())) {
-            throw new RuntimeException("User not found");
+    public OwnerDetailsResponse update(OwnerDetailsRequest ownerDetailsRequestDto) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerDetailsRequestDto.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
         }
-        Owner owner = Owner.builder()
+        Owner owner = ownerRepository.findById(ownerDetailsRequestDto.getOwnerId())
+                .orElseThrow(() -> new RuntimeException("User not found"));
+
+        owner = Owner.builder()
                 .id(ownerDetailsRequestDto.getOwnerId())
                 .phone(ownerDetailsRequestDto.getPhone())
                 .email(ownerDetailsRequestDto.getEmail())
                 .name(ownerDetailsRequestDto.getOwnerName())
                 .build();
 
-        ownerRepository.save(owner);
-        return ownerDetailsRequestDto;
+//        Owner save = ownerRepository.save(owner);
+        return OwnerDetailsResponse.builder()
+                .ownerId(owner.getId())
+                .ownerName(owner.getName())
+                .email(owner.getEmail())
+                .phone(owner.getPhone())
+                .build();
     }
 
     public OwnerDetailsResponse findById(int id) {
@@ -174,10 +191,7 @@ public class OwnerService {
             throw new RuntimeException("User not found");
         }
         Owner owner = ownerRepository.findById(id).get();
-        Subscription subscription = Optional.ofNullable(owner.getSubscription())
-                .filter(subs -> !subs.isEmpty())
-                .map(subs -> subs.get(0))
-                .orElse(null);
+        Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.getId(), SubscriptionStatus.ACTIVE).orElse(null);
         Plan plan = (subscription != null) ? subscription.getPlan() : null;
         OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                 .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
@@ -196,7 +210,7 @@ public class OwnerService {
                 .endDate(subscription != null ? subscription.getEndDate() : null)
                 .startDate(subscription != null ? subscription.getStartDate() : null)
                 .planName(subscription != null ? subscription.getName() : "No Active Plan")
-                .subscription(subscription != null ? subscription.getStatus() : null)
+                .subscriptionStatus(subscription != null ? subscription.getStatus() : null)
                 // Plan fields (null-safe)
                 .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
                 .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
@@ -228,17 +242,24 @@ public class OwnerService {
         return owners;
     }
 
-    public Integer getDueAmountOfAllMembersOfOwner(Integer ownerId) {
+    public PaymentDueResponse getTotalDueAmountAndCountOfMembersOfOwner(Integer ownerId) {
         List<MemberResponse> members = new ArrayList<>();
         List<Member> byOwnerId = memberRepository.findByOwnerId(ownerId);
-        Integer sum = 0;
+        long sum = 0;
+        long count = 0;
         for (Member m : byOwnerId) {
             sum += m.getDueAmount();
+            if (m.getDueAmount() > 0) {
+                count++;
+            }
         }
-        return sum;
+        return new PaymentDueResponse(sum, count);
     }
 
     public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom, LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, String plan, Pageable pageable) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
         return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId), name, dueAmount, joinedFrom, joinedTo, expiryFrom, expiryTo, plan, pageable);
     }
 
@@ -264,6 +285,33 @@ public class OwnerService {
         return responseDto;
     }
 
+    public Page<OwnerPaymentProjection> getAllPaymentsOfOwner(Integer ownerId, BigDecimal amount, String status, String method, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        com.backend.gym_backend.enums.Payment payment = null;
+        if (status != null && status.equals("SUCCESS")) {
+            payment = com.backend.gym_backend.enums.Payment.CAPTURED;
+        }
+        if (status != null && status.equals("FAILED")) {
+            payment = com.backend.gym_backend.enums.Payment.FAILED;
+        }
+        Page<OwnerPaymentProjection> byOwner = ownerPaymentRepository.findPaymentsByOwner(ownerId, amount, payment, method, startDate, endDate, pageable);
+
+        return byOwner;
+    }
+
+    @Transactional
+    public String resetPassword(Integer ownerId, String password) {
+        Optional<Owner> owner = ownerRepository.findById(ownerId);
+        if (owner.isEmpty()) {
+            throw new RuntimeException("Owner not found");
+        }
+        otpRepository.deleteByOwnerEmail(owner.get().getEmail());
+        otpRepository.flush();
+        password = bCryptPasswordEncoder.encode(password);
+        owner.get().setPassword(password);
+        ownerRepository.save(owner.get());
+
+        return "Password reset successfully";
+    }
 
     @Transactional
     public String deleteById(int id) {
@@ -272,6 +320,24 @@ public class OwnerService {
         }
         ownerRepository.deleteById(id);
         return "deleted";
+    }
+
+
+    public SubscriptionResponse getOwnerActiveSubscription(Integer ownerId){
+        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE);
+
+        if (subscription.isEmpty()){
+            return SubscriptionResponse.builder().build();
+        }
+
+        return SubscriptionResponse.builder()
+                .id(subscription.get().getId())
+                .endDate(subscription.get().getEndDate())
+                .startDate(subscription.get().getStartDate())
+                .subscriptionStatus(subscription.get().getStatus())
+                .price(subscription.get().getPrice())
+                .name(subscription.get().getName())
+                .build();
     }
 
 }

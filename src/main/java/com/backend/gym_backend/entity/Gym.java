@@ -4,6 +4,9 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.util.ArrayList;
+import java.util.List;
+
 @Entity
 @Builder
 @Getter
@@ -23,6 +26,8 @@ public class Gym {
 
     private String image;
 
+    private String imagePublicId;
+
     private String location;
 
     private String googleMapUrl;
@@ -30,4 +35,8 @@ public class Gym {
     @JsonManagedReference()
     @OneToOne(mappedBy = "gym")
     private Owner owner;
+
+    @JsonManagedReference(value = "plans")
+    @OneToMany(mappedBy = "gym",cascade = CascadeType.ALL)
+    private List<MemberShip> memberShips = new ArrayList<>();
 }

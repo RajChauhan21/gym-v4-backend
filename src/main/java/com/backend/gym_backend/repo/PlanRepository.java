@@ -8,4 +8,6 @@ import java.util.Optional;
 public interface PlanRepository extends JpaRepository<Plan,Integer> {
 
     Optional<Plan> findByName(String name);
+
+    Optional<Plan> findByRazorPayPlanId(String planId);
 }

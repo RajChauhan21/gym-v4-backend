@@ -1,11 +1,14 @@
 package com.backend.gym_backend.service;
 
 import com.backend.gym_backend.dto.RazorpayWebhookEvent;
+import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.*;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
+import com.razorpay.Subscription;
 import com.razorpay.Utils;
 import lombok.RequiredArgsConstructor;
 import lombok.extern.slf4j.Slf4j;
@@ -13,6 +16,8 @@ import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
+
+import java.util.Optional;
 
 @Service
 @Slf4j
@@ -38,6 +43,15 @@ public class RazorpayPaymentService {
 
     @Autowired
     private OwnerPaymentService ownerPaymentService;
+
+    @Autowired
+    private OwnerRepository ownerRepository;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
+    @Autowired
+    private OtpEmailService emailService;
 
     public String createSubscription(int planId, int ownerId) throws RazorpayException {
 
@@ -98,10 +112,10 @@ public class RazorpayPaymentService {
 //    @Async
     public void getWebHookResponse(String payload, String signature) {
         // 1. Verify signature first
-//        if (!verifySignature(payload, signature)) {
-//            log.error("Invalid Razorpay signature");
-//            return;
-//        }
+        if (!verifySignature(payload, signature)) {
+            log.error("Invalid Razorpay signature");
+            return;
+        }
         log.info("Webhook Thread: {}", Thread.currentThread().getName());
         try {
             // 2. Parse using Jackson into the Unified DTO
@@ -143,5 +157,59 @@ public class RazorpayPaymentService {
         } catch (Exception e) {
             return false;
         }
+    }
+
+    private String cancelSubscription(Integer ownerId) throws RazorpayException {
+        Optional<Owner> owner = ownerRepository.findById(ownerId);
+        if (owner.isEmpty()){
+            throw new RuntimeException("owner not found");
+        }
+        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.get().getId(), SubscriptionStatus.ACTIVE);
+
+        if (subscriptionEntity.isEmpty()){
+            return "102"; //no active subs found
+        }
+
+        RazorpayClient razorpay = new RazorpayClient(apiKey, secretKey);
+
+        JSONObject request = new JSONObject();
+        request.put("cancel_at_cycle_end", true);
+
+        Subscription subscription =
+                razorpay.subscriptions.cancel(subscriptionEntity.get().getRazorpaySubscriptionId(), request);
+
+        emailService.sendSubscriptionCancellationEmail(owner.get().getEmail(),owner.get().getName(),subscriptionEntity.get().getName(),subscriptionEntity.get().getEndDate());
+
+        return "202";
+    }
+
+    private String upgradeSubscription(Integer ownerId, int planId) throws RazorpayException {
+        Optional<Owner> owner = ownerRepository.findById(ownerId);
+        if (owner.isEmpty()){
+            throw new RuntimeException("owner not found");
+        }
+        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.get().getId(), SubscriptionStatus.ACTIVE);
+
+        if (subscriptionEntity.isEmpty()){
+            return "102"; //no active subs found
+        }
+
+        RazorpayClient razorpay = new RazorpayClient(apiKey, secretKey);
+
+        JSONObject request = new JSONObject();
+        Plan plan = planRepository.findById(planId).orElse(null);
+        if (plan==null) return "404";
+
+        request.put("plan_id", plan.getRazorPayPlanId());
+        request.put("schedule_change_at", "cycle_end");
+
+        Subscription subscription =
+                razorpay.subscriptions.update(
+                        subscriptionEntity.get().getRazorpaySubscriptionId(),
+                        request
+                );
+
+        emailService.sendSubscriptionUpgradeEmail(owner.get().getEmail(),owner.get().getName(),subscriptionEntity.get().getName(),plan.getName(),subscriptionEntity.get().getEndDate());
+        return "202";
     }
 }

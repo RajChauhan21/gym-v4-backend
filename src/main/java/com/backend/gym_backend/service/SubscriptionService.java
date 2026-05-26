@@ -6,7 +6,7 @@ import com.backend.gym_backend.dto.SubscriptionLinkedEvent;
 import com.backend.gym_backend.dto.SubscriptionResponse;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
-import com.backend.gym_backend.enums.Subscription;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.OwnerRepository;
 import com.backend.gym_backend.repo.PlanFeatureRepository;
 import com.backend.gym_backend.repo.PlanRepository;
@@ -21,6 +21,7 @@ import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
@@ -80,7 +81,7 @@ public class SubscriptionService {
         subscription.setOwner(owner);
         subscription.setName(plan.getName());
         subscription.setPrice(plan.getPrice());
-        subscription.setStatus(status.equals("ACTIVE") ? Subscription.ACTIVE : Subscription.CREATED);
+        subscription.setStatus(status.equals("ACTIVE") ? SubscriptionStatus.ACTIVE : SubscriptionStatus.CREATED);
         subscription.setRazorpaySubscriptionId(razorPaySubsId);
         subscription.setId(null);
         subscription.setCreatedAt(LocalDateTime.now());
@@ -98,7 +99,7 @@ public class SubscriptionService {
                 .startDate(save.getStartDate())
                 .name(save.getName())
                 .price(save.getPrice())
-                .subscription(save.getStatus())
+                .subscriptionStatus(save.getStatus())
                 .build();
     }
 
@@ -117,7 +118,7 @@ public class SubscriptionService {
                 .startDate(save.getStartDate())
                 .name(save.getName())
                 .price(save.getPrice())
-                .subscription(save.getStatus())
+                .subscriptionStatus(save.getStatus())
                 .build();
 
     }
@@ -133,7 +134,7 @@ public class SubscriptionService {
                     .name(s.getName())
                     .startDate(s.getStartDate())
                     .endDate(s.getEndDate())
-                    .subscription(s.getStatus())
+                    .subscriptionStatus(s.getStatus())
                     .build();
 
             subscriptionResponses.add(build);
@@ -153,7 +154,7 @@ public class SubscriptionService {
                     .name(s.getName())
                     .startDate(s.getStartDate())
                     .endDate(s.getEndDate())
-                    .subscription(s.getStatus())
+                    .subscriptionStatus(s.getStatus())
                     .build();
 
             subscriptionResponses.add(build);
@@ -187,7 +188,7 @@ public class SubscriptionService {
                     .startDate(s.getStartDate())
                     .name(s.getName())
                     .price(s.getPrice())
-                    .subscription(s.getStatus())
+                    .subscriptionStatus(s.getStatus())
                     .build();
 
             subscriptions.add(build);
@@ -195,51 +196,81 @@ public class SubscriptionService {
         return subscriptions;
     }
 
-    private Subscription mapSubscriptionStatus(String event) {
+    private SubscriptionStatus mapSubscriptionStatus(String event) {
         return switch (event) {
-            case "subscription.authenticated" -> Subscription.AUTHENTICATED;
-            case "subscription.activated", "subscription.charged" -> Subscription.ACTIVE;
-            case "subscription.cancelled" -> Subscription.CANCELLED;
+            case "subscription.authenticated" -> SubscriptionStatus.AUTHENTICATED;
+            case "subscription.activated", "subscription.charged" -> SubscriptionStatus.ACTIVE;
+            case "subscription.cancelled" -> SubscriptionStatus.CANCELLED;
             default -> null;
         };
     }
 
-    private int getSubscriptionStatusPriority(Subscription status) {
+    private int getSubscriptionStatusPriority(SubscriptionStatus status) {
         return switch (status) {
             case CREATED -> 0;
             case AUTHENTICATED -> 1;
-            case ACTIVE -> 2;
-            case COMPLETED -> 3;
-            case CANCELLED -> 4;
-            case EXPIRED -> 5;
+            case UPGRADED -> 2;
+            case ACTIVE -> 3;
+            case COMPLETED -> 4;
+            case CANCELLED -> 5;
+            case EXPIRED -> 6;
         };
     }
 
-    @Retryable(value = {OptimisticLockException.class, ObjectOptimisticLockingFailureException.class}, maxAttempts = 3, backoff = @Backoff(delay = 100))
+    @Retryable(retryFor = {OptimisticLockException.class, ObjectOptimisticLockingFailureException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 100, multiplier = 2, random = true))
     @Transactional
     public void handleSubscriptionLogic(RazorpayWebhookEvent.SubscriptionEntity entity, String event) throws RazorpayException {
         log.info("Webhook Subscription Thread: {}", Thread.currentThread().getName());
-        try{
+        try {
             Thread.sleep(10000); // 10 sec delay
-        }
-         catch (InterruptedException e) {
+        } catch (InterruptedException e) {
             throw new RuntimeException(e);
         }
 
-        Plan plan = planRepository.findById(Integer.valueOf(entity.getNotes().get("planId"))).get();
-        Owner owner = ownerRepository.findById(Integer.valueOf(entity.getNotes().get("ownerId"))).get();
+        Plan plan;
+        Owner owner;
 
+        if(!entity.getNotes().isEmpty()) {
+            if (!entity.getNotes().get("planId").isEmpty()) {
+                plan = planRepository.findById(Integer.valueOf(entity.getNotes().get("planId"))).get();
+            } else {
+                plan = null;
+            }
+            if (!entity.getNotes().get("ownerId").isEmpty()) {
+                owner = ownerRepository.findById(Integer.valueOf(entity.getNotes().get("ownerId"))).get();
+
+            } else {
+                owner = null;
+            }
+        } else {
+            plan = null;
+            owner = null;
+        }
+
+        if (owner==null){
+            owner = ownerRepository.findByEmail(entity.getCustomer_email()).orElse(null);
+        }
+
+        if (plan==null){
+            plan = planRepository.findByRazorPayPlanId(entity.getPlan_id()).orElse(null);
+        }
+
+
+        Owner finalOwner = owner;
+        Plan finalPlan = plan;
         com.backend.gym_backend.entity.Subscription subscription = subscriptionRepository.findByRazorpaySubscriptionId(entity.getId())
                 .orElseGet(() -> {
                     try {
                         com.backend.gym_backend.entity.Subscription newSub = new com.backend.gym_backend.entity.Subscription();
                         newSub.setRazorpaySubscriptionId(entity.getId());
-                        newSub.setOwner(owner);
-                        newSub.setPlan(plan);
-                        newSub.setName(plan.getName());
-                        newSub.setPrice(plan.getPrice());
+                        newSub.setOwner(finalOwner);
+                        newSub.setPlan(finalPlan);
+                        newSub.setName(finalPlan.getName());
+                        newSub.setPrice(finalPlan.getPrice());
                         newSub.setStartDate(LocalDate.now());
-                        long daysToAdd = (plan.getDays() != null && !plan.getDays().isEmpty()) ? Long.parseLong(plan.getDays()) : 0L;
+                        long daysToAdd = (finalPlan.getDays() != null && !finalPlan.getDays().isEmpty()) ? Long.parseLong(finalPlan.getDays()) : 0L;
                         newSub.setEndDate(LocalDate.now().plusDays(daysToAdd));
                         newSub.setCreatedAt(LocalDateTime.now());
                         log.info("New subscription added with id {}", entity.getId());
@@ -250,19 +281,19 @@ public class SubscriptionService {
                     }
                 });
 
-        Subscription oldStatus = subscription.getStatus();
+        SubscriptionStatus oldStatus = subscription.getStatus();
 
         if (subscription.getOwner() == null) {
-            subscription.setOwner(owner);
+            subscription.setOwner(finalOwner);
         }
         if (subscription.getPlan() == null) {
-            subscription.setPlan(plan);
+            subscription.setPlan(finalPlan);
         }
         if (subscription.getName() == null) {
-            subscription.setName(plan.getName());
+            subscription.setName(finalPlan.getName());
         }
         if (subscription.getPrice() == null) {
-            subscription.setPrice(plan.getPrice());
+            subscription.setPrice(finalPlan.getPrice());
         }
         if (subscription.getCreatedAt() == null) {
             subscription.setCreatedAt(LocalDateTime.now());
@@ -289,7 +320,7 @@ public class SubscriptionService {
             subscription.setEmail(entity.getCustomer_email());
         }
 
-        Subscription newStatus = mapSubscriptionStatus(event);
+        SubscriptionStatus newStatus = mapSubscriptionStatus(event);
         if (newStatus != null && subscription.getStatus() == null
                 || getSubscriptionStatusPriority(newStatus) >= getSubscriptionStatusPriority(subscription.getStatus())) {
 
@@ -321,8 +352,8 @@ public class SubscriptionService {
         }
 
         boolean isBecomingActive =
-                Subscription.ACTIVE.equals(newStatus)
-                        && !Subscription.ACTIVE.equals(oldStatus);
+                SubscriptionStatus.ACTIVE.equals(newStatus)
+                        && !SubscriptionStatus.ACTIVE.equals(oldStatus);
 
         //Always use savedSubscription (never original)
         applicationEventPublisher.publishEvent(new SubscriptionLinkedEvent(subscription.getRazorpaySubscriptionId()));
@@ -333,5 +364,12 @@ public class SubscriptionService {
                             savedSubscription.getId())
             );
         }
+    }
+
+    @Recover
+    public void recoverOptimisticLock(Exception ex, RazorpayWebhookEvent.SubscriptionEntity entity, String event) {
+
+        log.warn("Final failure after retries for payment {}. Reason: {}",
+                entity.getId(), ex.getClass().getSimpleName());
     }
 }

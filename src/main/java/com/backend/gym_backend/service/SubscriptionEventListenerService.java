@@ -4,6 +4,7 @@ import com.backend.gym_backend.dto.SubscriptionActivatedEvent;
 import com.backend.gym_backend.dto.SubscriptionLinkedEvent;
 import com.backend.gym_backend.entity.*;
 import com.backend.gym_backend.enums.Retry;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.InvoiceRepository;
 import com.backend.gym_backend.repo.OwnerPaymentRepository;
 import com.backend.gym_backend.repo.SubscriptionCancelRetryRepository;
@@ -16,13 +17,11 @@ import org.springframework.beans.factory.annotation.Value;
 import org.springframework.scheduling.annotation.Async;
 import org.springframework.scheduling.annotation.Scheduled;
 import org.springframework.stereotype.Component;
-import org.springframework.stereotype.Service;
 import org.springframework.transaction.event.TransactionPhase;
 import org.springframework.transaction.event.TransactionalEventListener;
 
 import java.time.LocalDateTime;
 import java.util.List;
-import java.util.Optional;
 
 @Slf4j
 @Component
@@ -57,7 +56,7 @@ public class SubscriptionEventListenerService {
         Owner owner = subscription.getOwner();
 
         List<Subscription> activeSubs =
-                subscriptionRepository.findByOwnerAndStatus(owner, com.backend.gym_backend.enums.Subscription.ACTIVE)
+                subscriptionRepository.findByOwnerAndStatus(owner, SubscriptionStatus.ACTIVE)
                         .orElse(List.of());
 
         for (Subscription oldSub : activeSubs) {
@@ -124,7 +123,7 @@ public class SubscriptionEventListenerService {
                     .orElse(null);
 
             if (subscription != null) {
-                subscription.setStatus(com.backend.gym_backend.enums.Subscription.CANCELLED);
+                subscription.setStatus(SubscriptionStatus.CANCELLED);
                 subscription.setUpdatedAt(LocalDateTime.now());
                 subscriptionRepository.save(subscription);
             }
@@ -154,7 +153,7 @@ public class SubscriptionEventListenerService {
 
     @Transactional
     public void markSubscriptionCancelled(Subscription sub) {
-        sub.setStatus(com.backend.gym_backend.enums.Subscription.CANCELLED);
+        sub.setStatus(SubscriptionStatus.CANCELLED);
         sub.setUpdatedAt(LocalDateTime.now());
         subscriptionRepository.save(sub);
     }

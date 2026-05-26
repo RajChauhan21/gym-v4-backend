@@ -5,7 +5,6 @@ import com.backend.gym_backend.entity.Invoice;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.OwnerPayment;
 import com.backend.gym_backend.enums.Payment;
-import com.backend.gym_backend.enums.Subscription;
 import com.backend.gym_backend.repo.InvoiceRepository;
 import com.backend.gym_backend.repo.OwnerPaymentRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
@@ -47,9 +46,9 @@ public class OwnerPaymentService {
 
     private static int count = 0;
 
-    @Retryable(value = {OptimisticLockException.class, ObjectOptimisticLockingFailureException.class},
+    @Retryable(retryFor = {OptimisticLockException.class, ObjectOptimisticLockingFailureException.class},
             maxAttempts = 5,
-            backoff = @Backoff(delay = 100, multiplier = 2))
+            backoff = @Backoff(delay = 100, multiplier = 2,random = true))
     @Transactional
     public void handlePaymentLogic(RazorpayWebhookEvent.PaymentEntity entity, String event) {
         log.info("Webhook Payment Thread: {}", Thread.currentThread().getName());

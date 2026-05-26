@@ -21,7 +21,7 @@ public class RazorpayConfig {
         return new RazorpayClient(apiKey,secretKey);
     }
 
-    @Bean
+//    @Bean
     public RestTemplate restTemplate(){
         return new RestTemplate();
     }

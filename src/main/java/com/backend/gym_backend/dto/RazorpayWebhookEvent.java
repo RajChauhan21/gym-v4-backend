@@ -46,6 +46,7 @@ public class RazorpayWebhookEvent {
         private Long start_at;
         private String status;
         private Long end_at;
+        private String plan_id;
         private Long charge_at;
         private Long current_end;
         private Long current_start;  //when the payment attempt was made

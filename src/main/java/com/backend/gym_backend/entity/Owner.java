@@ -32,6 +32,8 @@ public class Owner {
 
     private String image;
 
+    private String imagePublicId;
+
     @Enumerated(EnumType.STRING)
     private OAuthProvider provider;
 
@@ -42,8 +44,8 @@ public class Owner {
     private Gym gym;
 
     @JsonManagedReference("own")
-    @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)
-    private List<Subscription> subscription;
+    @OneToMany(mappedBy = "owner", cascade = {CascadeType.PERSIST, CascadeType.MERGE})
+    private List<Subscription> subscriptions;
 
     @JsonManagedReference("mem")
     @OneToMany(mappedBy = "owner", cascade = CascadeType.ALL, orphanRemoval = true)

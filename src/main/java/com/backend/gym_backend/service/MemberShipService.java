@@ -4,8 +4,11 @@ import com.backend.gym_backend.dto.MemberShipRequest;
 import com.backend.gym_backend.dto.MemberShipResponse;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.MemberShip;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.MemberShipRepository;
+import com.backend.gym_backend.repo.OwnerRepository;
+import com.backend.gym_backend.repo.SubscriptionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -23,14 +26,23 @@ public class MemberShipService {
     @Autowired
     private MemberRepository memberRepository;
 
+    @Autowired
+    private OwnerRepository ownerRepository;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
     @Transactional
     public MemberShipResponse save(MemberShipRequest request) {
+        if (ownerRepository.findById(request.getOwnerId()).get().getGym()==null){
+            throw new RuntimeException("404");
+        }
         MemberShip memberShip = new MemberShip();
-
         memberShip.setId(null);
         memberShip.setName(request.getName());
         memberShip.setPrice(request.getPrice());
         memberShip.setValidity(request.getValidity());
+        memberShip.setGym(ownerRepository.findById(request.getOwnerId()).get().getGym());
         MemberShip save = memberShipRepository.save(memberShip);
 
         return MemberShipResponse.builder()
@@ -44,16 +56,23 @@ public class MemberShipService {
 
     @Transactional
     public MemberShipResponse update(MemberShipRequest request) {
-        if (request.getId()==null && memberShipRepository.findByName(request.getName()).isPresent()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(request.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
+        if(ownerRepository.existsById(request.getOwnerId()) && ownerRepository.findById(request.getOwnerId()).get().getGym()==null){
+            throw new RuntimeException("404");
+        }
+        if (request.getId()==null && memberShipRepository.existsByNameAndGymId(request.getName(),request.getGymId())){
             throw new RuntimeException("Plan already exists");
         }
-        if (memberShipRepository.existsByNameAndIdNot(request.getName(), request.getId())){
+        if (memberShipRepository.existsByNameAndGymIdAndIdNot(request.getName(),request.getGymId(), request.getId())){
             throw new RuntimeException("Plan already exists");
         }
         MemberShip memberShip = new MemberShip();
         memberShip.setId(request.getId());
         memberShip.setName(request.getName());
         memberShip.setPrice(request.getPrice());
+        memberShip.setGym(ownerRepository.findById(request.getOwnerId()).get().getGym());
         memberShip.setValidity(request.getValidity()*30);//convert months in days
         MemberShip save = memberShipRepository.save(memberShip);
 
@@ -80,9 +99,9 @@ public class MemberShipService {
                 .build();
     }
 
-    public List<MemberShipResponse> getAll(){
+    public List<MemberShipResponse> getAllByGymId(Integer gymId){
         List<MemberShipResponse> responses = new ArrayList<>();
-        for (MemberShip m : memberShipRepository.findAll()){
+        for (MemberShip m : memberShipRepository.findAllByGymId(gymId)){
             MemberShipResponse build = MemberShipResponse.builder()
                     .name(m.getName())
                     .id(m.getId())

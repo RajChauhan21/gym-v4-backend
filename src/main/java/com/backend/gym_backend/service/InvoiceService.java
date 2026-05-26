@@ -15,7 +15,9 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.context.ApplicationEventPublisher;
 import org.springframework.dao.DataIntegrityViolationException;
 import org.springframework.dao.OptimisticLockingFailureException;
+import org.springframework.orm.ObjectOptimisticLockingFailureException;
 import org.springframework.retry.annotation.Backoff;
+import org.springframework.retry.annotation.Recover;
 import org.springframework.retry.annotation.Retryable;
 import org.springframework.stereotype.Service;
 
@@ -45,7 +47,9 @@ public class InvoiceService {
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
 
-    @Retryable(value = {OptimisticLockException.class, OptimisticLockingFailureException.class}, maxAttempts = 5, backoff = @Backoff(multiplier = 2, delay = 100))
+    @Retryable(retryFor = {OptimisticLockException.class, ObjectOptimisticLockingFailureException.class},
+            maxAttempts = 5,
+            backoff = @Backoff(delay = 100, multiplier = 2,random = true))
     @Transactional
     public void handleInvoiceLogic(RazorpayWebhookEvent.InvoiceEntity entity, String event) {
         log.info("Webhook Invoice Thread: {}", Thread.currentThread().getName());
@@ -144,5 +148,12 @@ public class InvoiceService {
                         entity.getSubscription_id()
                 )
         );
+    }
+
+    @Recover
+    public void recoverOptimisticLock(Exception ex, RazorpayWebhookEvent.InvoiceEntity entity, String event) {
+
+        log.warn("Final failure after retries for payment {}. Reason: {}",
+                entity.getId(), ex.getClass().getSimpleName());
     }
 }

@@ -4,8 +4,10 @@ import com.backend.gym_backend.dto.GymDetailsRequest;
 import com.backend.gym_backend.dto.GymDetailsResponse;
 import com.backend.gym_backend.entity.Gym;
 import com.backend.gym_backend.entity.Owner;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.GymRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
+import com.backend.gym_backend.repo.SubscriptionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
@@ -22,8 +24,14 @@ public class GymService {
     @Autowired
     private OwnerRepository ownerRepository;
 
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
+
     @Transactional
     public GymDetailsResponse save(GymDetailsRequest requestDto) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(requestDto.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
 
         Gym gym;
 
@@ -56,26 +64,8 @@ public class GymService {
 
         Owner owner = null;
 
-        // -------- OWNER UPDATE --------
-        if (requestDto.getOwnerId() != null) {
+        Gym savedGym = gymRepository.saveAndFlush(gym);
 
-            owner = ownerRepository.findById(requestDto.getOwnerId())
-                    .orElseThrow(() -> new RuntimeException("Owner not found"));
-
-            owner.setName(requestDto.getOwnerName());
-            owner.setPhone(requestDto.getNumber());
-
-            if (!requestDto.getEmail().equals(owner.getEmail())
-                    && ownerRepository.findByEmail(requestDto.getEmail()).isPresent()) {
-                throw new RuntimeException("Email already exists");
-            }
-
-            owner.setGym(gym);
-            gym.setOwner(owner);
-
-            ownerRepository.save(owner); // cascade will handle gym if configured
-        }
-        Gym savedGym = owner.getGym();
         return GymDetailsResponse.builder()
                 .gymId(savedGym.getId())
                 .gymName(savedGym.getName())

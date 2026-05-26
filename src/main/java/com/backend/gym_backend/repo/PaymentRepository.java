@@ -1,9 +1,6 @@
 package com.backend.gym_backend.repo;
 
-import com.backend.gym_backend.dto.PaymentProjection;
-import com.backend.gym_backend.dto.RecentPaymentProjection;
-import com.backend.gym_backend.dto.RevenueChartProjection;
-import com.backend.gym_backend.dto.RevenueProjection;
+import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.Payment;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;

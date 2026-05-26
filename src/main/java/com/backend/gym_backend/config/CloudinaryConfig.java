@@ -15,13 +15,13 @@ import java.util.Map;
 @Configuration
 public class CloudinaryConfig {
 
-//    @Value("${CLOUDINARY_CLOUD_NAME}")
+    @Value("${cloudinary_cloud_name}")
     private String cloudName;
 
-//    @Value("${CLOUDINARY_API_KEY}")
+    @Value("${cloudinary_api_key}")
     private String apiKey;
 
-//    @Value("${CLOUDINARY_API_SECRET}")
+    @Value("${cloudinary_secret_key}")
     private String apiSecret;
 
     @Bean
@@ -34,7 +34,7 @@ public class CloudinaryConfig {
 
     }
 
-//    @Bean
+    @Bean
     public RestTemplate restTemplate(RestTemplateBuilder builder) {
         return builder
                 .setConnectTimeout(Duration.ofMillis(3000)) // Set connection timeout

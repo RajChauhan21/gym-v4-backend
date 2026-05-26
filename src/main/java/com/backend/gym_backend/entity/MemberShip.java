@@ -1,5 +1,6 @@
 package com.backend.gym_backend.entity;
 
+import com.fasterxml.jackson.annotation.JsonBackReference;
 import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.Getter;
@@ -16,7 +17,6 @@ public class MemberShip {
     @GeneratedValue(strategy = GenerationType.IDENTITY)
     private Integer id;
 
-    @Column(unique = true)
     private String name;
 
     private Integer validity;
@@ -26,4 +26,8 @@ public class MemberShip {
     @JsonManagedReference("pack")
     @OneToMany(mappedBy = "memberShip")
     private List<Member> members;
+
+    @JsonBackReference("plans")
+    @ManyToOne
+    private Gym gym;
 }

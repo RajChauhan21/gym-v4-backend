@@ -3,8 +3,10 @@ package com.backend.gym_backend.service;
 import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.Member;
 import com.backend.gym_backend.entity.Payment;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.PaymentRepository;
+import com.backend.gym_backend.repo.SubscriptionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Page;
@@ -23,6 +25,9 @@ public class PaymentService {
 
     @Autowired
     private MemberRepository memberRepository;
+
+    @Autowired
+    private SubscriptionRepository subscriptionRepository;
 
     @Transactional
     public PaymentResponse save(PaymentRequest request) {
@@ -51,6 +56,9 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse update(PaymentRequest request) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(request.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
         if (!memberRepository.existsById(request.getMemberId())) {
             throw new RuntimeException("member id not found");
         }
@@ -113,6 +121,9 @@ public class PaymentService {
     }
 
     public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(Math.toIntExact(ownerId), SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
         return paymentRepository.findPaymentsFiltered(ownerId, memberName, membershipName, method, amount, dateFrom, dateTo, pageable);
     }
 
@@ -121,10 +132,16 @@ public class PaymentService {
     }
 
     public List<RecentPaymentProjection> getRecentPaymentByOwnerId(Integer ownerId){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
         return paymentRepository.findRecentPaymentsByOwner(ownerId);
     }
 
     public RevenueProjection getRevenues(Integer ownerId){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE).isEmpty()){
+            throw new RuntimeException("100");
+        }
         return paymentRepository.getRevenueByOwner(ownerId);
     }
 

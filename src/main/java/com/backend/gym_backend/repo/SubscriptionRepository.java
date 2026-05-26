@@ -2,6 +2,7 @@ package com.backend.gym_backend.repo;
 
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Subscription;
+import com.backend.gym_backend.enums.SubscriptionStatus;
 import jakarta.persistence.LockModeType;
 import org.springframework.data.jpa.repository.JpaRepository;
 import org.springframework.data.jpa.repository.Lock;
@@ -19,13 +20,13 @@ public interface SubscriptionRepository extends JpaRepository<Subscription,Integ
 
     Optional<Subscription> findByRazorpaySubscriptionId(String razorpaySubscriptionId);
 
-    Optional<List<Subscription>> findByOwnerAndStatus(Owner owner, com.backend.gym_backend.enums.Subscription status);
+    Optional<List<Subscription>> findByOwnerAndStatus(Owner owner, SubscriptionStatus status);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Subscription s WHERE s.razorpaySubscriptionId = :id")
     Optional<Subscription> findByRazorpaySubscriptionIdForUpdate(@Param("id") String id);
 
 
-    Optional<Subscription> findFirstByOwnerAndStatusInOrderByCreatedAtDesc(Owner owner, List<com.backend.gym_backend.enums.Subscription> subscriptions);
+    Optional<Subscription> findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(Integer ownerId, SubscriptionStatus subscriptions);
 
 }
