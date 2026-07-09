@@ -1,0 +1,184 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Vintage Ledger</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up special characters inside the font link configuration for strict compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{
+      --paper:#EFE6D8;
+      --paper-shadow:#C9B79C;
+      --ink:#3F3A36;
+      --sepia:#5B4636;
+      --rust:#8A6E4B;
+    }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#cfc4ad; font-family:'Courier Prime',monospace; color:var(--ink); }
+    .page{
+      width:210mm; min-height:297mm; margin:24px auto; background:var(--paper);
+      padding:18mm 18mm 14mm; position:relative;
+      background-image:radial-gradient(circle at 20% 30%, rgba(138,110,75,.05), transparent 60%),
+                        radial-gradient(circle at 80% 70%, rgba(138,110,75,.05), transparent 60%);
+    }
+    .perforation{
+      height:10px; background-image:radial-gradient(circle, var(--paper) 3px, transparent 3.5px);
+      background-size:16px 10px; background-position:0 0;
+    }
+    .perforation.top{ background-color:#cfc4ad; }
+    .perforation.bottom{ background-color:#cfc4ad; margin-top:14px; }
+
+    header{ text-align:center; margin:24px 0 18px; }
+    .brand h1{ font-family:'Special+Elite','Special Elite',cursive; font-size:26px; margin:0 0 8px; letter-spacing:1px; text-transform:uppercase; }
+    .brand p{ margin:2px 0; font-size:11.5px; color:var(--sepia); }
+    .dashed{ border:none; border-top:1px dashed var(--rust); margin:18px 0; }
+
+    .doc-row{ display:flex; justify-content:space-between; font-size:11.5px; margin-bottom:18px; text-transform:uppercase; letter-spacing:.5px; }
+    .doc-row b{ color:var(--sepia); }
+
+    .twin{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:18px; }
+    .col h2{
+      font-family:'Special Elite',cursive; font-size:13px; text-transform:uppercase; letter-spacing:1px;
+      color:var(--sepia); margin:0 0 10px; border-bottom:1px dashed var(--rust); padding-bottom:6px;
+    }
+    .col p{ margin:5px 0; font-size:12.5px; }
+    .col p b{ display:inline-block; min-width:78px; color:var(--rust); font-weight:400; }
+
+    table.items{ width:100%; border-collapse:collapse; margin-bottom:18px; }
+    table.items thead th{
+      text-align:left; font-size:11px; text-transform:uppercase; letter-spacing:1px; font-weight:700;
+      border-bottom:1px dashed var(--rust); padding:0 8px 8px;
+    }
+    table.items thead th:not(:first-child){ text-align:right; }
+    table.items tbody td{ padding:10px 8px; border-bottom:1px dotted var(--paper-shadow); font-size:13px; }
+    table.items tbody td:not(:first-child){ text-align:right; }
+
+    .bottom{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-bottom:18px; }
+    .pay-box h3{ font-family:'Special Elite',cursive; font-size:12.5px; text-transform:uppercase; letter-spacing:1px; color:var(--sepia); margin:0 0 10px; }
+    .pay-box p{ font-size:12.5px; margin:5px 0; }
+    .qr{ margin-top:12px; width:70px; height:70px; border:1px dashed var(--rust); display:flex; align-items:center; justify-content:center; font-size:8.5px; }
+    .totals table{ width:100%; font-size:12.5px; border-collapse:collapse; }
+    .totals td{ padding:5px 0; }
+    .totals td:last-child{ text-align:right; }
+    .totals tr.rule td{ border-top:1px dashed var(--rust); }
+    .totals tr.grand td{ font-weight:700; font-size:15px; padding-top:8px; }
+    .totals tr.due td{ font-weight:700; }
+
+    .stamp-wrap{ position:relative; text-align:center; margin:14px 0 18px; }
+    .stamp{
+      display:inline-block; border:3px double var(--rust); color:var(--rust); padding:10px 26px;
+      font-family:'Special Elite',cursive; font-size:16px; letter-spacing:3px; text-transform:uppercase;
+      transform:rotate(-6deg); opacity:.75;
+    }
+
+    .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:24px; margin-bottom:6px; }
+    .notes h4{ font-family:'Special Elite',cursive; font-size:11.5px; text-transform:uppercase; letter-spacing:1px; color:var(--sepia); margin:0 0 6px; }
+    .notes p{ font-size:11.5px; color:var(--sepia); margin:0 0 14px; line-height:1.6; }
+    .sign{ text-align:center; }
+    .sign .line{ height:34px; border-bottom:1px dashed var(--rust); margin-bottom:8px; }
+    .sign .name{ font-family:'Special Elite',cursive; font-size:13px; }
+    .sign .role{ font-size:10px; color:var(--rust); margin-top:2px; text-transform:uppercase; }
+
+    footer{ text-align:center; margin-top:6px; }
+    footer .thanks{ font-family:'Special Elite',cursive; font-size:13px; letter-spacing:.5px; }
+    footer .gen{ font-size:10px; color:var(--rust); margin-top:4px; }
+  </style>
+
+</head>
+<body>
+<div class="page">
+  <!-- Perforation Strip left completely intact -->
+  <div class="perforation top"></div>
+
+  <header>
+    <h1 class="brand" th:text="${gymName}">Gym Name</h1>
+    <p th:text="${gymAddress}">Gym Address</p>
+    <p><span th:text="${gymPhone}">Phone</span> &nbsp;|&nbsp; <span th:text="${gymEmail}">Email</span> &nbsp;|&nbsp; <span th:text="${gymWebsite}">Website</span></p>
+    <p>GST <span th:text="${gstNumber}">GST123456789</span></p>
+  </header>
+  <hr class="dashed">
+
+  <div class="doc-row">
+    <div><b>Receipt No.</b> <span th:text="${invoiceNumber}">INV-001</span></div>
+    <div><b>Invoice Date</b> <span th:text="${invoiceDate}">01/01/2026</span></div>
+    <div><b>Payment Date</b> <span th:text="${paymentDate}">01/01/2026</span></div>
+  </div>
+
+  <section class="twin">
+    <div class="col">
+      <h2>Member</h2>
+      <p><b>Name</b> <span th:text="${memberName}">John Doe</span></p>
+      <p><b>ID</b> <span th:text="${memberId}">M-101</span></p>
+      <p><b>Phone</b> <span th:text="${memberPhone}">+91 98765 43210</span></p>
+      <p><b>Email</b> <span th:text="${memberEmail}">john@example.com</span></p>
+    </div>
+    <div class="col">
+      <h2>Membership</h2>
+      <p><b>Plan</b> <span th:text="${planName}">Premium Plan</span></p>
+      <p><b>Duration</b> <span th:text="${planDuration}">3 Months</span></p>
+      <p><b>Start</b> <span th:text="${startDate}">01/01/2026</span></p>
+      <p><b>Expiry</b> <span th:text="${expiryDate}">31/03/2026</span></p>
+      <p><b>Trainer</b> <span th:text="${trainerName}">Jane Smith</span></p>
+    </div>
+  </section>
+
+  <table class="items">
+    <thead><tr><th>Description</th><th>Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Total</th></tr></thead>
+    <tbody>
+    <tr>
+      <td th:text="${planName}">Premium Plan</td>
+      <td style="text-align:right;">1</td>
+      <td style="text-align:right;" th:text="'Rs. ' + ${amount}">Rs. 0.00</td>
+      <td style="text-align:right;" th:text="'Rs. ' + ${amount}">Rs. 0.00</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <section class="bottom">
+    <div class="pay-box">
+      <h3>Payment Details</h3>
+      <p><b>Method:</b> <span th:text="${paymentMethod}">UPI</span></p>
+      <p><b>Reference:</b> <span th:text="${transactionId}">TXN123456</span></p>
+      <div class="qr">QR CODE</div>
+    </div>
+    <div class="totals">
+      <table>
+        <tr><td>Subtotal</td><td th:text="'Rs. ' + ${subtotal}">Rs. 0.00</td></tr>
+        <tr><td>Discount</td><td th:text="'− Rs. ' + ${discount}">− Rs. 0.00</td></tr>
+        <tr class="rule"><td>GST</td><td th:text="'Rs. ' + ${gst}">Rs. 0.00</td></tr>
+        <tr class="grand"><td>Total</td><td th:text="'Rs. ' + ${total}">Rs. 0.00</td></tr>
+        <tr><td>Paid</td><td th:text="'Rs. ' + ${paidAmount}">Rs. 0.00</td></tr>
+        <tr class="due"><td>Due</td><td th:text="'Rs. ' + ${dueAmount}">Rs. 0.00</td></tr>
+      </table>
+    </div>
+  </section>
+
+  <!-- Visual Paid Stamp Wrapper -->
+  <div class="stamp-wrap"><span class="stamp">Paid</span></div>
+
+  <section class="foot-grid">
+    <div class="notes">
+      <h4>Notes</h4>
+      <p th:text="${notes}">No notes provided.</p>
+      <h4>Terms &amp; Conditions</h4>
+      <p th:text="${terms}">Terms apply.</p>
+    </div>
+    <div class="sign">
+      <div class="line"></div>
+      <div class="name" th:text="${signatureName}">Manager</div>
+      <div class="role">Authorized Signature</div>
+    </div>
+  </section>
+
+  <hr class="dashed">
+  <footer>
+    <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+    <div class="gen">Generated by Gym SaaS</div>
+  </footer>
+  <div class="perforation bottom"></div>
+</div>
+</body>
+</html>

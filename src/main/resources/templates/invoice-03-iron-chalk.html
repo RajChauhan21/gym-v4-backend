@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Iron and Chalk</title>
+<style type="text/css">
+<![CDATA[
+  /* Optional self-hosted fonts (see invoice-01 for the pattern); falls back to system fonts otherwise. */
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; font-family:'Manrope', Helvetica, Arial, sans-serif; color:#4A4742; font-size:13px; }
+  .page{ width:210mm; min-height:297mm; padding:16mm; }
+  table{ border-collapse:collapse; width:100%; }
+  td{ vertical-align:top; }
+
+  table.header-table td.brand-cell{ width:62%; }
+  table.header-table td.doc-cell{ width:38%; text-align:right; font-size:12px; color:#9C958A; line-height:1.8; }
+  .brand-name{ font-family:'Oswald', Impact, 'Arial Narrow', sans-serif; font-size:27px; text-transform:uppercase; letter-spacing:.5px; margin:0 0 8px 0; color:#4A4742; }
+  .brand-line{ font-size:12px; color:#9C958A; line-height:1.5; margin:2px 0; }
+  .badge{ background-color:#C97D72; color:#FFFFFF; font-family:'Oswald', Arial, sans-serif; padding:5px 14px; font-size:11px; letter-spacing:1.5px; display:inline; }
+  .doc-cell .lbl{ color:#C97D72; font-weight:bold; }
+
+  table.twocol{ border:1px solid #E3DED7; }
+  table.twocol td{ padding:16px 20px; width:50%; }
+  table.twocol td.divide{ border-right:1px solid #E3DED7; }
+  .upper-h{ font-family:'Oswald', Arial, sans-serif; font-size:13px; text-transform:uppercase; letter-spacing:.5px; margin:0 0 10px 0; color:#C97D72; }
+  .upper-p{ margin:5px 0; font-size:13px; }
+  .upper-p .lbl2{ display:inline-block; min-width:78px; color:#9C958A; font-weight:normal; }
+
+  table.barbell{ margin:18px 0; }
+  table.barbell td{ vertical-align:middle; }
+  td.plate-cell{ width:1%; white-space:nowrap; }
+  .plate{ display:inline-block; width:40px; height:40px; border-radius:50%; background-color:#FFFFFF; border:3px solid #C97D72; }
+  .plate-sm{ display:inline-block; width:26px; height:26px; border-radius:50%; background-color:#FFFFFF; border:2px solid #E3DED7; margin:0 -2px; }
+  td.bar-cell{ height:5px; background-color:#E3DED7; position:relative; text-align:center; }
+  .bar-label{ display:inline-block; background-color:#C97D72; color:#FFFFFF; font-family:'Oswald', Arial, sans-serif; font-size:10.5px; letter-spacing:1px; padding:6px 16px; white-space:nowrap; margin-top:-18px; }
+
+  table.items{ margin-bottom:18px; }
+  table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#9C958A; padding:0 14px 8px 14px; font-weight:bold; border-bottom:1px solid #E3DED7; }
+  table.items thead th.r{ text-align:right; }
+  table.items tbody td{ padding:11px 14px; border-bottom:1px solid #E3DED7; font-size:13.5px; }
+  table.items tbody td.r{ text-align:right; font-weight:bold; }
+
+  table.bottom{ border:1px solid #E3DED7; margin-bottom:18px; }
+  table.bottom td{ padding:16px 20px; width:50%; }
+  table.bottom td.divide{ border-right:1px solid #E3DED7; }
+  .bottom-h{ font-family:'Oswald', Arial, sans-serif; font-size:12.5px; text-transform:uppercase; margin:0 0 10px 0; color:#4A4742; }
+  .bottom-p{ font-size:12.5px; margin:5px 0; }
+  .qr-box{ margin-top:10px; width:60px; height:60px; border:1px dashed #E3DED7; text-align:center; font-size:8.5px; color:#9C958A; line-height:60px; }
+
+  table.totals-tbl{ font-size:13px; }
+  table.totals-tbl td{ padding:5px 0; color:#9C958A; }
+  table.totals-tbl td.amt{ text-align:right; color:#4A4742; font-weight:bold; }
+  table.totals-tbl tr.grand td{ font-family:'Oswald', Arial, sans-serif; font-size:18px; color:#C97D72; border-top:1px solid #E3DED7; padding-top:9px; }
+
+  table.footgrid td.notes-cell{ width:58%; padding-right:20px; }
+  table.footgrid td.sign-cell{ width:42%; padding-left:20px; text-align:center; }
+  .notes-h{ font-family:'Oswald', Arial, sans-serif; font-size:11.5px; text-transform:uppercase; color:#C97D72; margin:0 0 5px 0; }
+  .notes-p{ font-size:12px; color:#9C958A; margin:0 0 14px 0; line-height:1.6; }
+  .sign-line{ height:28px; border-bottom:1px solid #4A4742; margin-bottom:6px; }
+  .sign-name{ font-family:'Oswald', Arial, sans-serif; font-size:13px; }
+  .sign-role{ font-size:10px; color:#9C958A; }
+  .sign-stamp{ display:inline; font-size:9px; letter-spacing:1px; border:1px solid #C97D72; color:#C97D72; padding:7px 12px; margin-top:8px; }
+
+  .footer{ text-align:center; margin-top:18px; padding-top:14px; border-top:1px solid #E3DED7; }
+  .footer-thanks{ font-family:'Oswald', Arial, sans-serif; font-size:13px; color:#C97D72; letter-spacing:.5px; }
+  .footer-gen{ font-size:10px; color:#9C958A; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<div class="page">
+
+  <table class="header-table">
+    <tr>
+      <td class="brand-cell">
+        <p class="brand-name">[[${gymName}]]</p>
+        <p class="brand-line">[[${gymAddress}]]</p>
+        <p class="brand-line">[[${gymPhone}]] / [[${gymEmail}]] / [[${gymWebsite}]]</p>
+      </td>
+      <td class="doc-cell">
+        <span class="badge">INVOICE</span>
+        <p><span class="lbl">No.</span> [[${invoiceNumber}]]</p>
+        <p><span class="lbl">Invoice</span> [[${invoiceDate}]]</p>
+        <p><span class="lbl">Payment</span> [[${paymentDate}]]</p>
+        <p><span class="lbl">GST</span> [[${gstNumber}]]</p>
+      </td>
+    </tr>
+  </table>
+
+  <table class="twocol">
+    <tr>
+      <td class="divide">
+        <p class="upper-h">Member</p>
+        <p class="upper-p"><span class="lbl2">Name</span> [[${memberName}]]</p>
+        <p class="upper-p"><span class="lbl2">ID</span> [[${memberId}]]</p>
+        <p class="upper-p"><span class="lbl2">Phone</span> [[${memberPhone}]]</p>
+        <p class="upper-p"><span class="lbl2">Email</span> [[${memberEmail}]]</p>
+      </td>
+      <td>
+        <p class="upper-h">Membership</p>
+        <p class="upper-p"><span class="lbl2">Plan</span> [[${planName}]]</p>
+        <p class="upper-p"><span class="lbl2">Duration</span> [[${planDuration}]]</p>
+        <p class="upper-p"><span class="lbl2">Start</span> [[${startDate}]] &#160; <span class="lbl2">Expiry</span> [[${expiryDate}]]</p>
+        <p class="upper-p"><span class="lbl2">Trainer</span> [[${trainerName}]]</p>
+      </td>
+    </tr>
+  </table>
+
+  <table class="barbell">
+    <tr>
+      <td class="plate-cell"><span class="plate-sm"></span><span class="plate"></span></td>
+      <td class="bar-cell"><span class="bar-label">SET NO. [[${invoiceNumber}]]</span></td>
+      <td class="plate-cell"><span class="plate"></span><span class="plate-sm"></span></td>
+    </tr>
+  </table>
+
+  <table class="items">
+    <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+    <tbody><tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr></tbody>
+  </table>
+
+  <table class="bottom">
+    <tr>
+      <td class="divide">
+        <p class="bottom-h">Payment Details</p>
+        <p class="bottom-p"><strong>Method:</strong> [[${paymentMethod}]]</p>
+        <p class="bottom-p"><strong>Reference:</strong> [[${transactionId}]]</p>
+        <div class="qr-box">QR CODE</div>
+      </td>
+      <td>
+        <table class="totals-tbl">
+          <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+          <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+          <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+          <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+          <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+          <tr><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <table class="footgrid">
+    <tr>
+      <td class="notes-cell">
+        <p class="notes-h">Notes</p>
+        <p class="notes-p">[[${notes}]]</p>
+        <p class="notes-h">Terms &amp; Conditions</p>
+        <p class="notes-p">[[${terms}]]</p>
+      </td>
+      <td class="sign-cell">
+        <div class="sign-line"></div>
+        <p class="sign-name">[[${signatureName}]]</p>
+        <p class="sign-role">Authorized Signature</p>
+        <p class="sign-stamp">STAMP</p>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <p class="footer-thanks">[[${thankYouMessage}]]</p>
+    <p class="footer-gen">Generated by Gym SaaS</p>
+  </div>
+
+</div>
+</body>
+</html>

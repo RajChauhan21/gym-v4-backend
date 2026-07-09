@@ -6,11 +6,11 @@ import com.backend.gym_backend.dto.SubscriptionLinkedEvent;
 import com.backend.gym_backend.dto.SubscriptionResponse;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
+import com.backend.gym_backend.entity.Subscription;
+import com.backend.gym_backend.entity.SubscriptionCancelRetry;
+import com.backend.gym_backend.enums.Retry;
 import com.backend.gym_backend.enums.SubscriptionStatus;
-import com.backend.gym_backend.repo.OwnerRepository;
-import com.backend.gym_backend.repo.PlanFeatureRepository;
-import com.backend.gym_backend.repo.PlanRepository;
-import com.backend.gym_backend.repo.SubscriptionRepository;
+import com.backend.gym_backend.repo.*;
 import com.razorpay.RazorpayClient;
 import com.razorpay.RazorpayException;
 import jakarta.persistence.OptimisticLockException;
@@ -31,6 +31,7 @@ import java.time.LocalDateTime;
 import java.time.ZoneId;
 import java.util.ArrayList;
 import java.util.List;
+import java.util.Objects;
 
 @Slf4j
 @Service
@@ -53,6 +54,9 @@ public class SubscriptionService {
 
     @Autowired
     private ApplicationEventPublisher applicationEventPublisher;
+
+    @Autowired
+    private SubscriptionCancelRetryRepository retryRepository;
 
     public static LocalDate convertEpochToLocalDate(Long epochSeconds) {
         if (epochSeconds == null) {
@@ -200,7 +204,7 @@ public class SubscriptionService {
         return switch (event) {
             case "subscription.authenticated" -> SubscriptionStatus.AUTHENTICATED;
             case "subscription.activated", "subscription.charged" -> SubscriptionStatus.ACTIVE;
-            case "subscription.cancelled" -> SubscriptionStatus.CANCELLED;
+            case "subscription.cancelled" -> SubscriptionStatus.PARTIALLY_ACTIVE;
             default -> null;
         };
     }
@@ -209,8 +213,7 @@ public class SubscriptionService {
         return switch (status) {
             case CREATED -> 0;
             case AUTHENTICATED -> 1;
-            case UPGRADED -> 2;
-            case ACTIVE -> 3;
+            case PARTIALLY_ACTIVE, ACTIVE -> 3;
             case COMPLETED -> 4;
             case CANCELLED -> 5;
             case EXPIRED -> 6;
@@ -223,11 +226,7 @@ public class SubscriptionService {
     @Transactional
     public void handleSubscriptionLogic(RazorpayWebhookEvent.SubscriptionEntity entity, String event) throws RazorpayException {
         log.info("Webhook Subscription Thread: {}", Thread.currentThread().getName());
-        try {
-            Thread.sleep(10000); // 10 sec delay
-        } catch (InterruptedException e) {
-            throw new RuntimeException(e);
-        }
+
 
         Plan plan;
         Owner owner;
@@ -273,7 +272,7 @@ public class SubscriptionService {
                         long daysToAdd = (finalPlan.getDays() != null && !finalPlan.getDays().isEmpty()) ? Long.parseLong(finalPlan.getDays()) : 0L;
                         newSub.setEndDate(LocalDate.now().plusDays(daysToAdd));
                         newSub.setCreatedAt(LocalDateTime.now());
-                        log.info("New subscription added with id {}", entity.getId());
+                        log.info("New subscription added with id {} and event {}", entity.getId(),event);
                         return newSub;
                     } catch (DataIntegrityViolationException e) {
                         log.info("Another thread inserting same row with id {}", entity.getId());
@@ -335,8 +334,20 @@ public class SubscriptionService {
         com.backend.gym_backend.entity.Subscription savedSubscription;
 
         try {
-            savedSubscription = subscriptionRepository.save(subscription);
             log.info("subscription record saved successfully of event {}", event);
+            log.info(
+                    "Event={}, SubscriptionId={}, CurrentStatus={}, NewStatus={}",
+                    event,
+                    entity.getId(),
+                    subscription.getStatus(),
+                    newStatus
+            );
+            savedSubscription = subscriptionRepository.saveAndFlush(subscription);
+            log.info(
+                    "Saved Event={}, FinalStatus={}",
+                    event,
+                    savedSubscription.getStatus()
+            );
 
         } catch (OptimisticLockException e) {
             log.warn("OptimisticLockException occurred: {}", e.toString());
@@ -371,5 +382,43 @@ public class SubscriptionService {
 
         log.warn("Final failure after retries for payment {}. Reason: {}",
                 entity.getId(), ex.getClass().getSimpleName());
+    }
+
+    @jakarta.transaction.Transactional
+    public void processSingleRetry(SubscriptionCancelRetry retry) {
+        try {
+            razorpayClient.subscriptions.cancel(retry.getRazorpaySubscriptionId());
+
+            retry.setStatus(Retry.SUCCESS);
+
+            // ✅ update subscription
+            Subscription subscription = subscriptionRepository
+                    .findByRazorpaySubscriptionId(retry.getRazorpaySubscriptionId())
+                    .orElse(null);
+
+            if (subscription != null) {
+                subscription.setStatus(SubscriptionStatus.CANCELLED);
+                subscription.setUpdatedAt(LocalDateTime.now());
+                subscriptionRepository.save(subscription);
+            }
+
+            log.info("subscription retry succeeded and cancelled");
+
+        } catch (Exception ex) {
+
+            int count = retry.getRetryCount() + 1;
+            retry.setRetryCount(count);
+
+            if (count >= 5) {
+                retry.setStatus(Retry.FAILED);
+            } else {
+                retry.setNextRetryAt(LocalDateTime.now().plusMinutes(5 * count));
+            }
+
+            log.info("subscription failed again for id {}", retry.getRazorpaySubscriptionId());
+        } finally {
+            retryRepository.save(retry);
+            log.info("Retry saved with status {}", retry.getStatus());
+        }
     }
 }

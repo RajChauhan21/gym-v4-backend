@@ -1,0 +1,227 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Trailhead Map</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up character parameters inside font URL paths for strict compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{ --moss:#6E8C72; --clay:#B98256; --sand:#F7F1E4; --ink:#3C3A33; --muted:#938A77; --line:#E5DCC4; }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#e2d9c2; font-family:'Karla',sans-serif; color:var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:var(--sand); padding:16mm; position:relative; overflow:hidden; display:flex; flex-direction:column; justify-content:space-between; }
+    .contours{ position:absolute; inset:0; opacity:.5; pointer-events:none; z-index:0; }
+
+    .content{ position:relative; z-index:1; flex-grow: 1; display:flex; flex-direction:column; }
+    header{ text-align:center; margin-bottom:8px; }
+    .brand h1{ font-family:'Fraunces',serif; font-weight:600; font-size:28px; color:var(--moss); margin:0 0 8px; }
+    .brand p{ margin:2px 0; font-size:12px; color:var(--muted); word-break: break-word; }
+
+    /* Document Strip overlapping fix */
+    .doc-strip{ display:flex; justify-content:center; flex-wrap: wrap; gap:14px 28px; font-size:11.5px; color:var(--muted); margin:14px 0 26px; }
+    .doc-strip span { white-space: nowrap; }
+    .doc-strip b{ color:var(--ink); }
+
+    /* Trail Row Grid Alignment Correction */
+    .trail{ display: flex; flex-direction: column; width: 100%; }
+    .trail-row { display: grid; grid-template-columns: 42px 1fr; width: 100%; min-height: fit-content; }
+    .trail-row:last-child .pin-col::before{ bottom:auto; height:24px; }
+    .pin-col{ position:relative; }
+    .pin-col::before{ content:""; position:absolute; left:50%; top:0; bottom:0; width:0; border-left:2px dashed var(--clay); transform:translateX(-50%); }
+    .pin{ position:absolute; top:24px; left:50%; transform:translate(-50%,-50%); width:30px; height:30px; border-radius:50% 50% 50% 0; background:var(--moss); rotate:-45deg; z-index:2; display:flex; align-items:center; justify-content:center; }
+    .pin span{ rotate:45deg; color:#fff; font-family:'Fraunces',serif; font-weight:600; font-size:12px; }
+
+    /* Stop Box Padding Safety */
+    .stop{ padding:14px 0 24px 20px; min-width: 0; }
+    .stop .tag{ font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:var(--clay); font-weight:700; margin-bottom:4px; }
+    .stop h2{ font-family:'Fraunces',serif; font-weight:600; font-size:17px; color:var(--ink); margin:0 0 12px; }
+
+    /* Grid Box Text Overlap Prevention */
+    .grid2{ display:grid; grid-template-columns:repeat(auto-fit, minmax(220px, 1fr)); gap:8px 24px; }
+    .field{ font-size:13px; padding:4px 0; border-bottom:1px dotted var(--line); display:flex; justify-content:space-between; align-items:flex-start; gap:12px; }
+    .field span:first-child{ color:var(--muted); flex-shrink: 0; }
+    .field span:last-child{ font-weight:500; text-align:right; word-break: break-all; }
+
+    /* Table Component Squeezing Correction */
+    table.items{ width:100%; border-collapse:collapse; margin-top: 4px; table-layout: fixed; }
+    table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); padding:0 0 8px; font-weight:700; border-bottom:1px solid var(--moss); }
+    table.items thead th:nth-child(1) { width: 50%; }
+    table.items thead th:nth-child(2) { width: 10%; text-align: center; }
+    table.items thead th:nth-child(3) { width: 20%; text-align: right; }
+    table.items thead th:nth-child(4) { width: 20%; text-align: right; }
+
+    table.items tbody td{ padding:10px 0; font-size:13.5px; border-bottom:1px dotted var(--line); vertical-align: top; }
+    table.items tbody td:nth-child(1) { text-align: left; word-break: break-word; }
+    table.items tbody td:nth-child(2) { text-align: center; }
+    table.items tbody td:nth-child(3) { text-align: right; }
+    table.items tbody td:nth-child(4) { text-align: right; }
+
+    /* Totals Layout Section Column Collapse */
+    .pay-totals{ display:grid; grid-template-columns:repeat(auto-fit, minmax(200px, 1fr)); gap:32px; align-items: start; }
+    .pay-totals p{ font-size:13px; margin:6px 0; display: flex; justify-content: space-between; gap: 8px; }
+    .pay-totals p span{ color:var(--muted); }
+    .qr{ margin-top:14px; width:64px; height:64px; border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:8.5px; color:var(--muted); background: rgba(255,255,255,0.3); }
+    .totals table{ width:100%; font-size:13px; border-collapse:collapse; }
+    .totals td{ padding:6px 0; color:var(--muted); }
+    .totals td:last-child{ text-align:right; color:var(--ink); }
+    .totals tr.grand td{ font-family:'Fraunces',serif; font-weight:600; font-size:19px; color:var(--clay); border-top:1px solid var(--moss); padding-top:9px; }
+
+    /* Footer Sign-off Component Layout Clearance */
+    .notes-sign{ display:grid; grid-template-columns:1.4fr 1fr; gap:32px; align-items:start; margin-top: 8px; }
+    .notes h4{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--clay); margin:0 0 6px; font-weight:700; }
+    .notes p{ font-size:12px; color:var(--muted); margin:0 0 14px; line-height:1.6; word-break: break-word; }
+    .sign{ text-align:center; min-width: 150px; }
+    .sign .line{ height:24px; border-bottom:1px solid var(--ink); margin-bottom:6px; }
+    .sign .name{ font-family:'Fraunces',serif; font-weight:600; font-size:14px; color:var(--moss); margin-top: 4px; }
+    .sign .role{ font-size:10.5px; color:var(--muted); }
+    .sign .stamp{ display:inline-block; margin-top:8px; font-size:9px; letter-spacing:1px; color:var(--muted); border:1px solid var(--line); padding:7px 13px; border-radius:6px; background: rgba(255,255,255,0.3); }
+
+    footer{ text-align:center; padding-top:16px; margin-top:auto; border-top:1px solid var(--line); }
+    footer .thanks{ font-family:'Fraunces',serif; font-weight:600; color:var(--moss); font-size:14px; }
+    footer .gen{ font-size:10px; color:var(--muted); margin-top:4px; }
+  </style>
+
+
+</head>
+<body>
+<div class="page">
+  <!-- Dynamic SVG background paths left completely intact -->
+  <svg class="contours" viewBox="0 0 800 1100" xmlns="http://www.w3.org/2000/svg">
+    <path d="M-50,150 C150,100 300,200 450,150 C600,100 700,180 850,140" stroke="#B98256" stroke-width="1" fill="none"/>
+    <path d="M-50,250 C150,210 320,280 470,230 C620,180 720,250 850,220" stroke="#B98256" stroke-width="1" fill="none"/>
+    <path d="M-50,650 C150,610 320,690 470,640 C620,590 720,660 850,630" stroke="#6E8C72" stroke-width="1" fill="none"/>
+    <path d="M-50,750 C150,720 320,790 470,740 C620,700 720,770 850,730" stroke="#6E8C72" stroke-width="1" fill="none"/>
+    <path d="M-50,950 C150,910 320,990 470,940 C620,890 720,960 850,930" stroke="#B98256" stroke-width="1" fill="none"/>
+  </svg>
+
+  <div class="content">
+    <header>
+      <h1 class="brand" style="margin:0;" th:text="${gymName}">Gym Name</h1>
+      <p th:text="${gymAddress}">Gym Address</p>
+      <p>
+        <span th:text="${gymPhone}">Phone</span> ·
+        <span th:text="${gymEmail}">Email</span> ·
+        <span th:text="${gymWebsite}">Website</span>
+      </p>
+    </header>
+    <div class="doc-strip">
+      <span><b>Invoice</b> <span th:text="${invoiceNumber}">INV-001</span></span>
+      <span><b>Date</b> <span th:text="${invoiceDate}">01/01/2026</span></span>
+      <span><b>Paid</b> <span th:text="${paymentDate}">01/01/2026</span></span>
+      <span><b>GST</b> <span th:text="${gstNumber}">GST123456789</span></span>
+    </div>
+
+    <div class="trail">
+      <!-- Stop 1: Trailhead -->
+      <div class="trail-row">
+        <div class="pin-col"><div class="pin"><span>1</span></div></div>
+        <div class="stop">
+          <div class="tag">Trailhead</div>
+          <h2>Member</h2>
+          <div class="grid2">
+            <div class="field"><span>Name</span><span th:text="${memberName}">John Doe</span></div>
+            <div class="field"><span>Member ID</span><span th:text="${memberId}">M-101</span></div>
+            <div class="field"><span>Phone</span><span th:text="${memberPhone}">+91 98765 43210</span></div>
+            <div class="field"><span>Email</span><span th:text="${memberEmail}">john@example.com</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stop 2: Checkpoint -->
+      <div class="trail-row">
+        <div class="pin-col"><div class="pin"><span>2</span></div></div>
+        <div class="stop">
+          <div class="tag">Checkpoint</div>
+          <h2>Membership</h2>
+          <div class="grid2">
+            <div class="field"><span>Plan</span><span th:text="${planName}">Premium Plan</span></div>
+            <div class="field"><span>Duration</span><span th:text="${planDuration}">3 Months</span></div>
+            <div class="field"><span>Start</span><span th:text="${startDate}">01/01/2026</span></div>
+            <div class="field"><span>Expiry</span><span th:text="${expiryDate}">31/03/2026</span></div>
+            <div class="field"><span>Trainer</span><span th:text="${trainerName}">Jane Smith</span></div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stop 3: Waypoint -->
+      <div class="trail-row">
+        <div class="pin-col"><div class="pin"><span>3</span></div></div>
+        <div class="stop">
+          <div class="tag">Waypoint</div>
+          <h2>Charges</h2>
+          <table class="items">
+            <thead><tr><th>Description</th><th>Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Total</th></tr></thead>
+            <tbody>
+            <tr>
+              <td th:text="${planName}">Premium Plan</td>
+              <td style="text-align:right;">1</td>
+              <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+              <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+            </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+
+      <!-- Stop 4: Summit -->
+      <div class="trail-row">
+        <div class="pin-col"><div class="pin"><span>4</span></div></div>
+        <div class="stop">
+          <div class="tag">Summit</div>
+          <h2>Payment &amp; Totals</h2>
+          <div class="pay-totals">
+            <div class="pay">
+              <p><span>Method</span> <span th:text="${paymentMethod}">UPI</span></p>
+              <p><span>Reference</span> <span th:text="${transactionId}">TXN123456</span></p>
+              <div class="qr">QR CODE</div>
+            </div>
+            <div class="totals">
+              <table>
+                <tr><td>Subtotal</td><td th:text="'₹' + ${subtotal}">₹0.00</td></tr>
+                <tr><td>Discount</td><td th:text="'−₹' + ${discount}">−₹0.00</td></tr>
+                <tr><td>GST</td><td th:text="'₹' + ${gst}">₹0.00</td></tr>
+                <tr class="grand"><td>Total</td><td th:text="'₹' + ${total}">₹0.00</td></tr>
+                <tr><td>Paid</td><td th:text="'₹' + ${paidAmount}">₹0.00</td></tr>
+                <tr><td>Due</td><td th:text="'₹' + ${dueAmount}">₹0.00</td></tr>
+              </table>
+            </div>
+          </div>
+        </div>
+      </div>
+
+      <!-- Stop 5: Trail's End -->
+      <div class="trail-row">
+        <div class="pin-col"><div class="pin"><span>5</span></div></div>
+        <div class="stop">
+          <div class="tag">Trail's End</div>
+          <h2>Notes &amp; Sign-off</h2>
+          <div class="notes-sign">
+            <div class="notes">
+              <h4>Notes</h4>
+              <p th:text="${notes}">No notes provided.</p>
+              <h4>Terms &amp; Conditions</h4>
+              <p th:text="${terms}">Terms apply.</p>
+            </div>
+            <div class="sign">
+              <div class="line"></div>
+              <div class="name" th:text="${signatureName}">Manager</div>
+              <div class="role">Authorized Signature</div>
+              <div class="stamp">STAMP</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+      <div class="gen">Generated by Gym SaaS</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>
+

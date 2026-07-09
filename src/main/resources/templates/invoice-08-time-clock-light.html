@@ -1,0 +1,172 @@
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Time Clock</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up character parameters inside font URL paths for strict compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{ --mustard:#C99A3E; --card:#FBF6E9; --ink:#3E3A33; --muted:#9C9180; --line:#E6DCC0; }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#ddd4ba; font-family:'IBM Plex Mono',monospace; color:var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:var(--card); padding:16mm 16mm 14mm 24mm; position:relative; border:1px solid var(--line); }
+    .holes{ position:absolute; left:8mm; top:0; bottom:0; width:8px; display:flex; flex-direction:column; justify-content:space-evenly; }
+    .holes span{ width:8px; height:8px; border-radius:50%; background:#ddd4ba; box-shadow:inset 0 0 0 1px var(--line); }
+
+    header{ display:flex; justify-content:space-between; align-items:flex-start; border-bottom:2px solid var(--ink); padding-bottom:14px; margin-bottom:4px; }
+    .brand h1{ font-family:'Special Elite',cursive; font-size:22px; margin:0 0 8px; text-transform:uppercase; }
+    .brand p{ margin:2px 0; font-size:11.5px; color:var(--muted); }
+    .doc-tag{ text-align:right; font-size:11.5px; color:var(--muted); }
+    .doc-tag .punch{ display:inline-block; border:2px solid var(--mustard); color:var(--mustard); padding:5px 14px; font-family:'Special Elite',cursive; font-size:12px; letter-spacing:1px; }
+    .doc-tag div{ margin-top:8px; }
+
+    table.clock{ width:100%; border-collapse:collapse; margin:18px 0; border-top:2px solid var(--ink); border-bottom:2px solid var(--ink); }
+    table.clock th{ text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1px; padding:8px 6px; border-bottom:1px solid var(--ink); color:var(--muted); }
+    table.clock td{ padding:8px 6px; font-size:12.5px; border-bottom:1px dashed var(--line); }
+    table.clock td.punchmark{ color:var(--mustard); text-align:center; font-weight:700; }
+
+    h2.section{ font-family:'Special Elite',cursive; font-size:14px; text-transform:uppercase; letter-spacing:.5px; margin:22px 0 8px; color:var(--mustard); }
+    .grid2{ display:grid; grid-template-columns:1fr 1fr; gap:4px 24px; font-size:12.5px; }
+    .field{ padding:4px 0; border-bottom:1px dashed var(--line); display:flex; justify-content:space-between; }
+    .field span:first-child{ color:var(--muted); }
+
+    .pay-totals{ display:grid; grid-template-columns:1fr 1fr; gap:24px; margin-top:6px; }
+    .pay-totals p{ font-size:12.5px; margin:5px 0; }
+    .pay-totals p span{ color:var(--muted); }
+    .qr{ margin-top:8px; width:58px; height:58px; border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:8px; color:var(--muted); }
+
+    .notes-sign{ display:grid; grid-template-columns:1.4fr 1fr; gap:24px; align-items:start; margin-top:10px; }
+    .notes p{ font-size:11.5px; color:var(--muted); margin:0 0 12px; line-height:1.6; }
+    .sign{ text-align:center; }
+    .sign .line{ height:28px; border-bottom:1px solid var(--ink); margin-bottom:6px; }
+    .sign .name{ font-family:'Special Elite',cursive; font-size:13px; }
+    .sign .role{ font-size:10px; color:var(--muted); }
+    .sign .stamp{ display:inline-block; margin-top:8px; font-size:9px; color:var(--mustard); border:1px dashed var(--mustard); padding:7px 12px; }
+
+    footer{ text-align:center; margin-top:18px; padding-top:14px; border-top:2px solid var(--ink); }
+    footer .thanks{ font-family:'Special Elite',cursive; font-size:13px; }
+    footer .gen{ font-size:10px; color:var(--muted); margin-top:4px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <!-- Punch Card Holes Left Completely Intact -->
+  <div class="holes"><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span><span></span></div>
+
+  <header>
+    <div class="brand">
+      <h1 th:text="${gymName}">Gym Name</h1>
+      <p th:text="${gymAddress}">Gym Address</p>
+      <p><span th:text="${gymPhone}">Phone</span> / <span th:text="${gymEmail}">Email</span> / <span th:text="${gymWebsite}">Website</span></p>
+      <p>GST <span th:text="${gstNumber}">GST123456789</span></p>
+    </div>
+    <div class="doc-tag">
+      <span class="punch" th:text="'No. ' + ${invoiceNumber}">No. INV-001</span>
+      <div>Invoice <span th:text="${invoiceDate}">01/01/2026</span></div>
+      <div>Payment <span th:text="${paymentDate}">01/01/2026</span></div>
+    </div>
+  </header>
+
+  <!-- Punch Card Time Log Matrix Layout -->
+  <table class="clock">
+    <thead><tr><th>Punch</th><th>Record</th><th>Detail</th></tr></thead>
+    <tbody>
+    <tr>
+      <td class="punchmark">●</td>
+      <td>Member Checked In</td>
+      <td><span th:text="${memberName}">John Doe</span> (<span th:text="${memberId}">M-101</span>)</td>
+    </tr>
+    <tr>
+      <td class="punchmark">●</td>
+      <td>Plan Selected</td>
+      <td><span th:text="${planName}">Premium Plan</span> — <span th:text="${planDuration}">3 Months</span></td>
+    </tr>
+    <tr>
+      <td class="punchmark">●</td>
+      <td>Trainer Assigned</td>
+      <td th:text="${trainerName}">Jane Smith</td>
+    </tr>
+    <tr>
+      <td class="punchmark">●</td>
+      <td>Amount Charged</td>
+      <td th:text="'₹' + ${amount}">₹0.00</td>
+    </tr>
+    <tr>
+      <td class="punchmark">●</td>
+      <td>Clock Out</td>
+      <td th:text="${expiryDate}">31/03/2026</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <h2 class="section">Member &amp; Membership</h2>
+  <div class="grid2">
+    <div class="field"><span>Phone</span><span th:text="${memberPhone}">+91 98765 43210</span></div>
+    <div class="field"><span>Email</span><span th:text="${memberEmail}">john@example.com</span></div>
+    <div class="field"><span>Start</span><span th:text="${startDate}">01/01/2026</span></div>
+    <div class="field"><span>Expiry</span><span th:text="${expiryDate}">31/03/2026</span></div>
+  </div>
+
+  <h2 class="section">Payment &amp; Totals</h2>
+  <div class="pay-totals">
+    <div class="pay">
+      <p><span>Method</span> <span th:text="${paymentMethod}">UPI</span></p>
+      <p><span>Reference</span> <span th:text="${transactionId}">TXN123456</span></p>
+      <div class="qr">QR CODE</div>
+    </div>
+    <div class="totals">
+      <table style="width:100%;font-size:12.5px;border-collapse:collapse;">
+        <tr>
+          <td style="color:var(--muted);padding:4px 0;">Subtotal</td>
+          <td style="text-align:right;padding:4px 0;" th:text="'₹' + ${subtotal}">₹0.00</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);padding:4px 0;">Discount</td>
+          <td style="text-align:right;padding:4px 0;" th:text="'−₹' + ${discount}">−₹0.00</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);padding:4px 0;">GST</td>
+          <td style="text-align:right;padding:4px 0;" th:text="'₹' + ${gst}">₹0.00</td>
+        </tr>
+        <tr>
+          <td style="font-family:'Special Elite',cursive;font-size:17px;padding-top:8px;border-top:2px solid var(--ink);">Total</td>
+          <td style="text-align:right;font-family:'Special Elite',cursive;font-size:17px;color:var(--mustard);padding-top:8px;border-top:2px solid var(--ink);" th:text="'₹' + ${total}">₹0.00</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);padding:4px 0;">Paid</td>
+          <td style="text-align:right;padding:4px 0;" th:text="'₹' + ${paidAmount}">₹0.00</td>
+        </tr>
+        <tr>
+          <td style="color:var(--muted);padding:4px 0;">Due</td>
+          <td style="text-align:right;padding:4px 0;font-weight:700;" th:text="'₹' + ${dueAmount}">₹0.00</td>
+        </tr>
+      </table>
+    </div>
+  </div>
+
+  <h2 class="section">Notes &amp; Sign-off</h2>
+  <div class="notes-sign">
+    <div class="notes">
+      <p><b>Notes:</b> <span th:text="${notes}">No notes provided.</span></p>
+      <p><b>Terms:</b> <span th:text="${terms}">Terms apply.</span></p>
+    </div>
+    <div class="sign">
+      <div class="line"></div>
+      <div class="name" th:text="${signatureName}">Manager</div>
+      <div class="role">Authorized Signature</div>
+      <div class="stamp">STAMP</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+    <div class="gen">Generated by Gym SaaS</div>
+  </footer>
+</div>
+</body>
+</html>
+

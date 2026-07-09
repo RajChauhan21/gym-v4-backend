@@ -1,0 +1,179 @@
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Studio Dashboard</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up character parameters inside font URL paths for strict compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{ --sage:#7FA38C; --ink:#33403A; --bg:#F7F9F7; --card:#FFFFFF; --border:#E7ECE8; --muted:#8C998F; --coral:#E0876B; }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#e3e9e4; font-family:'Inter',sans-serif; color:var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:var(--bg); padding:14mm; }
+
+    header{ display:flex; justify-content:space-between; align-items:center; margin-bottom:16px; }
+    .brand h1{ font-family:'Sora',sans-serif; font-size:21px; margin:0 0 6px; }
+    .brand p{ margin:1px 0; font-size:11.5px; color:var(--muted); }
+    .doc-tag{ text-align:right; font-size:11.5px; color:var(--muted); }
+    .doc-tag .pill{ background:var(--card); border:1px solid var(--border); border-radius:30px; padding:5px 14px; font-size:11px; color:var(--sage); font-weight:600; }
+
+    .hero-total{
+      background:var(--card); border:1px solid var(--border); border-radius:18px; padding:20px 26px; margin-bottom:16px;
+      display:flex; justify-content:space-between; align-items:center;
+    }
+    .hero-total .label{ font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--muted); margin-bottom:6px; }
+    .hero-total .amt{ font-family:'Roboto Mono',monospace; font-weight:500; font-size:34px; color:var(--sage); }
+    .hero-total .due-chip{ background:#FBEFEA; color:var(--coral); font-size:11px; font-weight:600; padding:6px 14px; border-radius:20px; }
+
+    .tiles{ display:grid; grid-template-columns:1fr 1fr; gap:14px; margin-bottom:14px; }
+    .tile{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 18px; }
+    .tile .t-label{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--sage); font-weight:600; margin-bottom:10px; }
+    .tile .row{ display:flex; justify-content:space-between; padding:5px 0; font-size:13px; border-bottom:1px solid var(--border); }
+    .tile .row:last-child{ border-bottom:none; }
+    .tile .row span:first-child{ color:var(--muted); }
+    .tile .row span:last-child{ font-weight:500; text-align:right; }
+
+    .items-tile{ grid-column:1 / -1; }
+    table.items{ width:100%; border-collapse:collapse; }
+    table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; color:var(--muted); padding:0 0 8px; font-weight:600; }
+    table.items thead th:not(:first-child){ text-align:right; }
+    table.items tbody td{ padding:6px 0; font-size:13.5px; }
+    table.items tbody td:not(:first-child){ text-align:right; font-family:'Roboto Mono',monospace; }
+
+    .totals-tile table{ width:100%; font-size:13px; border-collapse:collapse; }
+    .totals-tile td{ padding:5px 0; color:var(--muted); }
+    .totals-tile td:last-child{ text-align:right; color:var(--ink); font-family:'Roboto Mono',monospace; }
+    .qr{ margin-top:8px; width:58px; height:58px; border:1px solid var(--border); border-radius:10px; display:flex; align-items:center; justify-content:center; font-size:8.5px; color:var(--muted); }
+
+    .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:14px; }
+    .notes{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px 18px; }
+    .notes h4{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:var(--sage); margin:0 0 5px; font-weight:600; }
+    .notes p{ font-size:12px; color:var(--muted); margin:0 0 12px; line-height:1.6; }
+    .sign{ background:var(--card); border:1px solid var(--border); border-radius:16px; padding:16px; text-align:center; }
+    .sign .line{ height:30px; border-bottom:1px solid var(--border); margin-bottom:6px; }
+    .sign .name{ font-family:'Sora',sans-serif; font-size:13px; }
+    .sign .role{ font-size:10px; color:var(--muted); }
+    .sign .stamp{ display:inline-block; margin-top:8px; font-size:9px; color:var(--muted); border:1px dashed var(--border); padding:7px 12px; border-radius:8px; }
+
+    footer{ text-align:center; margin-top:14px; }
+    footer .thanks{ font-family:'Sora',sans-serif; font-weight:600; font-size:12.5px; color:var(--sage); }
+    footer .gen{ font-size:10px; color:var(--muted); margin-top:3px; }
+  </style>
+
+</head>
+<body>
+<div class="page">
+  <header>
+    <div class="brand">
+      <h1 th:text="${gymName}">Gym Name</h1>
+      <p th:text="${gymAddress}">Gym Address</p>
+      <p>
+        <span th:text="${gymPhone}">Phone</span> ·
+        <span th:text="${gymEmail}">Email</span> ·
+        <span th:text="${gymWebsite}">Website</span> · GST
+        <span th:text="${gstNumber}">GST123456789</span>
+      </p>
+    </div>
+    <div class="doc-tag">
+      <span class="pill" th:text="'Invoice ' + ${invoiceNumber}">Invoice INV-001</span>
+      <div style="margin-top:8px;">
+        Invoice <span th:text="${invoiceDate}">01/01/2026</span> · Payment <span th:text="${paymentDate}">01/01/2026</span>
+      </div>
+    </div>
+  </header>
+
+  <!-- Dashboard Overview Banner -->
+  <div class="hero-total">
+    <div>
+      <div class="label">Total Amount</div>
+      <div class="amt" th:text="'₹' + ${total}">₹0.00</div>
+    </div>
+    <div style="text-align:right;">
+      <div class="label">Balance Due</div>
+      <span class="due-chip" th:text="'₹' + ${dueAmount}">₹0.00</span>
+    </div>
+  </div>
+
+  <div class="tiles">
+    <!-- Member Tile -->
+    <div class="tile">
+      <div class="t-label">Member</div>
+      <div class="row"><span>Name</span><span th:text="${memberName}">John Doe</span></div>
+      <div class="row"><span>ID</span><span th:text="${memberId}">M-101</span></div>
+      <div class="row"><span>Phone</span><span th:text="${memberPhone}">+91 98765 43210</span></div>
+      <div class="row"><span>Email</span><span th:text="${memberEmail}">john@example.com</span></div>
+    </div>
+
+    <!-- Membership Configuration Tile -->
+    <div class="tile">
+      <div class="t-label">Membership</div>
+      <div class="row"><span>Plan</span><span th:text="${planName}">Premium Plan</span></div>
+      <div class="row"><span>Duration</span><span th:text="${planDuration}">3 Months</span></div>
+      <div class="row"><span>Start / Expiry</span><span><span th:text="${startDate}">01/01/2026</span> – <span th:text="${expiryDate}">31/03/2026</span></span></div>
+      <div class="row"><span>Trainer</span><span th:text="${trainerName}">Jane Smith</span></div>
+    </div>
+
+    <!-- Main Itemization Charges Matrix Tile -->
+    <div class="tile items-tile">
+      <div class="t-label">Charges</div>
+      <table class="items">
+        <thead><tr><th>Description</th><th>Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Total</th></tr></thead>
+        <tbody>
+        <tr>
+          <td th:text="${planName}">Premium Plan</td>
+          <td style="text-align:right;font-family:'Roboto Mono',monospace;">1</td>
+          <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+          <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+        </tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- Settlement Logs Tile -->
+    <div class="tile">
+      <div class="t-label">Payment</div>
+      <div class="row"><span>Method</span><span th:text="${paymentMethod}">UPI</span></div>
+      <div class="row"><span>Reference</span><span th:text="${transactionId}">TXN123456</span></div>
+      <div class="qr">QR CODE</div>
+    </div>
+
+    <!-- Financial Summary Ledger Tile -->
+    <div class="tile totals-tile">
+      <div class="t-label">Totals</div>
+      <table>
+        <tr><td>Subtotal</td><td th:text="'₹' + ${subtotal}">₹0.00</td></tr>
+        <tr><td>Discount</td><td th:text="'−₹' + ${discount}">−₹0.00</td></tr>
+        <tr><td>GST</td><td th:text="'₹' + ${gst}">₹0.00</td></tr>
+        <tr><td>Paid</td><td th:text="'₹' + ${paidAmount}">₹0.00</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot-grid">
+    <div class="notes">
+      <h4>Notes</h4>
+      <p th:text="${notes}">No notes provided.</p>
+      <h4>Terms &amp; Conditions</h4>
+      <p th:text="${terms}">Terms apply.</p>
+    </div>
+    <div class="sign">
+      <div class="line"></div>
+      <div class="name" th:text="${signatureName}">Manager</div>
+      <div class="role">Authorized Signature</div>
+      <div class="stamp">STAMP</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+    <div class="gen">Generated by Gym SaaS</div>
+  </footer>
+</div>
+</body>
+</html>
+

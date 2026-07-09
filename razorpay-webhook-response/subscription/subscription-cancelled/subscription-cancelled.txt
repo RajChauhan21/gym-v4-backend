@@ -11,7 +11,7 @@
         "id": "sub_DEXpmJhEIZK4fe",
         "entity": "subscription",
         "plan_id": "plan_BvrHngQ0xLNnNG",
-        "customer_id": "cust_C0WlbKhp3aLA7W",
+        "customer_email": "cust_C0WlbKhp3aLA7W",
         "status": "cancelled",
         "type": 3,
         "current_start": 1568226600,

@@ -1,0 +1,242 @@
+<?xml version="1.0" encoding="UTF-8"?><!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Soft Peach Color SaaS Receipt</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family:Arial, sans-serif;
+          color: #41EE3D; /* Deep muted terracotta text */
+          font-size: 11px;
+          background-color: #FAFAFA;
+          line-height: 2.25;
+        }
+
+        /* Centered Page Layout Container Frame */
+        .page {
+          width: 210mm;
+          min-height: 297mm;
+          box-sizing: border-box;
+          padding: 10mm 14mm;
+          background-color: #FFFFFF;
+          page-break-inside: avoid; /* Hard barrier preventing 2-page spilling */
+
+          /* AUTOMATIC HORIZONTAL CENTERING */
+          margin-left: auto;
+          margin-right: auto;
+
+          height:100%
+        }
+
+        /* Peach Brand Header Block Context */
+        .hero {
+          text-align: center;
+          padding: 6px 0 2px 0;
+          width: 100%;
+        }
+        .logo {
+          max-height: 38px;
+          width: auto;
+          display: inline-block;
+          margin: 0 auto 3px auto;
+        }
+        .gym {
+          font-size: 22px;
+          font-weight: bold;
+          color: #FF2A65; /* Vibrant Vibrant Peach Gym Header */
+          margin: 0;
+          letter-spacing: 0.25px;
+        }
+
+        /* Compact Paid Badge Banner Indicator */
+        .banner {
+          text-align: center;
+          background-color: #FF2A65; /* Solid Peach Banner */
+          color: #FFFFFF;
+          font-size: 10px;
+          font-weight: bold;
+          letter-spacing: 1.5px;
+          padding: 3px 0;
+          width: 120px;
+          margin: 6px auto 10px auto;
+          border-radius: 2px;
+        }
+
+        /* Peach Centered Callout Amount Banner */
+        .amount {
+          text-align: center;
+          background-color: #FBE2E7; /* Light Soft Pastel Peach Accent Background */
+          border: 1px solid #FFCCBC;
+          padding: 8px 0;
+          margin-bottom: 12px;
+          font-size: 9.5px;
+          font-weight: bold;
+          letter-spacing: 1px;
+          color: #FF2A65; /* Peach Subtitle text */
+          border-radius: 4px;
+        }
+        .amount .big {
+          font-size: 20px;
+          font-weight: bold;
+          color: #D82315; /* Contrasting Deep Dark Terracotta Peach for readability */
+          margin-top: 1px;
+          letter-spacing: 0px;
+        }
+
+        /* Clean Minimalist Data Card Blocks */
+        .card {
+          border: 1px solid #FBE9E7;
+          background-color: #FFFDFD;
+          padding: 8px 12px;
+          margin-bottom: 10px; /* Compressed block vertical distribution gap */
+          border-radius: 4px;
+        }
+
+        /* Peach Section Title Table Headers */
+        .head {
+          font-size: 11px;
+          font-weight: bold;
+          color: #FF2A65; /* Clear Peach Table Subheading Section Identifier */
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 4px;
+          border-bottom: 1.5px solid #FFCCBC;
+          padding-bottom: 2px;
+        }
+
+        /* Ultra-Dense Data Layout Tables */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td {
+          padding: 3.5px 0; /* Highly compressed row spacing padding footprint */
+          font-size: 11px;
+          color: #6D5C5B;
+          text-align: left;
+          border-bottom: 1px dotted #FBE9E7;
+        }
+
+        /* Target Right Alignment Class defined in your HTML */
+        td.r {
+          text-align: right;
+          font-weight: bold;
+          color: #2E2524;
+        }
+
+        /* Remove trailing border rules on the last index lines */
+        tr:last-child td {
+          border-bottom: none;
+        }
+
+        /* Dynamic Static Operational System Footer */
+        .footer {
+          text-align: center;
+          padding: 8px 0 0 0;
+          font-size: 9.5px;
+          color: #BCAAA4;
+          border-top: 1px solid #FBE9E7;
+          margin-top: 14px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="page">
+    <div class="hero">
+        <img class="logo" th:if="${gym.logoUrl!=null}" th:src="${gym.logoUrl}"/>
+        <div class="gym" th:text="${gym.name}">Gym</div>
+    </div>
+    <div class="banner">PAID
+    </div>
+    <div class="amount">AMOUNT PAID
+        <div class="big"><span th:text="${payment.paidAmount}">500</span> rs.</div>
+    </div>
+    <div class="card">
+        <div class="head">Receipt Overview</div>
+        <table>
+            <tr>
+                <td>Receipt No</td>
+                <td class="r" th:text="${invoice.invoiceNumber}">32</td>
+            </tr>
+            <tr>
+                <td>Date</td>
+                <td class="r" th:text="${invoice.paymentDate}">21/06/2016</td>
+            </tr>
+            <tr>
+                <td>Collected By</td>
+                <td class="r" th:text="${member.name}">Aryan</td>
+            </tr>
+        </table>
+    </div>
+    <div class="card">
+        <div class="head">Member</div>
+        <table>
+            <tr>
+                <td>Name</td>
+                <td class="r" th:text="${member.name}">Aryan</td>
+            </tr>
+            <tr>
+                <td>Phone</td>
+                <td class="r" th:text="${member.phone}">+91387874834</td>
+            </tr>
+            <tr>
+                <td>Plan</td>
+                <td class="r" th:text="${membership.planName}">Silver</td>
+            </tr>
+            <tr>
+                <td>Duration</td>
+                <td class="r" th:text="${membership.duration}">4 months</td>
+            </tr>
+            <tr>
+                <td>Validity</td>
+                <td class="r"><span th:text="${membership.startDate}">12/06/2026</span> - <span
+                        th:text="${membership.expiryDate}">12/07/2026</span></td>
+            </tr>
+        </table>
+    </div>
+    <div class="card">
+        <div class="head">Payment</div>
+        <table>
+            <tr>
+                <td>Membership Fee</td>
+                <td class="r"><span th:text="${payment.total}">3000</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Discount</td>
+                <td class="r"><span th:text="${payment.discount}">0</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Tax</td>
+                <td class="r"><span th:text="${payment.gst}">0</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Total Paid</td>
+                <td class="r"><span th:text="${payment.paidAmount}">2000</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Due Amount</td>
+                <td class="r"><span th:text="${payment.dueAmount}">1000</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Method</td>
+                <td class="r" th:text="${payment.paymentMethod}">UPI</td>
+            </tr>
+            <tr>
+                <td>Notes</td>
+                <td class="r" th:text="${gym.terms}">N/A</td>
+            </tr>
+        </table>
+    </div>
+    <div class="footer">Generated on <span th:text="${invoice.invoiceDate}">12/07/2026</span></div>
+</div>
+</body>
+</html>

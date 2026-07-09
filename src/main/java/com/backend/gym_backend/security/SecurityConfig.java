@@ -38,10 +38,24 @@ public class SecurityConfig {
 
     @Bean
     public SecurityFilterChain filterChain(HttpSecurity http) throws Exception {
+            // for production
+//        http.headers(headers -> headers
+//                .contentSecurityPolicy(csp -> csp
+//                        .policyDirectives(
+//                                "default-src 'self'; " +
+//                                        "frame-ancestors https://app.mygymsaas.com;"
+//                        )
+//                )
+//        );
 
         return http.authorizeHttpRequests(h ->
                         h.requestMatchers("/owner/signup", "/owner/login","/razorpay/webhook", "/owner/auth/refresh","/razorpay/simulate/fail","/razorpay/test").permitAll() // remove security for signup and login requests
                                 .anyRequest().authenticated())
+                .headers(headers -> headers
+                        .contentSecurityPolicy(csp -> csp
+                                .policyDirectives("frame-ancestors 'self' http://localhost:5173")
+                        )
+                )
                 .csrf(c -> c.disable())
                 .httpBasic(Customizer.withDefaults())
                 .cors(c -> c.configurationSource(corsConfigurationSource()))
@@ -82,7 +96,7 @@ public class SecurityConfig {
 
         CorsConfiguration config = new CorsConfiguration();
 
-        config.setAllowedOrigins(List.of("https://moralistically-unregretted-brice.ngrok-free.dev/member-ship/getAll","http://localhost:5173","https://tqtjpmd0-5173.inc1.devtunnels.ms/"));
+        config.setAllowedOrigins(List.of("https://moralistically-unregretted-brice.ngrok-free.dev/member-ship/getAll","http://localhost:5173","http://localhost:4173","https://tqtjpmd0-5173.inc1.devtunnels.ms/"));
         config.setAllowedMethods(List.of("GET", "POST", "PUT", "DELETE","OPTIONS"));
         config.setAllowedHeaders(List.of("*"));
         config.setAllowCredentials(true);

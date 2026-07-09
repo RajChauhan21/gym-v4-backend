@@ -1,0 +1,163 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Sunrise Wellness</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up special characters inside the font link configuration for strict compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{ --peach:#F6B89A; --lilac:#C9B6E4; --sky:#A9D3D9; --ink:#46414A; --muted:#928D98; --paper:#FFFDFB; --line:#F0E9EC; }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#efe9ea; font-family:'Inter',sans-serif; color:var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:var(--paper); padding:0; }
+
+    .hero{ background:linear-gradient(120deg, #FDEDE3 0%, #F3E4EE 50%, #E6F0F1 100%); padding:14mm 16mm 22px; }
+    .hero-row{ display:flex; justify-content:space-between; align-items:flex-start; }
+    .brand h1{ font-family:'Quicksand',sans-serif; font-weight:700; font-size:27px; margin:0 0 8px; color:var(--ink); }
+    .brand p{ margin:2px 0; font-size:12px; color:#766F79; line-height:1.6; }
+    .doc-tag{ text-align:right; }
+    .doc-tag .badge{ background:rgba(255,255,255,.7); border-radius:30px; padding:6px 16px; font-size:11px; letter-spacing:1.5px; font-weight:600; color:var(--ink); display:inline-block; }
+    .doc-tag .meta{ margin-top:10px; font-size:12px; color:#766F79; line-height:1.8; }
+    .doc-tag .meta b{ color:var(--ink); }
+
+    .content{ padding:24px 16mm 14mm; }
+    .twin{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px; }
+    .card{ border:1px solid var(--line); border-radius:18px; padding:18px 20px; }
+    .card h2{ font-family:'Quicksand',sans-serif; font-weight:700; font-size:14px; margin:0 0 12px; }
+    .card.peach h2{ color:var(--peach); } .card.lilac h2{ color:var(--lilac); }
+    .card p{ margin:6px 0; font-size:13px; }
+    .card p b{ color:var(--muted); font-weight:500; display:inline-block; min-width:78px; }
+
+    table.items{ width:100%; border-collapse:collapse; margin-bottom:20px; }
+    table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); padding:0 0 8px; font-weight:600; border-bottom:1px solid var(--line); }
+    table.items thead th:not(:first-child){ text-align:right; }
+    table.items tbody td{ padding:11px 0; font-size:13.5px; border-bottom:1px solid var(--line); }
+    table.items tbody td:not(:first-child){ text-align:right; }
+
+    .bottom{ display:grid; grid-template-columns:1fr 1fr; gap:18px; margin-bottom:20px; }
+    .pay-card{ border:1px solid var(--line); border-radius:18px; padding:18px 20px; }
+    .pay-card h3{ font-family:'Quicksand',sans-serif; font-weight:700; font-size:13px; color:var(--sky); margin:0 0 12px; }
+    .pay-card p{ font-size:13px; margin:6px 0; }
+    .pay-card p span{ color:var(--muted); }
+    .qr{ margin-top:10px; width:60px; height:60px; border:1px dashed var(--line); border-radius:12px; display:flex; align-items:center; justify-content:center; font-size:8.5px; color:var(--muted); }
+    .totals{ border:1px solid var(--line); border-radius:18px; padding:8px 20px; }
+    .totals table{ width:100%; font-size:13px; border-collapse:collapse; }
+    .totals td{ padding:6px 0; color:var(--muted); }
+    .totals td:last-child{ text-align:right; color:var(--ink); }
+    .totals tr.grand td{ font-family:'Quicksand',sans-serif; font-weight:700; font-size:18px; color:var(--peach); border-top:1px solid var(--line); padding-top:10px; }
+
+    .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:18px; }
+    .notes h4{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--lilac); margin:0 0 5px; font-weight:700; }
+    .notes p{ font-size:12px; color:var(--muted); margin:0 0 14px; line-height:1.6; }
+    .sign{ text-align:center; border:1px solid var(--line); border-radius:18px; padding:16px; }
+    .sign .line{ height:30px; border-bottom:1px solid var(--line); margin-bottom:6px; }
+    .sign .name{ font-family:'Quicksand',sans-serif; font-weight:700; font-size:13px; }
+    .sign .role{ font-size:10px; color:var(--muted); }
+    .sign .stamp{ display:inline-block; margin-top:8px; font-size:9px; color:var(--muted); border:1px dashed var(--line); padding:7px 12px; border-radius:20px; }
+
+    footer{ text-align:center; padding-top:6px; }
+    footer .thanks{ font-family:'Quicksand',sans-serif; font-weight:700; color:var(--ink); font-size:13px; }
+    footer .gen{ font-size:10px; color:var(--muted); margin-top:4px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <div class="hero-row">
+      <div class="brand">
+        <h1 th:text="${gymName}">Gym Name</h1>
+        <p th:text="${gymAddress}">Gym Address</p>
+        <p>
+          <span th:text="${gymPhone}">Phone</span> ·
+          <span th:text="${gymEmail}">Email</span> ·
+          <span th:text="${gymWebsite}">Website</span>
+        </p>
+        <p>GST <span th:text="${gstNumber}">GST123456789</span></p>
+      </div>
+      <div class="doc-tag">
+        <span class="badge">INVOICE</span>
+        <div class="meta">
+          <div><b>No.</b> <span th:text="${invoiceNumber}">INV-001</span></div>
+          <div><b>Invoice</b> <span th:text="${invoiceDate}">01/01/2026</span></div>
+          <div><b>Payment</b> <span th:text="${paymentDate}">01/01/2026</span></div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <div class="content">
+    <div class="twin">
+      <div class="card peach">
+        <h2>Member</h2>
+        <p><b>Name</b> <span th:text="${memberName}">John Doe</span></p>
+        <p><b>ID</b> <span th:text="${memberId}">M-101</span></p>
+        <p><b>Phone</b> <span th:text="${memberPhone}">+91 98765 43210</span></p>
+        <p><b>Email</b> <span th:text="${memberEmail}">john@example.com</span></p>
+      </div>
+      <div class="card lilac">
+        <h2>Membership</h2>
+        <p><b>Plan</b> <span th:text="${planName}">Premium Plan</span></p>
+        <p><b>Duration</b> <span th:text="${planDuration}">3 Months</span></p>
+        <p><b>Start</b> <span th:text="${startDate}">01/01/2026</span></p>
+        <p><b>Expiry</b> <span th:text="${expiryDate}">31/03/2026</span></p>
+        <p><b>Trainer</b> <span th:text="${trainerName}">Jane Smith</span></p>
+      </div>
+    </div>
+
+    <table class="items">
+      <thead><tr><th>Description</th><th>Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Total</th></tr></thead>
+      <tbody>
+      <tr>
+        <td th:text="${planName}">Premium Plan</td>
+        <td style="text-align:right;">1</td>
+        <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+        <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <div class="bottom">
+      <div class="pay-card">
+        <h3>Payment Details</h3>
+        <p><span>Method</span> <span th:text="${paymentMethod}">UPI</span></p>
+        <p><span>Reference</span> <span th:text="${transactionId}">TXN123456</span></p>
+        <div class="qr">QR CODE</div>
+      </div>
+      <div class="totals">
+        <table>
+          <tr><td>Subtotal</td><td th:text="'₹' + ${subtotal}">₹0.00</td></tr>
+          <tr><td>Discount</td><td th:text="'−₹' + ${discount}">−₹0.00</td></tr>
+          <tr><td>GST</td><td th:text="'₹' + ${gst}">₹0.00</td></tr>
+          <tr class="grand"><td>Total</td><td th:text="'₹' + ${total}">₹0.00</td></tr>
+          <tr><td>Paid</td><td th:text="'₹' + ${paidAmount}">₹0.00</td></tr>
+          <tr><td>Due</td><td th:text="'₹' + ${dueAmount}">₹0.00</td></tr>
+        </table>
+      </div>
+    </div>
+
+    <div class="foot-grid">
+      <div class="notes">
+        <h4>Notes</h4>
+        <p th:text="${notes}">No notes provided.</p>
+        <h4>Terms &amp; Conditions</h4>
+        <p th:text="${terms}">Terms apply.</p>
+      </div>
+      <div class="sign">
+        <div class="line"></div>
+        <div class="name" th:text="${signatureName}">Manager</div>
+        <div class="role">Authorized Signature</div>
+        <div class="stamp">STAMP</div>
+      </div>
+    </div>
+
+    <footer>
+      <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+      <div class="gen">Generated by Gym SaaS</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>

@@ -13,7 +13,6 @@ import org.springframework.data.jpa.repository.Lock;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
-import java.math.BigDecimal;
 import java.time.LocalDateTime;
 import java.util.List;
 import java.util.Optional;
@@ -43,8 +42,8 @@ public interface OwnerPaymentRepository extends JpaRepository<OwnerPayment, Inte
                 FROM OwnerPayment p
                 LEFT JOIN p.invoice i
                 WHERE p.owner.id = :ownerId
-           
-                AND (:amount IS NULL OR p.amount = :amount)
+            
+                AND (:amount IS NULL OR CAST(p.amount AS string) LIKE :amount)
             
                 AND (:status IS NULL OR p.status = :status)
             
@@ -56,11 +55,38 @@ public interface OwnerPaymentRepository extends JpaRepository<OwnerPayment, Inte
             """)
     Page<OwnerPaymentProjection> findPaymentsByOwner(
             @Param("ownerId") Integer ownerId,
-            @Param("amount") BigDecimal amount,
+            @Param("amount") String amount,
             @Param("status") Payment status,
             @Param("method") String method,
             @Param("startDate") LocalDateTime startDate,
             @Param("endDate") LocalDateTime endDate,
             Pageable pageable
     );
+
+    @Query("""
+                SELECT
+                    COUNT(p)
+                FROM OwnerPayment p
+                LEFT JOIN p.invoice i
+                WHERE p.owner.id = :ownerId
+            
+                AND (:amount IS NULL OR CAST(p.amount AS string) LIKE :amount)
+            
+                AND (:status IS NULL OR p.status = :status)
+            
+                AND (:method IS NULL OR p.method = :method)
+            
+                AND (:startDate IS NULL OR p.createdAt >= :startDate)
+            
+                AND (:endDate IS NULL OR p.createdAt <= :endDate)
+            """)
+    Long countPaymentsByOwner(
+            @Param("ownerId") Integer ownerId,
+            @Param("amount") String amount,
+            @Param("status") Payment status,
+            @Param("method") String method,
+            @Param("startDate") LocalDateTime startDate,
+            @Param("endDate") LocalDateTime endDate
+    );
+
 }

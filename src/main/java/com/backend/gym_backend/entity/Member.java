@@ -28,9 +28,15 @@ public class Member {
 
     private LocalDate joined;
 
+    private LocalDate startDate;
+
     private LocalDate expiry;
 
     private Integer dueAmount;
+
+    private Integer isActive;
+
+    private Integer sourceId;
 
     @JsonBackReference("mem")
     @ManyToOne

@@ -29,7 +29,7 @@ public class GymService {
 
     @Transactional
     public GymDetailsResponse save(GymDetailsRequest requestDto) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(requestDto.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(requestDto.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
 
@@ -62,22 +62,26 @@ public class GymService {
         gym.setLocation(requestDto.getLocation());
         gym.setGoogleMapUrl(requestDto.getGoogleMapUrl());
 
-        Owner owner = null;
+        Owner owner = ownerRepository.findById(requestDto.getOwnerId()).orElse(null);
 
-        Gym savedGym = gymRepository.saveAndFlush(gym);
+//        Gym savedGym = gymRepository.saveAndFlush(gym);
+        owner.setGym(gym);
+        gym.setOwner(owner);
+
+       Owner savedOwner =  ownerRepository.saveAndFlush(owner); //this will save gym entity automatically
 
         return GymDetailsResponse.builder()
-                .gymId(savedGym.getId())
-                .gymName(savedGym.getName())
-                .googleMapUrl(savedGym.getGoogleMapUrl())
-                .location(savedGym.getLocation())
-                .website(savedGym.getWebsite())
-                .ownerName(savedGym.getOwner() != null ? savedGym.getOwner().getName() : null)
-                .email(savedGym.getOwner() != null ? savedGym.getOwner().getEmail() : null)
-                .number(savedGym.getOwner() != null ? savedGym.getOwner().getPhone() : null)
-                .ownerId(savedGym.getOwner() != null ? savedGym.getOwner().getId() : null)
-                .gymImage(savedGym.getImage())
-                .ownerImage(owner != null ? owner.getImage() : null)
+                .gymId(savedOwner.getGym().getId())
+                .gymName(savedOwner.getGym().getName())
+                .googleMapUrl(savedOwner.getGym().getGoogleMapUrl())
+                .location(savedOwner.getGym().getLocation())
+                .website(savedOwner.getGym().getWebsite())
+                .ownerName(savedOwner.getGym().getOwner() != null ? savedOwner.getGym().getOwner().getName() : null)
+                .email(savedOwner.getGym().getOwner() != null ? savedOwner.getGym().getOwner().getEmail() : null)
+                .number(savedOwner.getGym().getOwner() != null ? savedOwner.getGym().getOwner().getPhone() : null)
+                .ownerId(savedOwner.getId() != null ? savedOwner.getId() : null)
+                .gymImage(savedOwner.getGym().getImage())
+                .ownerImage(savedOwner != null ? savedOwner.getImage() : null)
                 .build();
     }
 

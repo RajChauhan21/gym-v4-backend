@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Time Clock</title>
+<style type="text/css">
+<![CDATA[
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; background-color:#DDD4BA; font-family:'Courier New', monospace; color:#3E3A33; font-size:13px; }
+  table.outer{ width:210mm; min-height:297mm; }
+  table.outer td.page-cell{ background-color:#FBF6E9; border:1px solid #E6DCC0; padding:16mm 16mm 14mm 24mm; vertical-align:top; }
+  table.outer td.holes-cell{ width:24mm; background-color:#DDD4BA; vertical-align:top; padding-top:16mm; }
+  .hole-row{ text-align:center; padding:8px 0; }
+  .hole{ display:inline-block; width:8px; height:8px; border-radius:50%; background-color:#FBF6E9; border:1px solid #E6DCC0; }
+
+  table{ border-collapse:collapse; width:100%; }
+  td{ vertical-align:top; }
+  table.header-table td.brand-cell{ width:62%; }
+  table.header-table td.doc-cell{ width:38%; text-align:right; font-size:11.5px; color:#9C9180; }
+  .brand-name{ font-family:'Georgia', 'Times New Roman', serif; font-size:22px; margin:0 0 8px 0; text-transform:uppercase; }
+  .brand-line{ margin:2px 0; font-size:11.5px; color:#9C9180; }
+  .punch-no{ display:inline; border:2px solid #C99A3E; color:#C99A3E; padding:5px 14px; font-family:'Georgia', serif; font-size:12px; letter-spacing:1px; }
+
+  table.clock{ width:100%; margin:18px 0; border-top:2px solid #3E3A33; border-bottom:2px solid #3E3A33; }
+  table.clock th{ text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1px; padding:8px 6px; border-bottom:1px solid #3E3A33; color:#9C9180; }
+  table.clock td{ padding:8px 6px; font-size:12.5px; border-bottom:1px dashed #E6DCC0; }
+  table.clock td.punchmark{ color:#C99A3E; text-align:center; font-weight:bold; }
+
+  .section-h{ font-family:'Georgia', serif; font-size:14px; text-transform:uppercase; letter-spacing:.5px; margin:22px 0 8px 0; color:#C99A3E; }
+
+  table.cols2 td.c1{ width:50%; padding-right:14px; }
+  table.cols2 td.c2{ width:50%; padding-left:14px; }
+  .field{ overflow:hidden; padding:4px 0; border-bottom:1px dashed #E6DCC0; font-size:12.5px; }
+  .field .k{ float:left; color:#9C9180; }
+  .field .v{ float:right; text-align:right; }
+
+  table.paytot td.pay-cell{ width:50%; padding-right:14px; }
+  table.paytot td.tot-cell{ width:50%; padding-left:14px; }
+  .pay-line{ font-size:12.5px; margin:5px 0; }
+  .pay-line .lbl2{ color:#9C9180; }
+  .qr-box{ margin-top:8px; width:58px; height:58px; border:1px dashed #E6DCC0; text-align:center; font-size:8px; color:#9C9180; line-height:58px; }
+
+  table.totals-tbl{ width:100%; font-size:12.5px; }
+  table.totals-tbl td{ padding:4px 0; color:#9C9180; }
+  table.totals-tbl td.amt{ text-align:right; color:#3E3A33; }
+  table.totals-tbl tr.grand td{ font-family:'Georgia', serif; font-size:17px; color:#C99A3E; border-top:2px solid #3E3A33; padding-top:8px; }
+  table.totals-tbl tr.due td.amt{ font-weight:bold; }
+
+  table.notesign td.notes-cell{ width:58%; padding-right:14px; }
+  table.notesign td.sign-cell{ width:42%; padding-left:14px; text-align:center; }
+  .notes-p{ font-size:11.5px; color:#9C9180; margin:0 0 8px 0; line-height:1.6; }
+  .sign-line{ height:26px; border-bottom:1px solid #3E3A33; margin-bottom:6px; }
+  .sign-name{ font-family:'Georgia', serif; font-size:13px; }
+  .sign-role{ font-size:10px; color:#9C9180; }
+  .sign-stamp{ display:inline; font-size:9px; color:#C99A3E; border:1px dashed #C99A3E; padding:7px 12px; margin-top:8px; }
+
+  .footer{ text-align:center; margin-top:18px; padding-top:14px; border-top:2px solid #3E3A33; }
+  .footer-thanks{ font-family:'Georgia', serif; font-size:13px; }
+  .footer-gen{ font-size:10px; color:#9C9180; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<table class="outer">
+  <tr>
+    <td class="holes-cell">
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+      <div class="hole-row"><span class="hole"></span></div>
+    </td>
+    <td class="page-cell">
+
+      <table class="header-table">
+        <tr>
+          <td class="brand-cell">
+            <p class="brand-name">[[${gymName}]]</p>
+            <p class="brand-line">[[${gymAddress}]]</p>
+            <p class="brand-line">[[${gymPhone}]] / [[${gymEmail}]] / [[${gymWebsite}]]</p>
+            <p class="brand-line">GST [[${gstNumber}]]</p>
+          </td>
+          <td class="doc-cell">
+            <span class="punch-no">No. [[${invoiceNumber}]]</span>
+            <p>Invoice [[${invoiceDate}]]</p>
+            <p>Payment [[${paymentDate}]]</p>
+          </td>
+        </tr>
+      </table>
+
+      <table class="clock">
+        <thead><tr><th>Punch</th><th>Record</th><th>Detail</th></tr></thead>
+        <tbody>
+          <tr><td class="punchmark">&#9679;</td><td>Member Checked In</td><td>[[${memberName}]] ([[${memberId}]])</td></tr>
+          <tr><td class="punchmark">&#9679;</td><td>Plan Selected</td><td>[[${planName}]] - [[${planDuration}]]</td></tr>
+          <tr><td class="punchmark">&#9679;</td><td>Trainer Assigned</td><td>[[${trainerName}]]</td></tr>
+          <tr><td class="punchmark">&#9679;</td><td>Amount Charged</td><td>&#8377;[[${amount}]]</td></tr>
+          <tr><td class="punchmark">&#9679;</td><td>Clock Out</td><td>[[${expiryDate}]]</td></tr>
+        </tbody>
+      </table>
+
+      <p class="section-h">Member &amp; Membership</p>
+      <table class="cols2">
+        <tr>
+          <td class="c1">
+            <div class="field"><span class="k">Phone</span><span class="v">[[${memberPhone}]]</span></div>
+            <div class="field"><span class="k">Email</span><span class="v">[[${memberEmail}]]</span></div>
+          </td>
+          <td class="c2">
+            <div class="field"><span class="k">Start</span><span class="v">[[${startDate}]]</span></div>
+            <div class="field"><span class="k">Expiry</span><span class="v">[[${expiryDate}]]</span></div>
+          </td>
+        </tr>
+      </table>
+
+      <p class="section-h">Payment &amp; Totals</p>
+      <table class="paytot">
+        <tr>
+          <td class="pay-cell">
+            <p class="pay-line"><span class="lbl2">Method</span> [[${paymentMethod}]]</p>
+            <p class="pay-line"><span class="lbl2">Reference</span> [[${transactionId}]]</p>
+            <div class="qr-box">QR CODE</div>
+          </td>
+          <td class="tot-cell">
+            <table class="totals-tbl">
+              <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+              <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+              <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+              <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+              <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+              <tr class="due"><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p class="section-h">Notes &amp; Sign-off</p>
+      <table class="notesign">
+        <tr>
+          <td class="notes-cell">
+            <p class="notes-p"><strong>Notes:</strong> [[${notes}]]</p>
+            <p class="notes-p"><strong>Terms:</strong> [[${terms}]]</p>
+          </td>
+          <td class="sign-cell">
+            <div class="sign-line"></div>
+            <p class="sign-name">[[${signatureName}]]</p>
+            <p class="sign-role">Authorized Signature</p>
+            <p class="sign-stamp">STAMP</p>
+          </td>
+        </tr>
+      </table>
+
+      <div class="footer">
+        <p class="footer-thanks">[[${thankYouMessage}]]</p>
+        <p class="footer-gen">Generated by Gym SaaS</p>
+      </div>
+
+    </td>
+  </tr>
+</table>
+</body>
+</html>

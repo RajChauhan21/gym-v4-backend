@@ -1,0 +1,278 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Apple Minimal Receipt</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto, Helvetica, Arial, sans-serif;
+          color: #1d1d1f; /* Apple primary typography black tint */
+          font-size: 11px;
+          background-color: #f5f5f7; /* Off-white workspace fill */
+          line-height: 2.25;
+        }
+
+        /* Centered and structural page framing box */
+        .wrap {
+          width: 210mm;
+          box-sizing: border-box;
+          padding: 8mm 12mm; /* Highly tightened spacing */
+          page-break-inside: avoid; /* Prevents splitting into a second page */
+
+          /* AUTOMATIC HORIZONTAL CENTERING */
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Flat Elevation Card Panel Shell */
+        .card {
+          background-color: #FFFFFF;
+          border: 1px solid #d2d2d7;
+          border-radius: 8px;
+          padding: 6mm 10mm;
+          box-sizing: border-box;
+        }
+
+        /* Header Branding Block */
+        .head {
+          text-align: center;
+          padding-bottom: 8px;
+          border-bottom: 1px solid #e5e5ea;
+          margin-bottom: 8px;
+        }
+        .logo {
+          max-height: 42px;
+          width: auto;
+          display: inline-block;
+          margin: 0 auto 3px auto;
+        }
+        .gym {
+          font-size: 21px;
+          font-weight: 600;
+          color: #1d1d1f;
+          margin: 0;
+          letter-spacing: -0.5px;
+        }
+        .small {
+          font-size: 10.5px;
+          color: #86868b; /* Apple secondary text colour */
+          margin-top: 2px;
+        }
+
+        /* Main Type Header Badge */
+        .title {
+          text-align: center;
+          padding: 6px 0;
+          font-size: 13px;
+          font-weight: bold;
+          color: #1d1d1f;
+          letter-spacing: 0.5px;
+          margin-bottom: 8px;
+        }
+
+        /* Ultra-Dense Block Sections */
+        .block {
+          margin: 0 0 8px 0; /* Tightened block vertical layout gaps */
+          border: 1px solid #e5e5ea;
+          border-radius: 6px;
+          overflow: hidden;
+        }
+        .blockhead {
+          padding: 4px 10px;
+          background-color: #f5f5f7;
+          font-weight: 600;
+          color: #1d1d1f;
+          font-size: 10.5px;
+          border-bottom: 1px solid #e5e5ea;
+        }
+
+        /* Structural Clean Tables */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td {
+          padding: 4px 10px; /* Compressed data cell padding */
+          font-size: 11px;
+          color: #515154;
+          text-align: left;
+          border-top: 1px solid #f5f5f7;
+        }
+
+        /* Reset top border on the first line within the row arrays */
+        tr:first-child td {
+          border-top: none;
+        }
+
+        td.r {
+          text-align: right;
+          font-weight: 600;
+          color: #1d1d1f;
+        }
+
+        /* Bold Apple Styled Total Highlight Block Row */
+        .highlight td {
+          background-color: #111111; /* Clean flat pure deep black block fill */
+          color: #FFFFFF !important;
+          font-size: 11.5px;
+          font-weight: bold;
+          border-top: none;
+        }
+        .highlight td.r {
+          color: #FFFFFF !important;
+        }
+
+        /* Warning Outstandings Row Variant Box */
+        .due td {
+          background-color: #fff5f5;
+          color: #de350b; /* Apple deep red indicator string text */
+          font-weight: bold;
+          border-top: 1px solid #ffcccc;
+        }
+        .due td.r {
+          color: #de350b;
+        }
+
+        /* Minimal Success Message Segment Box */
+        .msg {
+          margin: 10px 0 0 0;
+          padding: 10px;
+          text-align: center;
+          background-color: #f5f5f7;
+          border: 1px solid #e5e5ea;
+          border-radius: 6px;
+          font-size: 10.5px;
+          color: #515154;
+        }
+        .msg b {
+          color: #1d1d1f;
+        }
+
+        /* Comprehensive Small Footer Frame */
+        .footer {
+          text-align: center;
+          padding-top: 12px;
+          color: #86868b;
+          font-size: 9.5px;
+          border-top: 1px solid #e5e5ea;
+          margin-top: 12px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="head">
+            <img alt="logo" class="logo" th:if="${gym.logoUrl!=null}" th:src="${gym.logoUrl}"/>
+            <div class="gym" th:text="${gym.name}">My Gym</div>
+            <div class="small">
+                <span th:text="${gym.address}">Mumbai</span><br/>
+                <span th:text="${member.phone}">+918347847833</span> | <span th:text="${gym.email}">mygym@gmail.com</span>
+            </div>
+        </div>
+        <div class="title">PAYMENT RECEIPT</div>
+
+        <div class="block">
+            <div class="blockhead">Receipt</div>
+            <table>
+                <tr>
+                    <td>Receipt No.</td>
+                    <td class="r" th:text="${invoice.invoiceNumber}">33</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td class="r" th:text="${invoice.paymentDate}">01/02/2026</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="block">
+            <div class="blockhead">Member Details</div>
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td class="r" th:text="${member.name}">Vicky</td>
+                </tr>
+                <tr>
+                    <td>Phone</td>
+                    <td class="r" th:text="${member.phone}">+9194676434</td>
+                </tr>
+                <tr>
+                    <td>Plan</td>
+                    <td class="r" th:text="${membership.planName}">Platinum</td>
+                </tr>
+                <tr>
+                    <td>Duration</td>
+                    <td class="r" th:text="${membership.duration}">3 Monthly</td>
+                </tr>
+                <tr>
+                    <td>Validity</td>
+                    <td class="r"><span th:text="${membership.startDate}">12/02/2026</span> - <span
+                            th:text="${membership.expiryDate}">19/04/2026</span></td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="block">
+            <div class="blockhead">Payment Summary</div>
+            <table>
+                <tr>
+                    <td>Membership Fee</td>
+                    <td class="r"><span th:text="${payment.total}">5000</span> rs.</td>
+                </tr>
+                <tr>
+                    <td>Discount</td>
+                    <td class="r"><span th:text="${payment.discount}">0</span> rs.</td>
+                </tr>
+                <tr>
+                    <td>Tax</td>
+                    <td class="r"><span th:text="${payment.gst}">0</span> rs.</td>
+                </tr>
+                <tr class="highlight">
+                    <td>Total Paid</td>
+                    <td class="r"><span th:text="${payment.paidAmount}">2000</span> rs.</td>
+                </tr>
+                <tr class="due">
+                    <td>Due Amount</td>
+                    <td class="r"><span th:text="${payment.dueAmount}">3000</span> rs.</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="block">
+            <div class="blockhead">Transaction</div>
+            <table>
+                <tr>
+                    <td>Payment Method</td>
+                    <td class="r" th:text="${payment.paymentMethod}">CASH</td>
+                </tr>
+                <tr>
+                    <td>Transaction ID</td>
+                    <td class="r" th:text="${payment.transactionId}">N/A</td>
+                </tr>
+            </table>
+        </div>
+
+        <div class="msg">
+            <b>Thank you for choosing us.</b><br/>
+            Your payment has been recorded successfully.
+        </div>
+
+        <div class="footer">
+            Generated on <span th:text="${invoice.invoiceDate}">29/12/2026</span>
+        </div>
+
+    </div>
+</div>
+</body>
+</html>

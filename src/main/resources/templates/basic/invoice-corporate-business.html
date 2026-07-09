@@ -1,0 +1,272 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Corporate Business Invoice</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', Helvetica, Arial, sans-serif;
+          color: #333333;
+          font-size: 11px;
+          background-color: #F8FAFC; /* Clean professional background workspace */
+          line-height: 2.25;
+        }
+
+        /* Centered Page Frame Container Shell */
+        .page {
+          width: 210mm;
+          min-height: 297mm;
+          box-sizing: border-box;
+          padding: 12mm 16mm;
+          background-color: #FFFFFF;
+          page-break-inside: avoid; /* Prevents overflow into a 2nd page */
+
+          /* AUTOMATIC HORIZONTAL CENTERING */
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Header Brand Block */
+        .header {
+          width: 100%;
+          margin-bottom: 12px;
+          position: relative;
+        }
+        .logo {
+          max-height: 42px;
+          width: auto;
+          display: block;
+          margin-bottom: 4px;
+        }
+        .left {
+          font-size: 24px;
+          font-weight: bold;
+          color: #1f4e79; /* Requested Corporate Blue */
+          margin: 0;
+          letter-spacing: -0.25px;
+        }
+        .small {
+          font-size: 10.5px;
+          color: #64748b;
+          margin-top: 3px;
+        }
+
+        /* Corporate Status Badge Top-Right Alignment */
+        .badge {
+          float: right;
+          background-color: #1f4e79; /* Requested Corporate Blue */
+          color: #FFFFFF;
+          padding: 4px 14px;
+          font-size: 10px;
+          font-weight: bold;
+          letter-spacing: 1px;
+          border-radius: 2px;
+          margin-top: 2px;
+        }
+
+        /* Structural Document Sections */
+        .section {
+          margin-bottom: 12px; /* Compressed vertical data card footprint */
+        }
+
+        /* Section Subheaders */
+        .title {
+          font-size: 11.5px;
+          font-weight: bold;
+          color: #1f4e79; /* Requested Corporate Blue */
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 4px;
+          border-bottom: 2px solid #1f4e79; /* Requested Corporate Blue Horizontal Line */
+          padding-bottom: 2px;
+        }
+
+        /* Structural Data Display Tables */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+
+        /* Summary Block Specific Table Headers */
+        th {
+          font-size: 10.5px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          color: #1f4e79; /* Requested Corporate Blue */
+          padding: 4px 0;
+          border-bottom: 1px solid #1f4e79; /* Requested Corporate Blue Underline */
+          font-weight: bold;
+          text-align: left;
+        }
+
+        td {
+          padding: 3.5px 0; /* Tight row line spaces */
+          font-size: 11px;
+          color: #475569;
+          text-align: left;
+          border-bottom: 1px dotted #cbd5e1;
+        }
+
+        /* Target Right Alignment Variable explicitly written in your HTML */
+        td.r {
+          text-align: right;
+          font-weight: bold;
+          color: #0f172a;
+        }
+
+        /* Clean trailing lines on section data loops */
+        tr:last-child td {
+          border-bottom: none;
+        }
+
+        /* Total Computations Aggressive Row Variables */
+        tr.total td {
+          color: #1f4e79; /* Highlighted text using Corporate Blue */
+          font-weight: bold;
+          font-size: 11.5px;
+          border-top: 1px solid #1f4e79; /* Solid accent top boundary */
+          padding-top: 5px;
+        }
+        tr.total td.r {
+          color: #1f4e79;
+        }
+
+        /* Standard Corporate Dynamic Footer Block */
+        .footer {
+          clear: both;
+          text-align: center;
+          padding: 8px 0 0 0;
+          font-size: 9.5px;
+          color: #94a3b8;
+          border-top: 1px solid #e2e8f0;
+          margin-top: 16px;
+          line-height: 1.3;
+        }
+        .footer b {
+          color: #475569;
+        }
+    </style>
+
+</head>
+<body>
+<div class="page">
+    <div class="header">
+        <div class="badge">PAID</div>
+        <img alt="logo" class="logo" th:if="${gym.logoUrl!=null}" th:src="${gym.logoUrl}"/>
+        <div class="left" th:text="${gym.name}">Gym Name</div>
+        <div class="small">
+            <span th:text="${gym.address}">Mumbai</span><br/>
+            P: <span th:text="${member.phone}">+9194776555</span> | M: <span th:text="${gym.email}">gymowner@gmail.com</span>
+        </div>
+
+    </div>
+
+    <div class="section">
+        <div class="title">Receipt Information</div>
+        <table>
+            <tr>
+                <td>Receipt Number</td>
+                <td class="r" th:text="${invoice.invoiceNumber}">32</td>
+            </tr>
+            <tr>
+                <td>Receipt Date</td>
+                <td class="r" th:text="${invoice.paymentDate}">10/07/2026</td>
+            </tr>
+            <tr>
+                <td>Collected By</td>
+                <td class="r" th:text="${member.name}">Vicky</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="title">Customer Information</div>
+        <table>
+            <tr>
+                <td>Member Name</td>
+                <td class="r" th:text="${member.name}">Vicky</td>
+            </tr>
+            <tr>
+                <td>Phone</td>
+                <td class="r" th:text="${member.phone}">+91946737444</td>
+            </tr>
+            <tr>
+                <td>Membership Plan</td>
+                <td class="r" th:text="${membership.planName}">Silver</td>
+            </tr>
+            <tr>
+                <td>Duration</td>
+                <td class="r" th:text="${membership.duration}">4 Month</td>
+            </tr>
+            <tr>
+                <td>Validity</td>
+                <td class="r"><span th:text="${membership.startDate}">28/05/2026</span> - <span
+                        th:text="${membership.expiryDate}">30/10/2026</span></td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="title">Invoice Summary</div>
+        <table>
+            <tr>
+                <th>Description</th>
+                <th style="text-align:right;">Amount</th>
+            </tr>
+            <tr>
+                <td>Membership Fee</td>
+                <td class="r"><span th:text="${payment.total}">5000</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Discount</td>
+                <td class="r"><span th:text="${payment.discount}">0</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Tax</td>
+                <td class="r"><span th:text="${payment.gst}">0</span> rs.</td>
+            </tr>
+            <tr class="total">
+                <td>Total Paid</td>
+                <td class="r"><span th:text="${payment.paidAmount}">3000</span> rs.</td>
+            </tr>
+            <tr class="total">
+                <td>Due Amount</td>
+                <td class="r"><span th:text="${payment.dueAmount}">2000</span> rs.</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="section">
+        <div class="title">Transaction Details</div>
+        <table>
+            <tr>
+                <td>Payment Method</td>
+                <td class="r" th:text="${payment.paymentMethod}">CASH</td>
+            </tr>
+            <tr>
+                <td>Transaction ID</td>
+                <td class="r" th:text="${payment.transactionId}">N/A</td>
+            </tr>
+            <tr>
+                <td>Notes</td>
+                <td class="r">N/A</td>
+            </tr>
+        </table>
+    </div>
+
+    <div class="footer">
+        <b th:text="${gym.name}">My Gym</b><br/>
+        Generated on <span th:text="${invoice.invoiceDate}">12/06/2026</span>
+    </div>
+</div>
+</body>
+</html>

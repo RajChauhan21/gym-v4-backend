@@ -22,6 +22,10 @@ public class SubscriptionResponse {
 
     private LocalDate endDate;
 
+    private LocalDate billingDate;
+
+    private Integer memberLimitCount;
+
     private SubscriptionStatus subscriptionStatus;
 
     private Owner owner;

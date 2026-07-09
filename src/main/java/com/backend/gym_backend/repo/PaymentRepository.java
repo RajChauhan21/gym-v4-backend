@@ -15,39 +15,43 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
 
     @Query(
             value = """
-                    SELECT
-                        p.id AS paymentId,
-                        p.member_id AS memberId,
-                        m.name AS memberName,
-                        ms.name AS membershipName,
-                        p.amount_paid AS amount,
-                        p.method AS method,
-                        p.date AS paymentDate
-                    FROM payment p
-                    JOIN member m ON p.member_id = m.id
-                    JOIN member_ship ms ON m.member_ship_id = ms.id
-                    WHERE m.owner_id = :ownerId
-                    AND (:memberName IS NULL OR m.name LIKE %:memberName%)
-                    AND (:membershipName IS NULL OR ms.name LIKE %:membershipName%)
-                    AND (:method IS NULL OR p.method = :method)
-                    AND (:amount IS NULL OR p.amount_paid = :amount)
-                    -- Date Range Logic for Payment Date
-                    AND (:dateFrom IS NULL OR p.date >= :dateFrom)
-                    AND (:dateTo IS NULL OR p.date <= :dateTo)
-                    """,
+                SELECT
+                    p.id AS paymentId,
+                    p.member_id AS memberId,
+                    m.name AS memberName,
+                    ms.name AS membershipName,
+                    p.amount_paid AS amount,
+                    p.method AS method,
+                    p.date AS paymentDate,
+                    m.due_amount AS dueAmount
+                FROM payment p
+                JOIN member m ON p.member_id = m.id
+                JOIN member_ship ms ON m.member_ship_id = ms.id
+                WHERE m.owner_id = :ownerId
+                AND (:memberName IS NULL OR m.name LIKE CONCAT('%', :memberName, '%'))
+                AND (:membershipName IS NULL OR ms.name LIKE CONCAT('%', :membershipName, '%'))
+                AND (:method IS NULL OR p.method = :method)
+                -- Numeric columns casted to CHAR for partial search
+                AND (:amount IS NULL OR CAST(p.amount_paid AS CHAR) LIKE CONCAT('%', :amount, '%'))
+                AND (:dueAmount IS NULL OR CAST(m.due_amount AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
+                -- Date Range Logic for Payment Date
+                AND (:dateFrom IS NULL OR p.date >= :dateFrom)
+                AND (:dateTo IS NULL OR p.date <= :dateTo)
+                """,
             countQuery = """
-                    SELECT COUNT(*)
-                    FROM payment p
-                    JOIN member m ON p.member_id = m.id
-                    JOIN member_ship ms ON m.member_ship_id = ms.id
-                    WHERE m.owner_id = :ownerId
-                    AND (:memberName IS NULL OR m.name LIKE %:memberName%)
-                    AND (:membershipName IS NULL OR ms.name LIKE %:membershipName%)
-                    AND (:method IS NULL OR p.method = :method)
-                    AND (:amount IS NULL OR p.amount_paid = :amount)
-                    AND (:dateFrom IS NULL OR p.date >= :dateFrom)
-                    AND (:dateTo IS NULL OR p.date <= :dateTo)
-                    """,
+                SELECT COUNT(*)
+                FROM payment p
+                JOIN member m ON p.member_id = m.id
+                JOIN member_ship ms ON m.member_ship_id = ms.id
+                WHERE m.owner_id = :ownerId
+                AND (:memberName IS NULL OR m.name LIKE CONCAT('%', :memberName, '%'))
+                AND (:membershipName IS NULL OR ms.name LIKE CONCAT('%', :membershipName, '%'))
+                AND (:method IS NULL OR p.method = :method)
+                AND (:amount IS NULL OR CAST(p.amount_paid AS CHAR) LIKE CONCAT('%', :amount, '%'))
+                AND (:dueAmount IS NULL OR CAST(m.due_amount AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
+                AND (:dateFrom IS NULL OR p.date >= :dateFrom)
+                AND (:dateTo IS NULL OR p.date <= :dateTo)
+                """,
             nativeQuery = true
     )
     Page<PaymentProjection> findPaymentsFiltered(
@@ -55,11 +59,42 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
             @Param("memberName") String memberName,
             @Param("membershipName") String membershipName,
             @Param("method") String method,
-            @Param("amount") Integer amount,
+            @Param("amount") String amount,       // Changed to String
+            @Param("dueAmount") String dueAmount, // Changed to String
             @Param("dateFrom") LocalDate dateFrom,
             @Param("dateTo") LocalDate dateTo,
             Pageable pageable
     );
+
+    @Query(
+            value = """
+                SELECT COUNT(*)
+                FROM payment p
+                JOIN member m ON p.member_id = m.id
+                JOIN member_ship ms ON m.member_ship_id = ms.id
+                WHERE m.owner_id = :ownerId
+                AND (:membershipName IS NULL OR ms.name LIKE CONCAT('%', :membershipName, '%'))
+                AND (:method IS NULL OR p.method = :method)
+                -- Numeric columns casted to CHAR for partial search
+                AND (:amount IS NULL OR CAST(p.amount_paid AS CHAR) LIKE CONCAT('%', :amount, '%'))
+                AND (:dueAmount IS NULL OR CAST(m.due_amount AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
+                -- Date Range Logic for Payment Date
+                AND (:dateFrom IS NULL OR p.date >= :dateFrom)
+                AND (:dateTo IS NULL OR p.date <= :dateTo)
+                """,
+            nativeQuery = true
+    )
+    Long countPaymentsFiltered(
+            @Param("ownerId") Long ownerId,
+            @Param("membershipName") String membershipName,
+            @Param("method") String method,
+            @Param("amount") String amount,
+            @Param("dueAmount") String dueAmount,
+            @Param("dateFrom") LocalDate dateFrom,
+            @Param("dateTo") LocalDate dateTo
+    );
+
+
 
 
     @Query(value = "SELECT COALESCE(SUM(amount_paid), 0) FROM payment", nativeQuery = true)

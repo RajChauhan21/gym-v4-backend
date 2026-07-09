@@ -1,0 +1,203 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Trailhead Map</title>
+<style type="text/css">
+<![CDATA[
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; background-color:#E2D9C2; font-family:'Karla', Helvetica, Arial, sans-serif; color:#3C3A33; font-size:13px; }
+  .page{ width:210mm; min-height:297mm; background-color:#F7F1E4; padding:16mm; position:relative; }
+  .contour-ring{ position:absolute; border:1px solid #B98256; border-radius:50%; opacity:0.18; }
+
+  table{ border-collapse:collapse; width:100%; position:relative; z-index:1; }
+  td{ vertical-align:top; }
+
+  .center{ text-align:center; }
+  .brand-name{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:28px; color:#6E8C72; margin:0 0 8px 0; }
+  .brand-line{ margin:2px 0; font-size:12px; color:#938A77; }
+  table.doc-strip td{ text-align:center; font-size:11.5px; color:#938A77; padding:14px 0 26px 0; }
+  .doc-strip .lbl{ color:#3C3A33; font-weight:bold; }
+
+  table.trail td.pin-cell{ width:34px; border-left:2px dashed #B98256; position:relative; }
+  table.trail td.pin-cell.first{ border-left:2px dashed #B98256; }
+  .pin{ width:26px; height:26px; border-radius:50%; background-color:#6E8C72; text-align:center; margin-left:-15px; margin-top:4px; }
+  .pin-no{ color:#FFFFFF; font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:12px; line-height:26px; }
+  td.stop-cell{ padding:0 0 26px 20px; }
+  .stop-tag{ font-size:10px; letter-spacing:1.5px; text-transform:uppercase; color:#B98256; font-weight:bold; margin-bottom:4px; }
+  .stop-h{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:17px; color:#3C3A33; margin:0 0 10px 0; }
+
+  table.cols2 td.c1{ width:50%; padding-right:14px; }
+  table.cols2 td.c2{ width:50%; padding-left:14px; }
+  .field{ overflow:hidden; padding:4px 0; border-bottom:1px dotted #E5DCC4; }
+  .field .k{ float:left; color:#938A77; font-size:13px; }
+  .field .v{ float:right; text-align:right; font-weight:bold; font-size:13px; }
+
+  table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#938A77; padding:0 0 8px 0; font-weight:bold; border-bottom:1px solid #6E8C72; }
+  table.items thead th.r{ text-align:right; }
+  table.items tbody td{ padding:9px 0; font-size:13.5px; border-bottom:1px dotted #E5DCC4; }
+  table.items tbody td.r{ text-align:right; }
+
+  table.paytot td.pay-cell{ width:50%; padding-right:14px; }
+  table.paytot td.tot-cell{ width:50%; padding-left:14px; }
+  .pay-line{ font-size:13px; margin:5px 0; }
+  .pay-line .lbl2{ color:#938A77; }
+  .qr-box{ margin-top:10px; width:60px; height:60px; border:1px dashed #E5DCC4; text-align:center; font-size:8.5px; color:#938A77; line-height:60px; }
+
+  table.totals-tbl{ width:100%; font-size:13px; }
+  table.totals-tbl td{ padding:5px 0; color:#938A77; }
+  table.totals-tbl td.amt{ text-align:right; color:#3C3A33; }
+  table.totals-tbl tr.grand td{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:19px; color:#B98256; border-top:1px solid #6E8C72; padding-top:9px; }
+
+  table.notesign td.notes-cell{ width:58%; padding-right:14px; }
+  table.notesign td.sign-cell{ width:42%; padding-left:14px; text-align:center; }
+  .notes-h{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:#B98256; margin:0 0 5px 0; font-weight:bold; }
+  .notes-p{ font-size:12px; color:#938A77; margin:0 0 14px 0; line-height:1.6; }
+  .sign-line{ height:26px; border-bottom:1px solid #3C3A33; margin-bottom:6px; }
+  .sign-name{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:14px; color:#6E8C72; }
+  .sign-role{ font-size:10.5px; color:#938A77; }
+  .sign-stamp{ display:inline; font-size:9px; letter-spacing:1px; color:#938A77; border:1px solid #E5DCC4; padding:7px 13px; margin-top:8px; }
+
+  .footer{ text-align:center; padding-top:16px; margin-top:6px; border-top:1px solid #E5DCC4; }
+  .footer-thanks{ font-family:'Fraunces', Georgia, serif; font-weight:bold; color:#6E8C72; font-size:14px; }
+  .footer-gen{ font-size:10px; color:#938A77; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<div class="page">
+
+  <div class="contour-ring" style="width:380px; height:380px; left:-120px; top:60px;"></div>
+  <div class="contour-ring" style="width:280px; height:280px; left:-70px; top:110px;"></div>
+  <div class="contour-ring" style="width:320px; height:320px; right:-140px; top:520px;"></div>
+  <div class="contour-ring" style="width:220px; height:220px; right:-90px; top:560px;"></div>
+
+  <div class="center">
+    <p class="brand-name">[[${gymName}]]</p>
+    <p class="brand-line">[[${gymAddress}]]</p>
+    <p class="brand-line">[[${gymPhone}]] &#183; [[${gymEmail}]] &#183; [[${gymWebsite}]]</p>
+  </div>
+  <table class="doc-strip">
+    <tr>
+      <td><span class="lbl">Invoice</span> [[${invoiceNumber}]]</td>
+      <td><span class="lbl">Date</span> [[${invoiceDate}]]</td>
+      <td><span class="lbl">Paid</span> [[${paymentDate}]]</td>
+      <td><span class="lbl">GST</span> [[${gstNumber}]]</td>
+    </tr>
+  </table>
+
+  <table class="trail">
+    <tr>
+      <td class="pin-cell first"><div class="pin"><span class="pin-no">1</span></div></td>
+      <td class="stop-cell">
+        <div class="stop-tag">Trailhead</div>
+        <p class="stop-h">Member</p>
+        <table class="cols2">
+          <tr>
+            <td class="c1">
+              <div class="field"><span class="k">Name</span><span class="v">[[${memberName}]]</span></div>
+              <div class="field"><span class="k">Member ID</span><span class="v">[[${memberId}]]</span></div>
+            </td>
+            <td class="c2">
+              <div class="field"><span class="k">Phone</span><span class="v">[[${memberPhone}]]</span></div>
+              <div class="field"><span class="k">Email</span><span class="v">[[${memberEmail}]]</span></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="pin-cell"><div class="pin"><span class="pin-no">2</span></div></td>
+      <td class="stop-cell">
+        <div class="stop-tag">Checkpoint</div>
+        <p class="stop-h">Membership</p>
+        <table class="cols2">
+          <tr>
+            <td class="c1">
+              <div class="field"><span class="k">Plan</span><span class="v">[[${planName}]]</span></div>
+              <div class="field"><span class="k">Duration</span><span class="v">[[${planDuration}]]</span></div>
+              <div class="field"><span class="k">Trainer</span><span class="v">[[${trainerName}]]</span></div>
+            </td>
+            <td class="c2">
+              <div class="field"><span class="k">Start</span><span class="v">[[${startDate}]]</span></div>
+              <div class="field"><span class="k">Expiry</span><span class="v">[[${expiryDate}]]</span></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="pin-cell"><div class="pin"><span class="pin-no">3</span></div></td>
+      <td class="stop-cell">
+        <div class="stop-tag">Waypoint</div>
+        <p class="stop-h">Charges</p>
+        <table class="items">
+          <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+          <tbody><tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr></tbody>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="pin-cell"><div class="pin"><span class="pin-no">4</span></div></td>
+      <td class="stop-cell">
+        <div class="stop-tag">Summit</div>
+        <p class="stop-h">Payment &amp; Totals</p>
+        <table class="paytot">
+          <tr>
+            <td class="pay-cell">
+              <p class="pay-line"><span class="lbl2">Method</span> [[${paymentMethod}]]</p>
+              <p class="pay-line"><span class="lbl2">Reference</span> [[${transactionId}]]</p>
+              <div class="qr-box">QR CODE</div>
+            </td>
+            <td class="tot-cell">
+              <table class="totals-tbl">
+                <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+                <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+                <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+                <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+                <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+                <tr><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="pin-cell" style="border-left:none;"><div class="pin"><span class="pin-no">5</span></div></td>
+      <td class="stop-cell">
+        <div class="stop-tag">Trail's End</div>
+        <p class="stop-h">Notes &amp; Sign-off</p>
+        <table class="notesign">
+          <tr>
+            <td class="notes-cell">
+              <p class="notes-h">Notes</p>
+              <p class="notes-p">[[${notes}]]</p>
+              <p class="notes-h">Terms &amp; Conditions</p>
+              <p class="notes-p">[[${terms}]]</p>
+            </td>
+            <td class="sign-cell">
+              <div class="sign-line"></div>
+              <p class="sign-name">[[${signatureName}]]</p>
+              <p class="sign-role">Authorized Signature</p>
+              <p class="sign-stamp">STAMP</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <p class="footer-thanks">[[${thankYouMessage}]]</p>
+    <p class="footer-gen">Generated by Gym SaaS</p>
+  </div>
+
+</div>
+</body>
+</html>

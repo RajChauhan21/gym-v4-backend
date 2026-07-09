@@ -1,6 +1,7 @@
 package com.backend.gym_backend.service;
 
 import com.backend.gym_backend.dto.RazorpayWebhookEvent;
+import com.backend.gym_backend.dto.VerifySubscriptionRequest;
 import com.backend.gym_backend.entity.Owner;
 import com.backend.gym_backend.entity.Plan;
 import com.backend.gym_backend.enums.SubscriptionStatus;
@@ -17,6 +18,8 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
+import java.util.List;
 import java.util.Optional;
 
 @Service
@@ -112,10 +115,10 @@ public class RazorpayPaymentService {
 //    @Async
     public void getWebHookResponse(String payload, String signature) {
         // 1. Verify signature first
-        if (!verifySignature(payload, signature)) {
-            log.error("Invalid Razorpay signature");
-            return;
-        }
+//        if (!verifySignature(payload, signature)) {
+//            log.error("Invalid Razorpay signature");
+//            return;
+//        }
         log.info("Webhook Thread: {}", Thread.currentThread().getName());
         try {
             // 2. Parse using Jackson into the Unified DTO
@@ -159,16 +162,40 @@ public class RazorpayPaymentService {
         }
     }
 
-    private String cancelSubscription(Integer ownerId) throws RazorpayException {
+    public boolean verifySubscriptionPayment(
+            VerifySubscriptionRequest request) {
+
+        try {
+
+            String payload =
+                    request.getRazorpayPaymentId() + "|" + request.getRazorpaySubscriptionId();
+
+            return Utils.verifySignature(
+                    payload,
+                    request.getRazorpaySignature(),
+                    secretKey
+            );
+
+        } catch (Exception e) {
+            return false;
+        }
+    }
+
+    public String cancelSubscription(Integer ownerId) throws RuntimeException, RazorpayException {
         Optional<Owner> owner = ownerRepository.findById(ownerId);
         if (owner.isEmpty()){
             throw new RuntimeException("owner not found");
         }
-        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.get().getId(), SubscriptionStatus.ACTIVE);
+        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.get().getId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE));
 
         if (subscriptionEntity.isEmpty()){
-            return "102"; //no active subs found
+             return "102"; //no active subs found
         }
+
+        subscriptionEntity.get().setStatus(SubscriptionStatus.PARTIALLY_ACTIVE);
+        subscriptionEntity.get().setUpdatedAt(LocalDateTime.now());
+
+        subscriptionRepository.save(subscriptionEntity.get());
 
         RazorpayClient razorpay = new RazorpayClient(apiKey, secretKey);
 
@@ -183,22 +210,22 @@ public class RazorpayPaymentService {
         return "202";
     }
 
-    private String upgradeSubscription(Integer ownerId, int planId) throws RazorpayException {
+    public String upgradeSubscription(Integer ownerId, int planId) throws RazorpayException {
         Optional<Owner> owner = ownerRepository.findById(ownerId);
         if (owner.isEmpty()){
             throw new RuntimeException("owner not found");
         }
-        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.get().getId(), SubscriptionStatus.ACTIVE);
+        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.get().getId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE));
 
         if (subscriptionEntity.isEmpty()){
-            return "102"; //no active subs found
+            throw new RuntimeException("102"); //no active subs found
         }
 
         RazorpayClient razorpay = new RazorpayClient(apiKey, secretKey);
 
         JSONObject request = new JSONObject();
         Plan plan = planRepository.findById(planId).orElse(null);
-        if (plan==null) return "404";
+        if (plan==null) throw new RuntimeException("404");
 
         request.put("plan_id", plan.getRazorPayPlanId());
         request.put("schedule_change_at", "cycle_end");

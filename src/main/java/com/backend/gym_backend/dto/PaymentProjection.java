@@ -13,6 +13,8 @@ public interface PaymentProjection {
 
     Double getAmount();
 
+    Double getDueAmount();
+
     String getMethod();
 
     LocalDate getPaymentDate();

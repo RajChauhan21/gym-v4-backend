@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Sunrise Wellness</title>
+<style type="text/css">
+<![CDATA[
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; font-family:'Inter', Helvetica, Arial, sans-serif; color:#46414A; font-size:13px; }
+  .page{ width:210mm; min-height:297mm; }
+  table{ border-collapse:collapse; width:100%; }
+  td{ vertical-align:top; }
+
+  .hero{ background-color:#F3E4EE; background-image:linear-gradient(120deg, #FDEDE3 0%, #F3E4EE 50%, #E6F0F1 100%); padding:14mm 16mm 22px 16mm; }
+  table.hero-row td.brand-cell{ width:62%; }
+  table.hero-row td.doc-cell{ width:38%; text-align:right; }
+  .brand-name{ font-family:'Quicksand', Arial, sans-serif; font-weight:bold; font-size:27px; margin:0 0 8px 0; color:#46414A; }
+  .brand-line{ margin:2px 0; font-size:12px; color:#766F79; line-height:1.6; }
+  .badge{ background-color:#FFFFFF; padding:6px 16px; font-size:11px; letter-spacing:1.5px; font-weight:bold; color:#46414A; display:inline; }
+  .doc-meta{ margin-top:10px; font-size:12px; color:#766F79; line-height:1.8; }
+  .doc-meta .lbl{ color:#46414A; font-weight:bold; }
+
+  .content{ padding:24px 16mm 14mm 16mm; }
+
+  table.twin{ margin-bottom:20px; }
+  table.twin td{ width:50%; padding:6px; }
+  .card{ border:1px solid #F0E9EC; padding:18px 20px; }
+  .card-h{ font-family:'Quicksand', Arial, sans-serif; font-weight:bold; font-size:14px; margin:0 0 12px 0; }
+  .card-h.peach{ color:#F6B89A; }
+  .card-h.lilac{ color:#C9B6E4; }
+  .card-p{ margin:6px 0; font-size:13px; }
+  .card-p .lbl2{ color:#928D98; font-weight:normal; display:inline-block; min-width:78px; }
+
+  table.items{ margin-bottom:20px; }
+  table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#928D98; padding:0 0 8px 0; font-weight:bold; border-bottom:1px solid #F0E9EC; }
+  table.items thead th.r{ text-align:right; }
+  table.items tbody td{ padding:11px 0; font-size:13.5px; border-bottom:1px solid #F0E9EC; }
+  table.items tbody td.r{ text-align:right; }
+
+  table.bottom{ margin-bottom:20px; }
+  table.bottom td{ width:50%; padding:6px; }
+  .pay-card{ border:1px solid #F0E9EC; padding:18px 20px; }
+  .pay-h{ font-family:'Quicksand', Arial, sans-serif; font-weight:bold; font-size:13px; color:#A9D3D9; margin:0 0 12px 0; }
+  .pay-p{ font-size:13px; margin:6px 0; }
+  .pay-p .lbl2{ color:#928D98; }
+  .qr-box{ margin-top:10px; width:60px; height:60px; border:1px dashed #F0E9EC; text-align:center; font-size:8.5px; color:#928D98; line-height:60px; }
+  .totals-card{ border:1px solid #F0E9EC; padding:8px 20px; }
+  table.totals-tbl{ font-size:13px; }
+  table.totals-tbl td{ padding:6px 0; color:#928D98; }
+  table.totals-tbl td.amt{ text-align:right; color:#46414A; }
+  table.totals-tbl tr.grand td{ font-family:'Quicksand', Arial, sans-serif; font-weight:bold; font-size:18px; color:#F6B89A; border-top:1px solid #F0E9EC; padding-top:10px; }
+
+  table.footgrid td.notes-cell{ width:58%; padding-right:18px; }
+  table.footgrid td.sign-cell{ width:42%; padding-left:18px; }
+  .sign-card{ border:1px solid #F0E9EC; padding:16px; text-align:center; }
+  .notes-h{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:#C9B6E4; margin:0 0 5px 0; font-weight:bold; }
+  .notes-p{ font-size:12px; color:#928D98; margin:0 0 14px 0; line-height:1.6; }
+  .sign-line{ height:26px; border-bottom:1px solid #F0E9EC; margin-bottom:6px; }
+  .sign-name{ font-family:'Quicksand', Arial, sans-serif; font-weight:bold; font-size:13px; }
+  .sign-role{ font-size:10px; color:#928D98; }
+  .sign-stamp{ display:inline; font-size:9px; color:#928D98; border:1px dashed #F0E9EC; padding:7px 12px; margin-top:8px; }
+
+  .footer{ text-align:center; padding-top:6px; }
+  .footer-thanks{ font-family:'Quicksand', Arial, sans-serif; font-weight:bold; color:#46414A; font-size:13px; }
+  .footer-gen{ font-size:10px; color:#928D98; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<div class="page">
+
+  <div class="hero">
+    <table class="hero-row">
+      <tr>
+        <td class="brand-cell">
+          <p class="brand-name">[[${gymName}]]</p>
+          <p class="brand-line">[[${gymAddress}]]</p>
+          <p class="brand-line">[[${gymPhone}]] &#183; [[${gymEmail}]] &#183; [[${gymWebsite}]]</p>
+          <p class="brand-line">GST [[${gstNumber}]]</p>
+        </td>
+        <td class="doc-cell">
+          <span class="badge">INVOICE</span>
+          <p class="doc-meta"><span class="lbl">No.</span> [[${invoiceNumber}]]<br/>
+          <span class="lbl">Invoice</span> [[${invoiceDate}]]<br/>
+          <span class="lbl">Payment</span> [[${paymentDate}]]</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <div class="content">
+    <table class="twin">
+      <tr>
+        <td><div class="card"><p class="card-h peach">Member</p>
+          <p class="card-p"><span class="lbl2">Name</span> [[${memberName}]]</p>
+          <p class="card-p"><span class="lbl2">ID</span> [[${memberId}]]</p>
+          <p class="card-p"><span class="lbl2">Phone</span> [[${memberPhone}]]</p>
+          <p class="card-p"><span class="lbl2">Email</span> [[${memberEmail}]]</p>
+        </div></td>
+        <td><div class="card"><p class="card-h lilac">Membership</p>
+          <p class="card-p"><span class="lbl2">Plan</span> [[${planName}]]</p>
+          <p class="card-p"><span class="lbl2">Duration</span> [[${planDuration}]]</p>
+          <p class="card-p"><span class="lbl2">Start</span> [[${startDate}]]</p>
+          <p class="card-p"><span class="lbl2">Expiry</span> [[${expiryDate}]]</p>
+          <p class="card-p"><span class="lbl2">Trainer</span> [[${trainerName}]]</p>
+        </div></td>
+      </tr>
+    </table>
+
+    <table class="items">
+      <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+      <tbody><tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr></tbody>
+    </table>
+
+    <table class="bottom">
+      <tr>
+        <td><div class="pay-card">
+          <p class="pay-h">Payment Details</p>
+          <p class="pay-p"><span class="lbl2">Method</span> [[${paymentMethod}]]</p>
+          <p class="pay-p"><span class="lbl2">Reference</span> [[${transactionId}]]</p>
+          <div class="qr-box">QR CODE</div>
+        </div></td>
+        <td><div class="totals-card">
+          <table class="totals-tbl">
+            <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+            <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+            <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+            <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+            <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+            <tr><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+          </table>
+        </div></td>
+      </tr>
+    </table>
+
+    <table class="footgrid">
+      <tr>
+        <td class="notes-cell">
+          <p class="notes-h">Notes</p>
+          <p class="notes-p">[[${notes}]]</p>
+          <p class="notes-h">Terms &amp; Conditions</p>
+          <p class="notes-p">[[${terms}]]</p>
+        </td>
+        <td class="sign-cell">
+          <div class="sign-card">
+            <div class="sign-line"></div>
+            <p class="sign-name">[[${signatureName}]]</p>
+            <p class="sign-role">Authorized Signature</p>
+            <p class="sign-stamp">STAMP</p>
+          </div>
+        </td>
+      </tr>
+    </table>
+
+    <div class="footer">
+      <p class="footer-thanks">[[${thankYouMessage}]]</p>
+      <p class="footer-gen">Generated by Gym SaaS</p>
+    </div>
+  </div>
+
+</div>
+</body>
+</html>

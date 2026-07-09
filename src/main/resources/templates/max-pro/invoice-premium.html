@@ -1,0 +1,319 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+    <meta content="text/html; charset=UTF-8"
+          http-equiv="Content-Type"/>
+
+    <title>Elite Fitness Premium Receipt</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', Helvetica, Arial, sans-serif;
+          color: #2B3A45;
+          font-size: 11px; /* Slightly reduced to account for vertical stack */
+          background-color: #FFFFFF;
+          line-height: 2.00;
+        }
+
+
+        .page {
+  width: 210mm;
+  min-height: 297mm;
+  padding: 12mm 14mm;
+  box-sizing: border-box;
+  page-break-inside: avoid;
+
+  /* CRITICAL CODES FOR CENTERING */
+  margin-left: auto;
+  margin-right: auto;
+  height:100%;
+}
+
+
+        /* Header Layout */
+        .header-table {
+          width: 100%;
+          margin-bottom: 8px;
+        }
+        .logo {
+  /* Restrict both dimensions completely */
+  max-width: 150px;
+  max-height: 45px;
+  height: auto;
+  width: auto;
+  display: block;
+  margin-bottom: 4px;
+}
+        .gym {
+          font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+          font-size: 22px;
+          font-weight: bold;
+          color: #3A5A6B;
+          margin: 0;
+        }
+        .contact {
+          font-size: 10.5px;
+          color: #86979C;
+        }
+        .status-cell {
+          text-align: right;
+          vertical-align: top;
+        }
+        .status {
+  display: block;
+  float: right; /* Use pure block alignment inside the table cell */
+  white-space: nowrap; /* Rigid constraint against line breaks */
+
+  border: 1.5px solid #E8806B;
+  color: #E8806B;
+  padding: 4px 10px;
+  font-size: 10.5px;
+  font-weight: bold;
+  letter-spacing: 1px;
+  margin-top: 4px;
+}
+
+
+        /* Hero Section */
+        .hero {
+          background-color: #F4F8F8;
+          border-left: 3px solid #E8806B;
+          padding: 8px 12px;
+          margin-bottom: 12px;
+        }
+        .heroTitle {
+          font-size: 10px;
+          text-transform: uppercase;
+          letter-spacing: 1px;
+          color: #86979C;
+          font-weight: bold;
+        }
+        .heroAmount {
+          font-size: 20px;
+          font-weight: bold;
+          color: #E8806B;
+          margin-top: 1px;
+        }
+
+        /* Vertical Card Layout */
+        .card {
+          border: 1px solid #E1E9E8;
+          padding: 8px 12px;
+          margin-bottom: 10px; /* Separates the cards vertically */
+        }
+        .cardTitle {
+          font-size: 11.5px;
+          font-weight: bold;
+          color: #3A5A6B;
+          border-bottom: 1px solid #3A5A6B;
+          padding-bottom: 3px;
+          margin-bottom: 6px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+
+        /* Data Tables inside Cards */
+        .card table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .card td {
+          padding: 3px 0;
+          font-size: 11px;
+          border-bottom: 1px dotted #E1E9E8;
+          vertical-align: middle;
+          color: #86979C;
+        }
+        .card tr:last-child td {
+          border-bottom: none; /* Cleans up the last row border */
+        }
+        .card td.value {
+          text-align: right;
+          font-weight: bold;
+          color: #2B3A45;
+        }
+        .card tr.highlight td {
+          color: #E8806B;
+          border-top: 1px solid #3A5A6B;
+          padding-top: 5px;
+        }
+        .card tr.highlight td.value {
+          color: #E8806B;
+        }
+        .card td.due {
+          color: #E8806B;
+          font-weight: bold;
+        }
+
+        .signature-container {
+          width: 100%;
+          margin-top: 20px;
+          margin-bottom: 15px;
+        }
+        .signature {
+          float: right;
+          width: 160px;
+          text-align: center;
+          border-top: 1px solid #2B3A45;
+          padding-top: 4px;
+          font-size: 11px;
+          color: #86979C;
+        }
+
+        .footer {
+          clear: both;
+          background-color: #F4F8F8;
+          text-align: center;
+          padding: 8px;
+          font-size: 10px;
+          color: #86979C;
+          border-top: 1px solid #E1E9E8;
+        }
+        .footer strong {
+          color: #3A5A6B;
+        }
+    </style>
+
+</head>
+<body>
+<div class="page">
+
+    <!-- Header Block -->
+    <table class="header-table">
+        <tr>
+            <td style="width: 100%; vertical-align: top;">
+                <img alt="logo" class="logo" th:if="${gym.logoUrl!=null}" th:src="${gym.logoUrl}"/>
+                <div class="gym" th:text="${gym.name}">SHri Ram Fitness</div>
+                <div class="contact">
+                    <span th:text="${gym.address}">New Panvel</span><br/>
+                    P: <span th:text="${member.phone}">+91748748734883</span> | M: <span th:text="${gym.email}">craj47577@gmail.com</span>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Hero Callout -->
+    <div class="hero">
+        <div class="heroTitle">TOTAL PAYMENT RECEIVED</div>
+        <div class="heroAmount"><span th:text="${payment.paidAmount}">5000</span> rs.</div>
+    </div>
+
+    <!-- Section 1: Receipt Information -->
+    <div class="card">
+        <div class="cardTitle">Receipt Information</div>
+        <table>
+            <tr>
+                <td>Receipt Number</td>
+                <td class="value" th:text="${invoice.invoiceNumber}">43</td>
+            </tr>
+            <tr>
+                <td>Date</td>
+                <td class="value" th:text="${invoice.paymentDate}">21/09/2026</td>
+            </tr>
+            <tr>
+                <td>Collected By</td>
+                <td class="value" th:text="${member.name}">Rahul</td>
+            </tr>
+            <tr>
+                <td>Transaction ID</td>
+                <td class="value" th:text="${payment.transactionId}">32</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Section 2: Member Information -->
+    <div class="card">
+        <div class="cardTitle">Member Information</div>
+        <table>
+            <tr>
+                <td>Name</td>
+                <td class="value" th:text="${member.name}">Rahul</td>
+            </tr>
+            <tr>
+                <td>Phone</td>
+                <td class="value" th:text="${member.phone}">+913243684839</td>
+            </tr>
+            <tr>
+                <td>Membership Plan</td>
+                <td class="value" th:text="${membership.planName}">Gold</td>
+            </tr>
+            <tr>
+                <td>Duration</td>
+                <td class="value" th:text="${membership.duration}">21</td>
+            </tr>
+            <tr>
+                <td>Validity Period</td>
+                <td class="value">
+                    <span th:text="${membership.startDate}">12/03/2026</span> - <span
+                        th:text="${membership.expiryDate}">12/06/2026</span>
+                </td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Section 3: Payment Summary -->
+    <div class="card">
+        <div class="cardTitle">Payment Summary</div>
+        <table>
+            <tr>
+                <td>Membership Fee</td>
+                <td class="value"><span th:text="${payment.total}">7000</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Discount</td>
+                <td class="value"><span th:text="${payment.discount}">0</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Tax</td>
+                <td class="value"><span th:text="${payment.gst}">0</span> rs.</td>
+            </tr>
+            <tr class="highlight">
+                <td><strong>Total Paid</strong></td>
+                <td class="value"><strong><span th:text="${payment.paidAmount}">323</span> rs.</strong></td>
+            </tr>
+            <tr>
+                <td class="due">Due Amount</td>
+                <td class="value due"><span th:text="${payment.dueAmount}">2000</span> rs.</td>
+            </tr>
+            <tr>
+                <td>Payment Method</td>
+                <td class="value" th:text="${payment.paymentMethod}">CASH</td>
+            </tr>
+            <tr>
+                <td>Invoice Notes</td>
+                <td class="value" th:text="${gym.terms}">N/A</td>
+            </tr>
+        </table>
+    </div>
+
+    <!-- Signature Block -->
+    <table class="signature-container">
+        <tr>
+            <td>
+                <div class="signature">Authorized Signature</div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Compressed Footer -->
+    <div class="footer">
+        <strong>Thank you for being part of <span th:text="${gym.name}">Shri Ram Fitness</span></strong>
+        <div style="margin: 2px 0;">Keep training. Stay consistent. Stay healthy.</div>
+        <div>Generated on <span th:text="${invoice.invoiceDate}">21/07/2026</span></div>
+    </div>
+
+</div>
+
+</body>
+</html>

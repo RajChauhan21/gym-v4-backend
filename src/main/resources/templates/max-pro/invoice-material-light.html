@@ -1,0 +1,245 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Material Light Receipt</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Roboto', 'Inter', Helvetica, Arial, sans-serif;
+          color: #333333;
+          font-size: 11px;
+          background-color: #F5F5F5; /* Material light grey background workspace */
+          line-height: 2.25;
+        }
+
+        /* Centered and structural page frame container */
+        .wrap {
+          width: 210mm;
+          box-sizing: border-box;
+          padding: 10mm; /* Clean workspace padding */
+          page-break-inside: avoid;
+
+          /* AUTOMATIC CENTERING PROPERTIES */
+          margin-left: auto;
+          margin-right: auto;
+        }
+
+        /* Material Elevation Styled Card Shell */
+        .card {
+          background-color: #FFFFFF;
+          border: 1px solid #E0E0E0;
+          border-radius: 4px; /* Material border rounding */
+          padding: 8mm 12mm;
+          box-sizing: border-box;
+          height:100%;
+        }
+
+        /* Header Branding Block */
+        .top {
+          text-align: center;
+          margin-bottom: 12px;
+           width: 100%;
+        }
+        .logo {
+          max-height: 38px;
+          width: auto;
+          display: inline-block;
+          margin: 0 auto 4px auto;
+        }
+        h1 {
+          font-size: 20px;
+          font-weight: 500;
+          color: #00796b; /* Material teal brand color */
+          margin: 0;
+          letter-spacing: 0.25px;
+        }
+        .small {
+          font-size: 10.5px;
+          color: #666666;
+          margin-top: 3px;
+        }
+        .top p {
+          margin: 6px 0 0 0;
+        }
+
+        /* Material Status Chip Badge */
+        .chip {
+          display: inline-block;
+          background-color: #E0F2F1; /* Muted teal accent highlight */
+          color: #004D40;
+          padding: 3px 12px;
+          font-size: 10px;
+          font-weight: bold;
+          border-radius: 12px; /* Pill-shaped rounding constraint */
+          letter-spacing: 0.5px;
+        }
+
+        /* Material Subheader Section */
+        .sec {
+          margin-bottom: 10px; /* Highly compressed card section space */
+        }
+        .sh {
+          font-size: 11px;
+          font-weight: bold;
+          color: #00796b;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+          margin-bottom: 3px;
+          border-bottom: 1px solid #E0E0E0;
+          padding-bottom: 2px;
+        }
+
+        /* Compact Data Layout Tables */
+        table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        td {
+          padding: 3.5px 0; /* Tight data row padding */
+          font-size: 11px;
+          color: #555555;
+          text-align: left;
+          border-bottom: 1px dotted #EEEEEE;
+        }
+        td.r {
+          text-align: right;
+          font-weight: bold;
+          color: #212121;
+        }
+
+        /* Clear border lines on terminal rows */
+        tr:last-child td {
+          border-bottom: none;
+        }
+
+        /* Invoice Cost Computations Highlight Rows */
+        tr.total td {
+          color: #00796b;
+          font-weight: bold;
+          border-top: 1px solid #00796b;
+          padding-top: 5px;
+        }
+        tr.total td.r {
+          color: #00796b;
+        }
+        tr.due td {
+          color: #C62828; /* Material deep red indicator warning label */
+          font-weight: bold;
+        }
+        tr.due td.r {
+          color: #C62828;
+        }
+
+        /* Unified Structural System Footer Block */
+        .foot {
+          text-align: center;
+          padding: 6px 0 0 0;
+          font-size: 9.5px;
+          color: #9E9E9E;
+          border-top: 1px solid #E0E0E0;
+          margin-top: 14px;
+        }
+    </style>
+
+</head>
+<body>
+<div class="wrap">
+    <div class="card">
+        <div class="top">
+            <img class="logo" th:if="${gym.logoUrl!=null}" th:src="${gym.logoUrl}"/>
+            <h1 th:text="${gym.name}">Gym</h1>
+            <div class="small"><span th:text="${gym.address}">Mumbai</span><br/><span th:text="${member.phone}">+91877834783</span> |
+                <span th:text="${gym.email}">gymowner@gmail.com</span></div>
+            <p><span class="chip">PAID</span></p>
+        </div>
+        <div class="sec">
+            <div class="sh">Receipt</div>
+            <table>
+                <tr>
+                    <td>No.</td>
+                    <td class="r" th:text="${invoice.invoiceNumber}">22</td>
+                </tr>
+                <tr>
+                    <td>Date</td>
+                    <td class="r" th:text="${invoice.paymentDate}">10/06/2026</td>
+                </tr>
+            </table>
+        </div>
+        <div class="sec">
+            <div class="sh">Member</div>
+            <table>
+                <tr>
+                    <td>Name</td>
+                    <td class="r" th:text="${member.name}">Vicky</td>
+                </tr>
+                <tr>
+                    <td>Duration</td>
+                    <td class="r" th:text="${membership.duration}"></td>
+                </tr>
+                <tr>
+                    <td>Plan</td>
+                    <td class="r" th:text="${membership.planName}">4 months</td>
+                </tr>
+                <tr>
+                    <td>Validity</td>
+                    <td class="r"><span th:text="${membership.startDate}">07/10/2026</span> - <span
+                            th:text="${membership.expiryDate}">07/12/2026</span></td>
+                </tr>
+            </table>
+        </div>
+        <div class="sec">
+            <div class="sh">Payment</div>
+            <table>
+                <tr>
+                    <td>Fee</td>
+                    <td class="r"><span th:text="${payment.total}">4000</span> rs.</td>
+                </tr>
+                <tr>
+                    <td>Discount</td>
+                    <td class="r"><span th:text="${payment.discount}">0</span> rs.</td>
+                </tr>
+                <tr>
+                    <td>Tax</td>
+                    <td class="r"><span th:text="${payment.gst}">0</span> rs.</td>
+                </tr>
+                <tr class="total">
+                    <td>Total Paid</td>
+                    <td class="r"><span th:text="${payment.paidAmount}">2000</span> rs.</td>
+                </tr>
+                <tr class="due">
+                    <td>Due Amount</td>
+                    <td class="r"><span th:text="${payment.dueAmount}">2000</span> rs.</td>
+                </tr>
+            </table>
+        </div>
+        <div class="sec">
+            <div class="sh">Transaction</div>
+            <table>
+                <tr>
+                    <td>Method</td>
+                    <td class="r" th:text="${payment.paymentMethod}">CASH</td>
+                </tr>
+                <tr>
+                    <td>Transaction ID</td>
+                    <td class="r" th:text="${payment.transactionId}">N/A</td>
+                </tr>
+                <tr>
+                    <td>Collected By</td>
+                    <td class="r" th:text="${member.name}">Vicky</td>
+                </tr>
+            </table>
+        </div>
+        <div class="foot">Generated on <span th:text="${invoice.invoiceDate}">12/06/2026</span></div>
+    </div>
+</div>
+</body>
+</html>

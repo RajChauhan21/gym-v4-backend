@@ -56,7 +56,7 @@ public class MemberShipService {
 
     @Transactional
     public MemberShipResponse update(MemberShipRequest request) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(request.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
         if(ownerRepository.existsById(request.getOwnerId()) && ownerRepository.findById(request.getOwnerId()).get().getGym()==null){

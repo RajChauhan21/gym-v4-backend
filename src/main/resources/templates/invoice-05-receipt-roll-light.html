@@ -1,0 +1,148 @@
+
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Receipt Roll</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{ --ink:#3A3A38; --slate:#7C8C94; --cream:#FBF9F4; --line:#DCD6C8; }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#d9d4c4; font-family:'Courier Prime',monospace; color:var(--ink); }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:#e9e4d6; display:flex; justify-content:center; padding:20mm 0; }
+    .roll{ width:120mm; background:var(--cream); padding:14px 22px 6px; box-shadow:0 4px 18px rgba(0,0,0,.08); position:relative; }
+    .zig-top, .zig-bottom{ height:10px; }
+    .zig-top svg, .zig-bottom svg{ width:100%; height:100%; display:block; }
+
+    .center{ text-align:center; }
+    h1{ font-size:18px; text-transform:uppercase; letter-spacing:1px; margin:6px 0 6px; }
+    .center p{ margin:2px 0; font-size:11px; color:var(--slate); }
+    .star-rule{ text-align:center; font-size:10px; color:var(--line); margin:12px 0; letter-spacing:4px; }
+
+    .row{ display:flex; justify-content:space-between; font-size:11.5px; margin:4px 0; }
+    .row span:first-child{ color:var(--slate); }
+    .dash{ border:none; border-top:1px dashed var(--line); margin:12px 0; }
+
+    h2.sec{ font-size:11.5px; text-transform:uppercase; letter-spacing:2px; margin:14px 0 8px; text-align:center; }
+
+    table.items{ width:100%; font-size:11.5px; border-collapse:collapse; margin-bottom:6px; }
+    table.items thead th{ text-align:left; font-size:10px; text-transform:uppercase; border-bottom:1px dashed var(--line); padding-bottom:6px; }
+    table.items thead th:not(:first-child){ text-align:right; }
+    table.items tbody td{ padding:8px 0; }
+    table.items tbody td:not(:first-child){ text-align:right; }
+
+    .totals-list .row.grand{ font-weight:700; font-size:14px; border-top:1px dashed var(--ink); padding-top:8px; margin-top:8px; }
+    .totals-list .row.due{ font-weight:700; }
+
+    .qr-mini{ margin:10px auto 0; width:56px; height:56px; border:1px dashed var(--line); display:flex; align-items:center; justify-content:center; font-size:8px; color:var(--slate); }
+
+    .barcode{ display:flex; justify-content:center; gap:2px; margin:16px 0 4px; height:32px; }
+    .barcode span{ display:inline-block; width:2px; background:var(--ink); }
+    .barcode-label{ text-align:center; font-size:10px; letter-spacing:2px; color:var(--slate); margin-bottom:10px; }
+
+    .notes p{ font-size:11px; color:var(--slate); margin:0 0 10px; line-height:1.5; text-align:center; }
+    .sign{ text-align:center; margin-top:14px; }
+    .sign .line{ width:60%; margin:0 auto 6px; border-bottom:1px dashed var(--ink); height:24px; }
+    .sign .name{ font-size:12px; font-weight:700; }
+    .sign .role{ font-size:10px; color:var(--slate); }
+
+    footer{ text-align:center; margin-top:14px; padding-bottom:6px; }
+    footer .thanks{ font-size:12px; font-weight:700; }
+    footer .gen{ font-size:9.5px; color:var(--slate); margin-top:4px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="roll">
+    <div class="zig-top"><svg viewBox="0 0 200 10" preserveAspectRatio="none"><polyline points="0,10 5,0 10,10 15,0 20,10 25,0 30,10 35,0 40,10 45,0 50,10 55,0 60,10 65,0 70,10 75,0 80,10 85,0 90,10 95,0 100,10 105,0 110,10 115,0 120,10 125,0 130,10 135,0 140,10 145,0 150,10 155,0 160,10 165,0 170,10 175,0 180,10 185,0 190,10 195,0 200,10" fill="#e9e4d6"/></svg></div>
+
+    <div class="center">
+      <h1 th:text="${gymName}">Gym Name</h1>
+      <p th:text="${gymAddress}">Gym Address</p>
+      <p th:text="${gymPhone}">Phone</p>
+      <p th:text="${gymEmail}">Email</p>
+      <p th:text="${gymWebsite}">Website</p>
+      <p>GST <span th:text="${gstNumber}">GST123456789</span></p>
+    </div>
+    <div class="star-rule">★ ★ ★ ★ ★ ★ ★ ★ ★ ★</div>
+
+    <div class="row"><span>Invoice No.</span><span th:text="${invoiceNumber}">INV-001</span></div>
+    <div class="row"><span>Invoice Date</span><span th:text="${invoiceDate}">01/01/2026</span></div>
+    <div class="row"><span>Payment Date</span><span th:text="${paymentDate}">01/01/2026</span></div>
+    <hr class="dash">
+
+    <h2 class="sec">Member</h2>
+    <div class="row"><span>Name</span><span th:text="${memberName}">John Doe</span></div>
+    <div class="row"><span>Member ID</span><span th:text="${memberId}">M-101</span></div>
+    <div class="row"><span>Phone</span><span th:text="${memberPhone}">+91 98765 43210</span></div>
+    <div class="row"><span>Email</span><span th:text="${memberEmail}">john@example.com</span></div>
+    <hr class="dash">
+
+    <h2 class="sec">Membership</h2>
+    <div class="row"><span>Plan</span><span th:text="${planName}">Premium Plan</span></div>
+    <div class="row"><span>Duration</span><span th:text="${planDuration}">3 Months</span></div>
+    <div class="row"><span>Start</span><span th:text="${startDate}">01/01/2026</span></div>
+    <div class="row"><span>Expiry</span><span th:text="${expiryDate}">31/03/2026</span></div>
+    <div class="row"><span>Trainer</span><span th:text="${trainerName}">Jane Smith</span></div>
+    <hr class="dash">
+
+    <table class="items">
+      <thead><tr><th>Item</th><th>Qty</th><th style="text-align:right;">Price</th></tr></thead>
+      <tbody>
+      <tr>
+        <td th:text="${planName}">Premium Plan</td>
+        <td style="text-align:right;">1</td>
+        <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+      </tr>
+      </tbody>
+    </table>
+    <hr class="dash">
+
+    <div class="totals-list">
+      <div class="row"><span>Subtotal</span><span th:text="'₹' + ${subtotal}">₹0.00</span></div>
+      <div class="row"><span>Discount</span><span th:text="'−₹' + ${discount}">−₹0.00</span></div>
+      <div class="row"><span>GST</span><span th:text="'₹' + ${gst}">₹0.00</span></div>
+      <div class="row grand"><span>TOTAL</span><span th:text="'₹' + ${total}">₹0.00</span></div>
+      <div class="row"><span>Paid</span><span th:text="'₹' + ${paidAmount}">₹0.00</span></div>
+      <div class="row due"><span>Due</span><span th:text="'₹' + ${dueAmount}">₹0.00</span></div>
+    </div>
+    <hr class="dash">
+
+    <div class="row"><span>Payment Method</span><span th:text="${paymentMethod}">UPI</span></div>
+    <div class="row"><span>Reference</span><span th:text="${transactionId}">TXN123456</span></div>
+    <div class="qr-mini">QR CODE</div>
+
+    <div class="barcode">
+      <span style="width:2px;height:100%;"></span><span style="width:1px;height:80%;"></span><span style="width:3px;height:100%;"></span><span style="width:1px;height:60%;"></span><span style="width:2px;height:100%;"></span><span style="width:1px;height:90%;"></span><span style="width:1px;height:70%;"></span><span style="width:3px;height:100%;"></span><span style="width:1px;height:60%;"></span><span style="width:2px;height:100%;"></span><span style="width:1px;height:85%;"></span><span style="width:1px;height:60%;"></span><span style="width:3px;height:100%;"></span><span style="width:1px;height:75%;"></span><span style="width:2px;height:100%;"></span>
+    </div>
+    <div class="barcode-label" th:text="${transactionId}">TXN123456</div>
+
+    <div class="notes">
+      <p th:text="${notes}">No notes provided.</p>
+      <p th:text="${terms}">Terms apply.</p>
+    </div>
+
+    <div class="sign">
+      <div class="line"></div>
+      <div class="name" th:text="${signatureName}">Manager</div>
+      <div class="role">Authorized Signature</div>
+    </div>
+
+    <footer>
+      <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+      <div class="gen">Generated by Gym SaaS</div>
+    </footer>
+
+    <div class="zig-bottom"><svg viewBox="0 0 200 10" preserveAspectRatio="none"><polyline points="0,0 5,10 10,0 15,10 20,0 25,10 30,0 35,10 40,0 45,10 50,0 55,10 60,0 65,10 70,0 75,10 80,0 85,10 90,0 95,10 100,0 105,10 110,0 115,10 120,0 125,10 130,0 135,10 140,0 145,10 150,0 155,10 160,0 165,10 170,0 175,10 180,0 185,10 190,0 195,10 200,0" fill="#e9e4d6"/></svg></div>
+  </div>
+</div>
+</body>
+</html>
+

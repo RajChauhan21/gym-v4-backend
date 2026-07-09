@@ -1,0 +1,405 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Invoice — Paper Fold Ticket</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', Helvetica, Arial, sans-serif;
+          color: #2F3E46;
+          font-size: 11px;
+          background-color: #F8F9FA;
+          line-height: 2.25;
+        }
+
+        /* Centered Main Document Framing Workspace */
+        .page {
+          width: 210mm;
+          min-height: 297mm;
+          box-sizing: border-box;
+          padding: 10mm 14mm;
+          background-color: #FFFFFF;
+          page-break-inside: avoid; /* Hard print prevention barrier for page 2 spilling */
+
+          /* AUTOMATIC HORIZONTAL CENTERING */
+          margin-left: auto;
+          margin-right: auto;
+          height:100%
+        }
+
+        /* Structural Panel Blocks */
+        .panel {
+          background: #FFFFFF;
+          margin-bottom: 8px;
+          box-sizing: border-box;
+        }
+
+        /* Header Section Table Layout */
+        .header-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 10px;
+        }
+        .brand {
+          vertical-align: top;
+          text-align: left;
+        }
+        .brand h1 {
+          font-size: 22px;
+          font-weight: bold;
+          color: #2F3E46;
+          margin: 0 0 2px 0;
+          text-transform: uppercase;
+        }
+        .brand p {
+          font-size: 10.5px;
+          color: #6C757D;
+          margin: 2px 0;
+        }
+
+        .doc-tag {
+          vertical-align: top;
+          text-align: right;
+          width: 200px;
+        }
+
+        /* Ticket Style Invoice Badge */
+        .badge {
+          display: inline-block;
+          background-color: #2F3E46;
+          color: #FFFFFF;
+          padding: 3px 12px;
+          font-size: 10px;
+          font-weight: bold;
+          letter-spacing: 1px;
+          border-radius: 2px;
+          margin-bottom: 6px;
+        }
+        .meta {
+          font-size: 10.5px;
+          color: #495057;
+          line-height: 1.4;
+        }
+        .meta b {
+          color: #2F3E46;
+        }
+
+        /* Reliable Cross-Row Grid Table Substitutes for Column Layouts */
+        .grid-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 6px;
+        }
+        .grid-table td.fold-cell {
+          width: 50%;
+          vertical-align: top;
+          box-sizing: border-box;
+        }
+        .grid-table td.fold-cell:first-child { padding-right: 8px; }
+        .grid-table td.fold-cell:last-child { padding-left: 8px; }
+
+        /* Sub-Section Cards */
+        .fold-box {
+          border: 1px dashed #CED4DA; /* Paper ticket perforated fold theme */
+          padding: 8px 12px;
+          background: #F8F9FA;
+          border-radius: 4px;
+          min-height: 110px;
+        }
+        .fold-box h2, .fold-box h3 {
+          font-size: 11.5px;
+          color: #2F3E46;
+          margin: 0 0 6px 0;
+          text-transform: uppercase;
+          border-bottom: 1px solid #CED4DA;
+          padding-bottom: 2px;
+        }
+        .fold-box p {
+          margin: 3px 0;
+          font-size: 10.5px;
+          color: #495057;
+        }
+        .fold-box p b {
+          display: inline-block;
+          width: 65px;
+          color: #6C757D;
+        }
+
+        /* Itemization Table Styling */
+        table.items {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 4px 0;
+        }
+        table.items th {
+          background-color: #2F3E46;
+          color: #FFFFFF;
+          font-size: 10px;
+          font-weight: bold;
+          text-transform: uppercase;
+          padding: 5px 10px;
+          text-align: left;
+        }
+        table.items td {
+          padding: 6px 10px;
+          border-bottom: 1px solid #E9ECEF;
+          color: #495057;
+        }
+
+        .qr {
+          display: inline-block;
+          margin-top: 6px;
+          padding: 4px 10px;
+          border: 1px dashed #6C757D;
+          font-size: 9px;
+          color: #6C757D;
+          font-weight: bold;
+          background: #FFFFFF;
+          letter-spacing: 0.5px;
+        }
+
+        table.totals-layout {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        table.totals-layout td {
+          padding: 3px 0;
+          font-size: 10.5px;
+          color: #6C757D;
+          border-bottom: 1px dotted #E9ECEF;
+        }
+        table.totals-layout td:last-child {
+          text-align: right;
+          font-weight: bold;
+          color: #2F3E46;
+        }
+        table.totals-layout tr.grand td {
+          font-size: 11.5px;
+          font-weight: bold;
+          color: #E63946; /* High contrast energetic red accent */
+          border-top: 1px solid #2F3E46;
+          padding-top: 5px;
+        }
+        table.totals-layout tr.grand td:last-child {
+          color: #E63946;
+        }
+
+        /* Ticket Perforation Separation Element */
+        .tear {
+          text-align: center;
+          font-size: 9px;
+          color: #6C757D;
+          letter-spacing: 1px;
+          margin: 12px 0;
+          position: relative;
+          border-bottom: 1px dashed #6C757D;
+          line-height: 0.1em;
+        }
+        .tear span {
+          background: #FFFFFF;
+          padding: 0 10px;
+        }
+
+        /* Lower Receipt Stub Element layouts */
+        .stub-table {
+          width: 100%;
+          border-collapse: collapse;
+        }
+        .notes {
+          vertical-align: top;
+          text-align: left;
+          padding-right: 15px;
+        }
+        .notes h4 {
+          margin: 0 0 3px 0;
+          font-size: 10.5px;
+          color: #2F3E46;
+          text-transform: uppercase;
+        }
+        .notes p {
+          margin: 0 0 8px 0;
+          font-size: 10px;
+          color: #6C757D;
+          line-height: 1.3;
+        }
+
+        .sign {
+          vertical-align: top;
+          text-align: center;
+          width: 180px;
+        }
+        .line2 {
+          border-top: 1px solid #2F3E46;
+          margin-top: 25px;
+          margin-bottom: 4px;
+        }
+        .sign .name {
+          font-weight: bold;
+          color: #2F3E46;
+          font-size: 10.5px;
+        }
+        .sign .role {
+          font-size: 9.5px;
+          color: #6C757D;
+        }
+        .stamp {
+          display: inline-block;
+          margin-top: 6px;
+          border: 1px solid #CED4DA;
+          padding: 3px 10px;
+          font-size: 8.5px;
+          color: #CED4DA;
+          letter-spacing: 1px;
+        }
+
+        /* Footer System Blocks */
+        footer {
+          text-align: center;
+          margin-top: 10px;
+          border-top: 1px solid #E9ECEF;
+          padding-top: 6px;
+        }
+        .thanks {
+          font-weight: bold;
+          color: #2F3E46;
+          font-size: 11px;
+        }
+        .gen {
+          font-size: 9px;
+          color: #ADB5BD;
+          margin-top: 2px;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+    <!-- Fixed Layout Header Block Container -->
+    <table class="header-table">
+        <tr>
+            <td class="brand">
+                <h1 th:text="${gym.name}">Gym Name</h1>
+                <p th:text="${gym.address}">Gym Address</p>
+                <p>
+                    Phone: <span th:text="${member.phone}">+914738478347</span> ·
+                    Email: <span th:text="${gym.email}">gymowner@gmail.com</span> ·
+                    Website: <span th:text="${gym.website}">www.gym.com</span>
+                </p>
+            </td>
+            <td class="doc-tag">
+                <span class="badge">INVOICE</span>
+                <div class="meta">
+                    <div><b>No.</b> <span th:text="${invoice.invoiceNumber}">INV-001</span></div>
+                    <div><b>Invoice:</b> <span th:text="${invoice.invoiceDate}">01/01/2026</span></div>
+                    <div><b>Payment:</b> <span th:text="${invoice.paymentDate}">01/01/2026</span></div>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Perforated Split Core Data Section Layout Sub-Grid -->
+    <table class="grid-table">
+        <tr>
+            <td class="fold-cell">
+                <div class="fold-box">
+                    <h2>Member</h2>
+                    <p><b>Name</b> <span th:text="${member.name}">John Doe</span></p>
+                    <p><b>Phone</b> <span th:text="${member.phone}">+91 98765 43210</span></p>
+                    <p><b>Email</b> <span th:text="${member.email}">john@example.com</span></p>
+                </div>
+            </td>
+            <td class="fold-cell">
+                <div class="fold-box">
+                    <h2>Membership</h2>
+                    <p><b>Plan</b> <span th:text="${membership.planName}">Premium Plan</span></p>
+                    <p><b>Duration</b> <span th:text="${membership.duration}">3 Months</span></p>
+                    <p><b>Start</b> <span th:text="${membership.startDate}">01/01/2026</span></p>
+                    <p><b>Expiry</b> <span th:text="${membership.expiryDate}">31/03/2026</span></p>
+                </div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Purchase Breakdown Arrays -->
+    <div class="panel">
+        <table class="items">
+            <thead>
+            <tr>
+                <th>Description</th>
+                <th style="width: 50px; text-align: right;">Qty</th>
+                <th style="width: 100px; text-align: right;">Unit Price</th>
+                <th style="width: 100px; text-align: right;">Total</th>
+            </tr>
+            </thead>
+            <tbody>
+            <tr>
+                <td th:text="${membership.planName}">Premium Plan</td>
+                <td style="text-align: right;">1</td>
+                <td style="text-align: right;">
+                    <span th:text="${payment.total}">500</span> rs.
+                </td>
+                <td style="text-align: right;">
+                    <span th:text="${payment.total}">500</span> rs.
+                </td>
+            </tr>
+            </tbody>
+        </table>
+    </div>
+
+    <!-- Lower Account Processing Information Sub-Grid -->
+    <table class="grid-table">
+        <tr>
+            <td class="fold-cell">
+                <div class="fold-box" style="min-height: 125px;">
+                    <h3>Payment Details</h3>
+                    <p><b>Method</b> <span th:text="${payment.paymentMethod}">UPI</span></p>
+                    <p><b>Reference</b> <span th:text="${payment.transactionId}">TXN123456</span></p>
+                </div>
+            </td>
+            <td class="fold-cell">
+                <div class="fold-box" style="min-height: 125px; background: #FFFFFF;">
+                    <table class="totals-layout">
+                        <tr>
+                            <td>Subtotal</td>
+                            <td><span th:text="${payment.total}">500</span> rs.</td>
+                        </tr>
+                        <tr>
+                            <td>Discount</td>
+                            <td><span th:text="${payment.discount}">0</span> rs.</td>
+                        </tr>
+                        <tr>
+                            <td>GST</td>
+                            <td><span th:text="${payment.gst}">0</span> rs.</td>
+                        </tr>
+                        <tr class="grand">
+                            <td>Total</td>
+                           <td><span th:text="${payment.total}">500</span> rs.</td>
+                        </tr>
+                        <tr>
+                            <td>Paid</td>
+                           <td><span th:text="${payment.paidAmount}">200</span> rs.</td>
+                        </tr>
+                        <tr>
+                            <td>Due</td>
+                           <td><span th:text="${payment.dueAmount}">300</span> rs.</td>
+                        </tr>
+                    </table>
+                </div>
+            </td>
+        </tr>
+    </table>
+    <footer>
+        <div class="thanks">Thank you for your business!</div>
+        <div class="gen" th:text="'Generated by ' + ${gym.name}">Generated by Gym Name</div>
+    </footer>
+</div>
+</body>
+</html>

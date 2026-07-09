@@ -56,7 +56,7 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse update(PaymentRequest request) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(request.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
         if (!memberRepository.existsById(request.getMemberId())) {
@@ -120,11 +120,11 @@ public class PaymentService {
         return paymentRepository.getRevenueOverview(ownerId,days);
     }
 
-    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, Integer amount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(Math.toIntExact(ownerId), SubscriptionStatus.ACTIVE).isEmpty()){
+    public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, String amount,String dueAmount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(Math.toIntExact(ownerId), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
-        return paymentRepository.findPaymentsFiltered(ownerId, memberName, membershipName, method, amount, dateFrom, dateTo, pageable);
+        return paymentRepository.findPaymentsFiltered(ownerId, memberName, membershipName, method, amount,dueAmount, dateFrom, dateTo, pageable);
     }
 
     public Double getRevenueThisMonth(){
@@ -132,17 +132,20 @@ public class PaymentService {
     }
 
     public List<RecentPaymentProjection> getRecentPaymentByOwnerId(Integer ownerId){
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE).isEmpty()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
         return paymentRepository.findRecentPaymentsByOwner(ownerId);
     }
 
     public RevenueProjection getRevenues(Integer ownerId){
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE).isEmpty()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
         return paymentRepository.getRevenueByOwner(ownerId);
     }
 
+    public Long getFilteredPaymentsCount(Long ownerId, String plan, String method, String amount, String dueAmount, LocalDate dateFrom, LocalDate dateTo) {
+      return   paymentRepository.countPaymentsFiltered(ownerId,plan,method,amount,dueAmount,dateFrom,dateTo);
+    }
 }

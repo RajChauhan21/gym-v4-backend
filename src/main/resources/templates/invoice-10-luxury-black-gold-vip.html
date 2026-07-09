@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Luxury VIP</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up character parameters inside font URL paths for strict compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{
+      --black:#0A0A0A;
+      --panel:#161616;
+      --gold:#D4AF37;
+      --gold-soft:#F2E8C9;
+      --border:#2B2B2B;
+      --muted:#9A9A9A;
+    }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#000; font-family:'Jost',sans-serif; color:var(--gold-soft); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:var(--black); padding:14mm; position:relative; }
+    .frame{ border:1px solid var(--gold); padding:10mm; min-height:273mm; position:relative; }
+    .corner{ position:absolute; width:22px; height:22px; border:2px solid var(--gold); }
+    .corner.tl{ top:-2px; left:-2px; border-right:none; border-bottom:none; }
+    .corner.tr{ top:-2px; right:-2px; border-left:none; border-bottom:none; }
+    .corner.bl{ bottom:-2px; left:-2px; border-right:none; border-top:none; }
+    .corner.br{ bottom:-2px; right:-2px; border-left:none; border-top:none; }
+
+    header{ text-align:center; margin-bottom:24px; }
+    .brand h1{ font-family:'Cinzel',serif; font-size:26px; letter-spacing:3px; text-transform:uppercase; color:var(--gold); margin:0 0 10px; }
+    .brand p{ margin:2px 0; font-size:11.5px; color:var(--muted); letter-spacing:.5px; }
+    .vip-line{ display:flex; align-items:center; justify-content:center; gap:10px; margin:14px 0; }
+    .vip-line .bar{ height:1px; width:60px; background:var(--gold); opacity:.5; }
+    .vip-line .label{ font-family:'Cinzel',serif; font-size:11px; letter-spacing:3px; color:var(--gold); }
+
+    .doc-row{ display:flex; justify-content:space-between; font-size:11.5px; letter-spacing:.5px; color:var(--muted); margin-bottom:22px; text-transform:uppercase; }
+    .doc-row b{ color:var(--gold-soft); }
+
+    .twin{ display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-bottom:26px; background:var(--border); }
+    .col{ background:var(--panel); padding:18px 22px; }
+    .col h2{ font-family:'Cinzel',serif; font-size:13px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin:0 0 12px; }
+    .col p{ margin:6px 0; font-size:12.5px; color:var(--gold-soft); }
+    .col p b{ display:inline-block; min-width:80px; color:var(--muted); font-weight:400; }
+
+    table.items{ width:100%; border-collapse:collapse; margin-bottom:26px; }
+    table.items thead th{
+      text-align:left; font-size:10.5px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold);
+      padding:0 14px 10px; border-bottom:1px solid var(--gold); font-weight:500; font-family:'Cinzel',serif;
+    }
+    table.items thead th:not(:first-child){ text-align:right; }
+    table.items tbody td{ padding:14px; border-bottom:1px solid var(--border); font-size:13.5px; color:var(--gold-soft); }
+    table.items tbody td:not(:first-child){ text-align:right; }
+
+    .bottom{ display:grid; grid-template-columns:1fr 1fr; gap:1px; margin-bottom:26px; background:var(--border); }
+    .pay-box{ background:var(--panel); padding:18px 22px; }
+    .pay-box h3{ font-family:'Cinzel',serif; font-size:12px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin:0 0 12px; }
+    .pay-box p{ font-size:12.5px; margin:6px 0; }
+    .pay-box p span{ color:var(--muted); }
+    .qr{ margin-top:14px; width:74px; height:74px; border:1px solid var(--gold); display:flex; align-items:center; justify-content:center; font-size:9px; color:var(--muted); }
+    .totals{ background:var(--panel); padding:6px 22px; }
+    .totals table{ width:100%; font-size:13px; border-collapse:collapse; }
+    .totals td{ padding:8px 0; color:var(--muted); }
+    .totals td:last-child{ text-align:right; color:var(--gold-soft); }
+    .totals tr.grand td{ font-family:'Cinzel',serif; font-weight:600; font-size:17px; color:var(--gold); border-top:1px solid var(--gold); padding-top:12px; }
+    .totals tr.due td{ color:#D98C8C; }
+
+    .medallion-wrap{ text-align:center; margin-bottom:24px; }
+    .medallion{
+      display:inline-flex; width:78px; height:78px; border-radius:50%; border:2px solid var(--gold);
+      align-items:center; justify-content:center; flex-direction:column; box-shadow:inset 0 0 0 4px var(--black), inset 0 0 0 5px var(--gold);
+    }
+    .medallion .t1{ font-family:'Cinzel',serif; font-size:9px; letter-spacing:1.5px; color:var(--gold); }
+    .medallion .t2{ font-family:'Cinzel',serif; font-size:12px; letter-spacing:1px; color:var(--gold); }
+
+    .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:24px; }
+    .notes h4{ font-family:'Cinzel',serif; font-size:11px; letter-spacing:1.5px; text-transform:uppercase; color:var(--gold); margin:0 0 6px; }
+    .notes p{ font-size:12px; color:var(--muted); margin:0 0 16px; line-height:1.6; }
+    .sign{ text-align:center; }
+    .sign .line{ height:36px; border-bottom:1px solid var(--gold); margin-bottom:8px; }
+    .sign .name{ font-family:'Cinzel',serif; font-size:13px; color:var(--gold-soft); letter-spacing:.5px; }
+    .sign .role{ font-size:10px; color:var(--muted); margin-top:3px; letter-spacing:.5px; text-transform:uppercase; }
+
+    footer{ text-align:center; border-top:1px solid var(--border); margin-top:8px; padding-top:16px; }
+    footer .thanks{ font-family:'Cinzel',serif; color:var(--gold); font-size:13px; letter-spacing:1px; }
+    footer .gen{ font-size:9.5px; color:var(--muted); margin-top:4px; letter-spacing:.5px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="frame">
+    <!-- Ornate Frame Corners Left Completely Intact -->
+    <div class="corner tl"></div><div class="corner tr"></div><div class="corner bl"></div><div class="corner br"></div>
+
+    <header>
+      <h1 class="brand" th:text="${gymName}">Gym Name</h1>
+      <p th:text="${gymAddress}">Gym Address</p>
+      <p><span th:text="${gymPhone}">Phone</span> &nbsp;·&nbsp; <span th:text="${gymEmail}">Email</span> &nbsp;·&nbsp; <span th:text="${gymWebsite}">Website</span></p>
+      <p>GST <span th:text="${gstNumber}">GST123456789</span></p>
+      <div class="vip-line"><span class="bar"></span><span class="label">VIP Membership Invoice</span><span class="bar"></span></div>
+    </header>
+
+    <div class="doc-row">
+      <div><b>No.</b> <span th:text="${invoiceNumber}">INV-001</span></div>
+      <div><b>Invoice</b> <span th:text="${invoiceDate}">01/01/2026</span></div>
+      <div><b>Payment</b> <span th:text="${paymentDate}">01/01/2026</span></div>
+    </div>
+
+    <section class="twin">
+      <div class="col">
+        <h2>Member Details</h2>
+        <p><b>Name</b> <span th:text="${memberName}">John Doe</span></p>
+        <p><b>ID</b> <span th:text="${memberId}">M-101</span></p>
+        <p><b>Phone</b> <span th:text="${memberPhone}">+91 98765 43210</span></p>
+        <p><b>Email</b> <span th:text="${memberEmail}">john@example.com</span></p>
+      </div>
+      <div class="col">
+        <h2>Membership</h2>
+        <p><b>Plan</b> <span th:text="${planName}">Premium Plan</span></p>
+        <p><b>Duration</b> <span th:text="${planDuration}">3 Months</span></p>
+        <p><b>Start</b> <span th:text="${startDate}">01/01/2026</span></p>
+        <p><b>Expiry</b> <span th:text="${expiryDate}">31/03/2026</span></p>
+        <p><b>Trainer</b> <span th:text="${trainerName}">Jane Smith</span></p>
+      </div>
+    </section>
+
+    <table class="items">
+      <thead><tr><th>Description</th><th>Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Total</th></tr></thead>
+      <tbody>
+      <tr>
+        <td th:text="${planName}">Premium Plan</td>
+        <td style="text-align:right;">1</td>
+        <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+        <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+      </tr>
+      </tbody>
+    </table>
+
+    <section class="bottom">
+      <div class="pay-box">
+        <h3>Payment Details</h3>
+        <p><span>Method</span> <span th:text="${paymentMethod}">UPI</span></p>
+        <p><span>Reference</span> <span th:text="${transactionId}">TXN123456</span></p>
+        <div class="qr">QR CODE</div>
+      </div>
+      <div class="totals">
+        <table>
+          <tr><td>Subtotal</td><td th:text="'₹' + ${subtotal}">₹0.00</td></tr>
+          <tr><td>Discount</td><td th:text="'−₹' + ${discount}">−₹0.00</td></tr>
+          <tr><td>GST</td><td th:text="'₹' + ${gst}">₹0.00</td></tr>
+          <tr class="grand"><td>Total</td><td th:text="'₹' + ${total}">₹0.00</td></tr>
+          <tr><td>Paid</td><td th:text="'₹' + ${paidAmount}">₹0.00</td></tr>
+          <tr class="due"><td>Due</td><td th:text="'₹' + ${dueAmount}">₹0.00</td></tr>
+        </table>
+      </div>
+    </section>
+
+    <!-- Embedded Luxury Decorative Seal Medallion -->
+    <div class="medallion-wrap">
+      <div class="medallion"><span class="t1">OFFICIAL</span><span class="t2">SEAL</span></div>
+    </div>
+
+    <section class="foot-grid">
+      <div class="notes">
+        <h4>Notes</h4>
+        <p th:text="${notes}">No notes provided.</p>
+        <h4>Terms &amp; Conditions</h4>
+        <p th:text="${terms}">Terms apply.</p>
+      </div>
+      <div class="sign">
+        <div class="line"></div>
+        <div class="name" th:text="${signatureName}">Manager</div>
+        <div class="role">Authorized Signature</div>
+      </div>
+    </section>
+
+    <footer>
+      <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+      <div class="gen">Generated by Gym SaaS</div>
+    </footer>
+  </div>
+</div>
+</body>
+</html>
+

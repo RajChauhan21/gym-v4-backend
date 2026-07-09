@@ -46,5 +46,7 @@ public class OwnerDetailsResponse {
 
     private Integer currentMemberCount;
 
+    private LocalDate billingDate;
+
 
 }

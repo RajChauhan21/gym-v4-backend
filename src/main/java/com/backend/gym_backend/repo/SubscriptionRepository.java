@@ -20,13 +20,13 @@ public interface SubscriptionRepository extends JpaRepository<Subscription,Integ
 
     Optional<Subscription> findByRazorpaySubscriptionId(String razorpaySubscriptionId);
 
-    Optional<List<Subscription>> findByOwnerAndStatus(Owner owner, SubscriptionStatus status);
+    Optional<List<Subscription>> findByOwnerAndStatusIn(Owner owner, List<SubscriptionStatus> statuses);
 
     @Lock(LockModeType.PESSIMISTIC_WRITE)
     @Query("SELECT s FROM Subscription s WHERE s.razorpaySubscriptionId = :id")
     Optional<Subscription> findByRazorpaySubscriptionIdForUpdate(@Param("id") String id);
 
 
-    Optional<Subscription> findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(Integer ownerId, SubscriptionStatus subscriptions);
+    Optional<Subscription> findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(Integer ownerId, List<SubscriptionStatus> subscriptions);
 
 }

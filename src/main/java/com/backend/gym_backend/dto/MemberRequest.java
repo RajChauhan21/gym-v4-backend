@@ -8,11 +8,15 @@ import java.time.LocalDate;
 @Data
 public class MemberRequest {
 
-    private Integer packageId;
+    private Integer memberShipId;
 
     private Integer memberId;
 
     private Integer ownerId;
+
+    private Integer sourceId;
+
+    private LocalDate startDate;
 
     private String name;
 

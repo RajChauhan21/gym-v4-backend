@@ -1,0 +1,166 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Festival Wristband</title>
+<style type="text/css">
+<![CDATA[
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; font-family:'Manrope', Helvetica, Arial, sans-serif; color:#3A3540; font-size:13px; }
+  .page{ width:210mm; min-height:297mm; padding:16mm 16mm 10mm 16mm; }
+  table{ border-collapse:collapse; width:100%; }
+  td{ vertical-align:top; }
+
+  table.hero td.ring-cell{ width:108px; }
+  .ring-outer{ width:96px; height:96px; border-radius:50%; background-color:#F2A878; text-align:center; }
+  .ring-mid{ width:74px; height:74px; margin:11px auto 0 auto; border-radius:50%; background-color:#7BC9A8; text-align:center; }
+  .ring-inner{ width:54px; height:54px; margin:10px auto 0 auto; border-radius:50%; background-color:#FFFFFF; text-align:center; }
+  .ring-no{ font-family:'Poppins', Arial, sans-serif; font-weight:bold; font-size:14px; color:#3A3540; line-height:54px; }
+  .ring-lbl-row{ text-align:center; margin-top:4px; }
+  .ring-lbl{ font-size:7.5px; letter-spacing:1.5px; color:#9A93A0; text-transform:uppercase; }
+
+  .brand-name{ font-family:'Poppins', Arial, sans-serif; font-weight:bold; font-size:25px; margin:0 0 8px 0; }
+  .brand-line{ margin:2px 0; font-size:12px; color:#9A93A0; line-height:1.6; }
+
+  .doc-strip{ background-color:#FAF3EC; padding:12px 20px; font-size:12px; color:#9A93A0; margin:18px 0 22px 0; }
+  .doc-strip .lbl{ color:#3A3540; font-weight:bold; }
+  .doc-strip td{ text-align:center; }
+
+  table.stub{ border:1px dashed #EFE6F2; margin-bottom:18px; }
+  table.stub td{ padding:18px 22px; width:50%; }
+  table.stub td.divide{ border-right:1px dashed #EFE6F2; }
+  .stub-h{ font-family:'Poppins', Arial, sans-serif; font-size:13px; margin:0 0 10px 0; }
+  .stub-h.peach{ color:#F2A878; }
+  .stub-h.mint{ color:#7BC9A8; }
+  .stub-p{ margin:6px 0; font-size:13px; }
+  .stub-p .lbl2{ display:inline-block; min-width:78px; color:#9A93A0; font-weight:normal; }
+
+  table.items{ width:100%; margin-bottom:18px; }
+  table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#9A93A0; padding:0 0 8px 0; font-weight:bold; }
+  table.items thead th.r{ text-align:right; }
+  table.items tbody td{ padding:10px 0; border-bottom:1px solid #EFE6F2; font-size:13.5px; }
+  table.items tbody td.r{ text-align:right; }
+
+  .qr-box{ margin-top:10px; width:60px; height:60px; border:1px dashed #EFE6F2; text-align:center; font-size:8.5px; color:#9A93A0; line-height:60px; }
+  table.totals-tbl{ font-size:13px; }
+  table.totals-tbl td{ padding:5px 0; color:#9A93A0; }
+  table.totals-tbl td.amt{ text-align:right; color:#3A3540; font-weight:bold; }
+  table.totals-tbl tr.grand td{ font-family:'Poppins', Arial, sans-serif; font-weight:bold; font-size:17px; color:#B79FD6; border-top:1px solid #EFE6F2; padding-top:9px; }
+
+  table.footgrid td.notes-cell{ width:58%; padding-right:20px; }
+  table.footgrid td.sign-cell{ width:42%; padding-left:20px; text-align:center; }
+  .notes-h{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:#B79FD6; margin:0 0 5px 0; font-weight:bold; }
+  .notes-p{ font-size:12px; color:#9A93A0; margin:0 0 14px 0; line-height:1.6; }
+  .sign-line{ height:28px; border-bottom:1px solid #3A3540; margin-bottom:6px; }
+  .sign-name{ font-family:'Poppins', Arial, sans-serif; font-weight:bold; font-size:13px; }
+  .sign-role{ font-size:10px; color:#9A93A0; }
+  .sign-stamp{ display:inline; font-size:9px; letter-spacing:1px; color:#9A93A0; border:1px dashed #EFE6F2; padding:7px 13px; margin-top:8px; }
+
+  .footer{ text-align:center; padding-top:14px; border-top:1px dashed #EFE6F2; }
+  .footer-thanks{ font-family:'Poppins', Arial, sans-serif; font-weight:bold; font-size:13px; }
+  .footer-gen{ font-size:10px; color:#9A93A0; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<div class="page">
+
+  <table class="hero">
+    <tr>
+      <td class="ring-cell">
+        <div class="ring-outer">
+          <div class="ring-mid">
+            <div class="ring-inner"><span class="ring-no">[[${invoiceNumber}]]</span></div>
+          </div>
+        </div>
+        <div class="ring-lbl-row"><span class="ring-lbl">Invoice</span></div>
+      </td>
+      <td>
+        <p class="brand-name">[[${gymName}]]</p>
+        <p class="brand-line">[[${gymAddress}]]</p>
+        <p class="brand-line">[[${gymPhone}]] &#183; [[${gymEmail}]] &#183; [[${gymWebsite}]] &#183; GST [[${gstNumber}]]</p>
+      </td>
+    </tr>
+  </table>
+
+  <table class="doc-strip">
+    <tr>
+      <td><span class="lbl">Invoice Date</span> [[${invoiceDate}]]</td>
+      <td><span class="lbl">Payment Date</span> [[${paymentDate}]]</td>
+      <td><span class="lbl">GST</span> [[${gstNumber}]]</td>
+    </tr>
+  </table>
+
+  <table class="stub">
+    <tr>
+      <td class="divide">
+        <p class="stub-h peach">Member</p>
+        <p class="stub-p"><span class="lbl2">Name</span> [[${memberName}]]</p>
+        <p class="stub-p"><span class="lbl2">ID</span> [[${memberId}]]</p>
+        <p class="stub-p"><span class="lbl2">Phone</span> [[${memberPhone}]]</p>
+        <p class="stub-p"><span class="lbl2">Email</span> [[${memberEmail}]]</p>
+      </td>
+      <td>
+        <p class="stub-h mint">Membership</p>
+        <p class="stub-p"><span class="lbl2">Plan</span> [[${planName}]]</p>
+        <p class="stub-p"><span class="lbl2">Duration</span> [[${planDuration}]]</p>
+        <p class="stub-p"><span class="lbl2">Start</span> [[${startDate}]]</p>
+        <p class="stub-p"><span class="lbl2">Expiry</span> [[${expiryDate}]]</p>
+        <p class="stub-p"><span class="lbl2">Trainer</span> [[${trainerName}]]</p>
+      </td>
+    </tr>
+  </table>
+
+  <table class="items">
+    <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+    <tbody><tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr></tbody>
+  </table>
+
+  <table class="stub">
+    <tr>
+      <td class="divide">
+        <p class="stub-h peach">Payment</p>
+        <p class="stub-p"><span class="lbl2">Method</span> [[${paymentMethod}]]</p>
+        <p class="stub-p"><span class="lbl2">Reference</span> [[${transactionId}]]</p>
+        <div class="qr-box">QR CODE</div>
+      </td>
+      <td>
+        <p class="stub-h mint">Totals</p>
+        <table class="totals-tbl">
+          <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+          <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+          <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+          <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+          <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+          <tr><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <table class="footgrid">
+    <tr>
+      <td class="notes-cell">
+        <p class="notes-h">Notes</p>
+        <p class="notes-p">[[${notes}]]</p>
+        <p class="notes-h">Terms &amp; Conditions</p>
+        <p class="notes-p">[[${terms}]]</p>
+      </td>
+      <td class="sign-cell">
+        <div class="sign-line"></div>
+        <p class="sign-name">[[${signatureName}]]</p>
+        <p class="sign-role">Authorized Signature</p>
+        <p class="sign-stamp">STAMP</p>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <p class="footer-thanks">[[${thankYouMessage}]]</p>
+    <p class="footer-gen">Generated by Gym SaaS</p>
+  </div>
+
+</div>
+</body>
+</html>

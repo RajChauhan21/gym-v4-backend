@@ -1,0 +1,460 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+
+<html xmlns="http://www.w3.org/1999/xhtml"
+      xmlns:th="http://www.thymeleaf.org">
+
+<head>
+  <meta http-equiv="Content-Type" content="text/html; charset=UTF-8"/>
+
+  <title>Payment Receipt</title>
+
+  <style type="text/css">
+
+    body{
+        margin:0;
+        padding:25px;
+        font-family:Arial, Helvetica, sans-serif;
+        background:#f4f6f8;
+        color:#333333;
+        font-size:14px;
+    }
+
+    .page{
+        width:100%;
+        background:#ffffff;
+        border:1px solid #dcdcdc;
+    }
+
+    table{
+        width:100%;
+        border-collapse:collapse;
+    }
+
+    .header{
+        background:#ffffff;
+        border-bottom:3px solid #1976d2;
+    }
+
+    .logo{
+        width:85px;
+        height:85px;
+        border:1px solid #dddddd;
+    }
+
+    .gym-name{
+        font-size:28px;
+        font-weight:bold;
+        color:#1976d2;
+    }
+
+    .gym-info{
+        color:#777777;
+        font-size:12px;
+        line-height:20px;
+    }
+
+    .receipt-title{
+        font-size:30px;
+        color:#1976d2;
+        font-weight:bold;
+        text-align:right;
+    }
+
+    .receipt-subtitle{
+        color:#888888;
+        text-align:right;
+        font-size:13px;
+    }
+
+    .section-title{
+        background:#1976d2;
+        color:white;
+        font-size:15px;
+        font-weight:bold;
+        padding:10px;
+    }
+
+    .content{
+        padding:20px;
+    }
+
+    .label{
+        color:#777777;
+        width:35%;
+        padding:10px;
+    }
+
+    .value{
+        font-weight:bold;
+        padding:10px;
+    }
+
+    .summary{
+        border:1px solid #dddddd;
+        margin-top:15px;
+    }
+
+    .summary td{
+        padding:10px;
+        border-bottom:1px solid #eeeeee;
+    }
+
+    .amount{
+        text-align:right;
+    }
+
+    .grand-total{
+        background:#1976d2;
+        color:white;
+        font-size:18px;
+        font-weight:bold;
+    }
+
+    .footer{
+        margin-top:25px;
+        border-top:2px solid #eeeeee;
+        padding-top:15px;
+        text-align:center;
+        color:#777777;
+        font-size:12px;
+        line-height:20px;
+    }
+
+    .thank-you{
+        margin-top:25px;
+        padding:18px;
+        background:#f8fbff;
+        border:1px solid #d8e8fb;
+        text-align:center;
+        color:#1976d2;
+        font-size:18px;
+        font-weight:bold;
+    }
+
+    .small{
+        font-size:12px;
+        color:#888888;
+    }
+
+  </style>
+
+</head>
+
+<body>
+
+<table class="page">
+
+  <!-- Header -->
+
+  <tr>
+
+    <td>
+
+      <table class="header">
+
+        <tr>
+
+          <td style="padding:25px;width:110px;">
+
+            <img class="logo"
+                 th:if="${gymLogo != null}"
+                 th:src="${gymLogo}"
+                 alt="Logo"/>
+
+          </td>
+
+          <td style="padding-top:20px;">
+
+            <div class="gym-name"
+                 th:text="${gymName}">
+              Gym Name
+            </div>
+
+            <div class="gym-info">
+
+              <span th:text="${gymAddress}">Address</span><br/>
+
+              Phone :
+              <span th:text="${gymPhone}"></span>
+
+              <br/>
+
+              Email :
+              <span th:text="${gymEmail}"></span>
+
+            </div>
+
+          </td>
+
+          <td style="padding-right:25px;">
+
+            <div class="receipt-title">
+              PAYMENT RECEIPT
+            </div>
+
+            <div class="receipt-subtitle">
+
+              Receipt #
+              <span th:text="${invoiceNumber}"></span>
+
+              <br/>
+
+              Date :
+              <span th:text="${invoiceDate}"></span>
+
+            </div>
+
+          </td>
+
+        </tr>
+
+      </table>
+
+    </td>
+
+  </tr>
+
+  <!-- Customer -->
+
+  <tr>
+
+    <td class="section-title">
+      MEMBER INFORMATION
+    </td>
+
+  </tr>
+
+  <tr>
+
+    <td class="content">
+
+      <table>
+
+        <tr>
+
+          <td class="label">Member Name</td>
+
+          <td class="value"
+              th:text="${memberName}">
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="label">Phone Number</td>
+
+          <td class="value"
+              th:text="${memberPhone}">
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="label">Membership Plan</td>
+
+          <td class="value"
+              th:text="${membershipName}">
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="label">Duration</td>
+
+          <td class="value"
+              th:text="${membershipDuration}">
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="label">Start Date</td>
+
+          <td class="value"
+              th:text="${membershipStartDate}">
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="label">End Date</td>
+
+          <td class="value"
+              th:text="${membershipEndDate}">
+          </td>
+
+        </tr>
+
+      </table>
+
+    </td>
+
+  </tr>
+
+  <!-- Payment -->
+
+  <tr>
+
+    <td class="section-title">
+      PAYMENT DETAILS
+    </td>
+
+  </tr>
+
+  <tr>
+
+    <td class="content">
+
+      <table class="summary">
+
+        <tr>
+
+          <td>Membership Fee</td>
+
+          <td class="amount">
+            ₹ <span th:text="${amount}"></span>
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td>Discount</td>
+
+          <td class="amount">
+            ₹ <span th:text="${discount}"></span>
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td>Tax</td>
+
+          <td class="amount">
+            ₹ <span th:text="${tax}"></span>
+          </td>
+
+        </tr>
+
+        <tr class="grand-total">
+
+          <td>Total Paid</td>
+
+          <td class="amount">
+
+            ₹ <span th:text="${totalAmount}"></span>
+
+          </td>
+
+        </tr>
+
+      </table>
+
+      <br/>
+
+      <table>
+
+        <tr>
+
+          <td class="label">
+            Payment Method
+          </td>
+
+          <td class="value"
+              th:text="${paymentMethod}">
+          </td>
+
+        </tr>
+
+        <tr>
+
+          <td class="label">
+            Transaction Id
+          </td>
+
+          <td class="value"
+              th:text="${transactionId}">
+          </td>
+
+        </tr>
+
+      </table>
+
+    </td>
+
+  </tr>
+
+  <!-- Message -->
+
+  <tr>
+
+    <td style="padding:20px;">
+
+      <div class="thank-you">
+
+        THANK YOU FOR TRAINING WITH US!
+
+        <br/>
+
+        <span class="small">
+
+                    Your payment has been received successfully.
+
+                </span>
+
+      </div>
+
+    </td>
+
+  </tr>
+
+  <!-- Footer -->
+
+  <tr>
+
+    <td>
+
+      <div class="footer">
+
+        <strong th:text="${gymName}">
+          Gym
+        </strong>
+
+        <br/>
+
+        <span th:text="${gymAddress}"></span>
+
+        <br/>
+
+        Phone :
+        <span th:text="${gymPhone}"></span>
+
+        |
+
+        Email :
+        <span th:text="${gymEmail}"></span>
+
+        <br/><br/>
+
+        Generated on
+        <span th:text="${generatedAt}"></span>
+
+      </div>
+
+    </td>
+
+  </tr>
+
+</table>
+
+</body>
+
+</html>

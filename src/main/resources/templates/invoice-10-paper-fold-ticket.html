@@ -1,0 +1,168 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Paper Fold Ticket</title>
+<style type="text/css">
+<![CDATA[
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; background-color:#FAF8F5; font-family:'Inter', Helvetica, Arial, sans-serif; color:#2B2B2B; font-size:13px; }
+  .page{ width:210mm; min-height:297mm; padding:16mm; }
+  table{ border-collapse:collapse; width:100%; }
+  td{ vertical-align:top; }
+
+  .panel{ background-color:#FFFFFF; border:1px solid #EAE5DD; padding:20px 24px; margin-bottom:16px; }
+
+  table.header-table td.brand-cell{ width:62%; }
+  table.header-table td.doc-cell{ width:38%; text-align:right; }
+  .brand-name{ font-family:'Georgia', 'Times New Roman', serif; font-weight:bold; font-size:26px; margin:0 0 8px 0; color:#3E7C7C; }
+  .brand-line{ margin:2px 0; font-size:12px; color:#8C8780; line-height:1.6; }
+  .badge{ background-color:#E8745A; color:#FFFFFF; padding:6px 16px; font-size:11px; letter-spacing:1.5px; font-weight:bold; display:inline; }
+  .doc-meta{ margin-top:10px; font-size:12px; color:#8C8780; line-height:1.8; }
+  .doc-meta .lbl{ color:#2B2B2B; font-weight:bold; }
+
+  table.twin td{ width:50%; padding:0 0 16px 0; }
+  table.twin td.pad-r{ padding-right:8px; }
+  table.twin td.pad-l{ padding-left:8px; }
+  .twin-h{ font-family:'Georgia', serif; font-weight:bold; font-size:14px; margin:0 0 12px 0; color:#E8745A; }
+  .twin-p{ margin:6px 0; font-size:13px; }
+  .twin-p .lbl2{ color:#8C8780; font-weight:normal; display:inline-block; min-width:78px; }
+
+  table.items{ width:100%; }
+  table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:#8C8780; padding:0 0 8px 0; font-weight:bold; border-bottom:1px solid #3E7C7C; }
+  table.items thead th.r{ text-align:right; }
+  table.items tbody td{ padding:10px 0; font-size:13.5px; border-bottom:1px solid #EAE5DD; }
+  table.items tbody td.r{ text-align:right; }
+
+  table.bottom td{ width:50%; padding:0; }
+  table.bottom td.pad-r{ padding-right:8px; }
+  table.bottom td.pad-l{ padding-left:8px; }
+  .pay-h{ font-family:'Georgia', serif; font-weight:bold; font-size:13px; color:#3E7C7C; margin:0 0 12px 0; }
+  .pay-p{ font-size:13px; margin:6px 0; }
+  .pay-p .lbl2{ color:#8C8780; }
+  .qr-box{ margin-top:10px; width:60px; height:60px; border:1px dashed #EAE5DD; text-align:center; font-size:8.5px; color:#8C8780; line-height:60px; }
+  table.totals-tbl{ font-size:13px; }
+  table.totals-tbl td{ padding:6px 0; color:#8C8780; }
+  table.totals-tbl td.amt{ text-align:right; color:#2B2B2B; }
+  table.totals-tbl tr.grand td{ font-family:'Georgia', serif; font-weight:bold; font-size:18px; color:#E8745A; border-top:1px solid #EAE5DD; padding-top:10px; }
+
+  table.tear-row td{ font-size:10.5px; letter-spacing:1px; color:#8C8780; padding:8px 0 14px 0; }
+  .tear-rule{ border-top:1px dashed #EAE5DD; }
+
+  table.stub td{ width:50%; padding:0; }
+  table.stub td.pad-r{ padding-right:8px; }
+  table.stub td.pad-l{ padding-left:8px; }
+  .notes-h{ font-size:10.5px; letter-spacing:1px; text-transform:uppercase; color:#3E7C7C; margin:0 0 5px 0; font-weight:bold; }
+  .notes-p{ font-size:12px; color:#8C8780; margin:0 0 14px 0; line-height:1.6; }
+  .sign-panel{ text-align:center; }
+  .sign-line{ height:26px; border-bottom:1px solid #2B2B2B; margin-bottom:6px; }
+  .sign-name{ font-family:'Georgia', serif; font-weight:bold; font-size:13px; }
+  .sign-role{ font-size:10px; color:#8C8780; }
+  .sign-stamp{ display:inline; font-size:9px; color:#8C8780; border:1px dashed #EAE5DD; padding:7px 12px; margin-top:8px; }
+
+  .footer{ text-align:center; margin-top:16px; }
+  .footer-thanks{ font-family:'Georgia', serif; font-weight:bold; color:#3E7C7C; font-size:13px; }
+  .footer-gen{ font-size:10px; color:#8C8780; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<div class="page">
+
+  <div class="panel">
+    <table class="header-table">
+      <tr>
+        <td class="brand-cell">
+          <p class="brand-name">[[${gymName}]]</p>
+          <p class="brand-line">[[${gymAddress}]]</p>
+          <p class="brand-line">[[${gymPhone}]] &#183; [[${gymEmail}]] &#183; [[${gymWebsite}]]</p>
+          <p class="brand-line">GST [[${gstNumber}]]</p>
+        </td>
+        <td class="doc-cell">
+          <span class="badge">INVOICE</span>
+          <p class="doc-meta"><span class="lbl">No.</span> [[${invoiceNumber}]]<br/>
+          <span class="lbl">Invoice</span> [[${invoiceDate}]]<br/>
+          <span class="lbl">Payment</span> [[${paymentDate}]]</p>
+        </td>
+      </tr>
+    </table>
+  </div>
+
+  <table class="twin">
+    <tr>
+      <td class="pad-r"><div class="panel">
+        <p class="twin-h">Member</p>
+        <p class="twin-p"><span class="lbl2">Name</span> [[${memberName}]]</p>
+        <p class="twin-p"><span class="lbl2">ID</span> [[${memberId}]]</p>
+        <p class="twin-p"><span class="lbl2">Phone</span> [[${memberPhone}]]</p>
+        <p class="twin-p"><span class="lbl2">Email</span> [[${memberEmail}]]</p>
+      </div></td>
+      <td class="pad-l"><div class="panel">
+        <p class="twin-h">Membership</p>
+        <p class="twin-p"><span class="lbl2">Plan</span> [[${planName}]]</p>
+        <p class="twin-p"><span class="lbl2">Duration</span> [[${planDuration}]]</p>
+        <p class="twin-p"><span class="lbl2">Start</span> [[${startDate}]]</p>
+        <p class="twin-p"><span class="lbl2">Expiry</span> [[${expiryDate}]]</p>
+        <p class="twin-p"><span class="lbl2">Trainer</span> [[${trainerName}]]</p>
+      </div></td>
+    </tr>
+  </table>
+
+  <div class="panel">
+    <table class="items">
+      <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+      <tbody><tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr></tbody>
+    </table>
+  </div>
+
+  <table class="bottom">
+    <tr>
+      <td class="pad-r"><div class="panel">
+        <p class="pay-h">Payment Details</p>
+        <p class="pay-p"><span class="lbl2">Method</span> [[${paymentMethod}]]</p>
+        <p class="pay-p"><span class="lbl2">Reference</span> [[${transactionId}]]</p>
+        <div class="qr-box">QR CODE</div>
+      </div></td>
+      <td class="pad-l"><div class="panel">
+        <table class="totals-tbl">
+          <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+          <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+          <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+          <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+          <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+          <tr><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+        </table>
+      </div></td>
+    </tr>
+  </table>
+
+  <table class="tear-row">
+    <tr><td class="tear-rule">&#9986; &#160;TEAR HERE TO KEEP YOUR RECEIPT STUB</td></tr>
+  </table>
+
+  <table class="stub">
+    <tr>
+      <td class="pad-r"><div class="panel">
+        <p class="notes-h">Notes</p>
+        <p class="notes-p">[[${notes}]]</p>
+        <p class="notes-h">Terms &amp; Conditions</p>
+        <p class="notes-p">[[${terms}]]</p>
+      </div></td>
+      <td class="pad-l"><div class="panel sign-panel">
+        <div class="sign-line"></div>
+        <p class="sign-name">[[${signatureName}]]</p>
+        <p class="sign-role">Authorized Signature</p>
+        <p class="sign-stamp">STAMP</p>
+      </div></td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <p class="footer-thanks">[[${thankYouMessage}]]</p>
+    <p class="footer-gen">Generated by Gym SaaS</p>
+  </div>
+
+</div>
+</body>
+</html>

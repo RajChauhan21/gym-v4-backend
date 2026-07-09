@@ -1,0 +1,180 @@
+
+
+
+
+<!DOCTYPE html>
+<html lang="en" xmlns:th="http://www.thymeleaf.org">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Invoice — Festival Wristband</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <!-- Cleaned up special characters inside the font link configuration for strict XHTML compliance -->
+  <link href="https://googleapis.com" rel="stylesheet">
+  <style>
+    :root{
+      --peach:#F2A878; --mint:#7BC9A8; --lavender:#B79FD6; --ink:#3A3540; --paper:#FFFCF7; --muted:#9A93A0; --line:#EFE6F2;
+    }
+    *{box-sizing:border-box;}
+    @page{ size:A4; margin:0; }
+    body{ margin:0; background:#efe9ec; font-family:'Manrope',sans-serif; color:var(--ink); -webkit-print-color-adjust:exact; print-color-adjust:exact; }
+    .page{ width:210mm; min-height:297mm; margin:24px auto; background:var(--paper); padding:16mm 16mm 10mm; position:relative; }
+
+    .hero{ display:flex; align-items:center; gap:24px; margin-bottom:24px; }
+    .wristband{
+      width:96px; height:96px; border-radius:50%; flex:none; position:relative;
+      background:conic-gradient(var(--peach) 0 25%, var(--mint) 25% 50%, var(--lavender) 50% 75%, var(--peach) 75% 100%);
+      display:flex; align-items:center; justify-content:center; padding:8px;
+    }
+    .wristband::before{ content:""; position:absolute; inset:8px; border-radius:50%; border:2px dashed #fff; }
+    .wristband .inner{ width:100%; height:100%; border-radius:50%; background:#fff; display:flex; flex-direction:column; align-items:center; justify-content:center; }
+    .wristband .inner .no{ font-family:'Poppins',sans-serif; font-weight:700; font-size:15px; color:var(--ink); }
+    .wristband .inner .lbl{ font-size:7.5px; letter-spacing:1.5px; color:var(--muted); text-transform:uppercase; margin-top:2px; }
+
+    .brand h1{ font-family:'Poppins',sans-serif; font-weight:700; font-size:25px; margin:0 0 8px; }
+    .brand p{ margin:2px 0; font-size:12px; color:var(--muted); line-height:1.6; }
+
+    .doc-strip{ display:flex; justify-content:space-between; background:#FAF3EC; border-radius:14px; padding:12px 20px; font-size:12px; color:var(--muted); margin-bottom:22px; }
+    .doc-strip b{ color:var(--ink); }
+
+    .stub{ position:relative; border:1px dashed var(--line); border-radius:16px; margin-bottom:18px; }
+    .stub::before, .stub::after{ content:""; position:absolute; width:18px; height:18px; background:var(--paper); border-radius:50%; top:50%; transform:translateY(-50%); border:1px dashed var(--line); }
+    .stub::before{ left:-10px; } .stub::after{ right:-10px; }
+    .twin{ display:grid; grid-template-columns:1fr 1fr; }
+    .twin .col{ padding:18px 22px; }
+    .twin .col:first-child{ border-right:1px dashed var(--line); }
+    .twin h2{ font-family:'Poppins',sans-serif; font-size:13px; margin:0 0 10px; }
+    .twin h2.peach{ color:var(--peach); } .twin h2.mint{ color:var(--mint); }
+    .twin p{ margin:6px 0; font-size:13px; }
+    .twin p b{ display:inline-block; min-width:78px; color:var(--muted); font-weight:500; }
+
+    table.items{ width:100%; border-collapse:collapse; margin-bottom:18px; }
+    table.items thead th{ text-align:left; font-size:10.5px; text-transform:uppercase; letter-spacing:1px; color:var(--muted); padding:0 0 8px; font-weight:600; }
+    table.items thead th:not(:first-child){ text-align:right; }
+    table.items tbody td{ padding:10px 0; border-bottom:1px solid var(--line); font-size:13.5px; }
+    table.items tbody td:not(:first-child){ text-align:right; }
+
+    .bottom .twin .col{ padding:18px 22px; }
+    .pay p{ font-size:13px; margin:6px 0; }
+    .pay p span{ color:var(--muted); }
+    .qr{ margin-top:10px; width:62px; height:62px; border:1px dashed var(--line); border-radius:14px; display:flex; align-items:center; justify-content:center; font-size:8.5px; color:var(--muted); }
+    .totals table{ width:100%; font-size:13px; border-collapse:collapse; }
+    .totals td{ padding:5px 0; color:var(--muted); }
+    .totals td:last-child{ text-align:right; color:var(--ink); font-weight:600; }
+    .totals tr.grand td{ font-family:'Poppins',sans-serif; font-weight:700; font-size:17px; color:var(--lavender); border-top:1px solid var(--line); padding-top:9px; }
+
+    .foot-grid{ display:grid; grid-template-columns:1.4fr 1fr; gap:20px; }
+    .notes h4{ font-size:11px; letter-spacing:.5px; text-transform:uppercase; color:var(--lavender); margin:0 0 5px; font-weight:700; }
+    .notes p{ font-size:12px; color:var(--muted); margin:0 0 14px; line-height:1.6; }
+    .sign{ text-align:center; }
+    .sign .line{ height:32px; border-bottom:1px solid var(--ink); margin-bottom:6px; }
+    .sign .name{ font-family:'Poppins',sans-serif; font-weight:600; font-size:13px; }
+    .sign .role{ font-size:10px; color:var(--muted); }
+    .sign .stamp{ display:inline-block; margin-top:8px; font-size:9px; letter-spacing:1px; color:var(--muted); border:1px dashed var(--line); padding:7px 13px; border-radius:20px; }
+
+    footer{ text-align:center; padding-top:14px; border-top:1px dashed var(--line); }
+    footer .thanks{ font-family:'Poppins',sans-serif; font-weight:600; font-size:13px; color:var(--ink); }
+    footer .gen{ font-size:10px; color:var(--muted); margin-top:4px; }
+  </style>
+</head>
+<body>
+<div class="page">
+  <div class="hero">
+    <!-- Wristband Accent Component with Clean Text Extraction Binding -->
+    <div class="wristband">
+      <div class="inner">
+        <span class="no" th:text="${invoiceNumber}">INV-001</span>
+        <span class="lbl">Invoice</span>
+      </div>
+    </div>
+    <div class="brand">
+      <h1 th:text="${gymName}">Gym Name</h1>
+      <p th:text="${gymAddress}">Gym Address</p>
+      <p>
+        <span th:text="${gymPhone}">Phone</span> ·
+        <span th:text="${gymEmail}">Email</span> ·
+        <span th:text="${gymWebsite}">Website</span> · GST
+        <span th:text="${gstNumber}">GST123456789</span>
+      </p>
+    </div>
+  </div>
+
+  <div class="doc-strip">
+    <span><b>Invoice Date</b> <span th:text="${invoiceDate}">01/01/2026</span></span>
+    <span><b>Payment Date</b> <span th:text="${paymentDate}">01/01/2026</span></span>
+    <span><b>GST</b> <span th:text="${gstNumber}">GST123456789</span></span>
+  </div>
+
+  <div class="stub twin">
+    <div class="col">
+      <h2 class="peach">Member</h2>
+      <p><b>Name</b> <span th:text="${memberName}">John Doe</span></p>
+      <p><b>ID</b> <span th:text="${memberId}">M-101</span></p>
+      <p><b>Phone</b> <span th:text="${memberPhone}">+91 98765 43210</span></p>
+      <p><b>Email</b> <span th:text="${memberEmail}">john@example.com</span></p>
+    </div>
+    <div class="col">
+      <h2 class="mint">Membership</h2>
+      <p><b>Plan</b> <span th:text="${planName}">Premium Plan</span></p>
+      <p><b>Duration</b> <span th:text="${planDuration}">3 Months</span></p>
+      <p><b>Start</b> <span th:text="${startDate}">01/01/2026</span></p>
+      <p><b>Expiry</b> <span th:text="${expiryDate}">31/03/2026</span></p>
+      <p><b>Trainer</b> <span th:text="${trainerName}">Jane Smith</span></p>
+    </div>
+  </div>
+
+  <table class="items">
+    <thead><tr><th>Description</th><th>Qty</th><th style="text-align:right;">Unit Price</th><th style="text-align:right;">Total</th></tr></thead>
+    <tbody>
+    <tr>
+      <td th:text="${planName}">Premium Plan</td>
+      <td style="text-align:right;">1</td>
+      <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+      <td style="text-align:right;" th:text="'₹' + ${amount}">₹0.00</td>
+    </tr>
+    </tbody>
+  </table>
+
+  <div class="stub twin bottom">
+    <div class="col pay">
+      <h2 class="peach">Payment</h2>
+      <p><span>Method</span> <span th:text="${paymentMethod}">UPI</span></p>
+      <p><span>Reference</span> <span th:text="${transactionId}">TXN123456</span></p>
+      <div class="qr">QR CODE</div>
+    </div>
+    <div class="col totals">
+      <h2 class="mint">Totals</h2>
+      <table>
+        <tr><td>Subtotal</td><td th:text="'₹' + ${subtotal}">₹0.00</td></tr>
+        <tr><td>Discount</td><td th:text="'−₹' + ${discount}">−₹0.00</td></tr>
+        <tr><td>GST</td><td th:text="'₹' + ${gst}">₹0.00</td></tr>
+        <tr class="grand"><td>Total</td><td th:text="'₹' + ${total}">₹0.00</td></tr>
+        <tr><td>Paid</td><td th:text="'₹' + ${paidAmount}">₹0.00</td></tr>
+        <tr><td>Due</td><td th:text="'₹' + ${dueAmount}">₹0.00</td></tr>
+      </table>
+    </div>
+  </div>
+
+  <div class="foot-grid">
+    <div class="notes">
+      <h4>Notes</h4>
+      <p th:text="${notes}">No notes provided.</p>
+      <h4>Terms &amp; Conditions</h4>
+      <p th:text="${terms}">Terms apply.</p>
+    </div>
+    <div class="sign">
+      <div class="line"></div>
+      <div class="name" th:text="${signatureName}">Manager</div>
+      <div class="role">Authorized Signature</div>
+      <div class="stamp">STAMP</div>
+    </div>
+  </div>
+
+  <footer>
+    <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+    <div class="gen">Generated by Gym SaaS</div>
+  </footer>
+</div>
+</body>
+</html>
+

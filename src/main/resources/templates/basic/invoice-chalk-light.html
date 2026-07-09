@@ -1,0 +1,448 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Transitional//EN"
+        "http://www.w3.org/TR/xhtml1/DTD/xhtml1-transitional.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta content="text/html; charset=UTF-8" http-equiv="Content-Type"/>
+    <title>Invoice — Iron Chalk</title>
+    <style type="text/css">
+        @page {
+          size: A4;
+          margin: 0;
+        }
+
+        body {
+          margin: 0;
+          padding: 0;
+          font-family: 'Inter', Helvetica, Arial, sans-serif;
+          color: #212529;
+          font-size: 11px;
+          background-color: #f8f9fa;
+          line-height: 2.25;
+        }
+
+        /* Centered Main Document Workspace Frame */
+        .page {
+          width: 210mm;
+          min-height: 297mm;
+          box-sizing: border-box;
+          padding: 10mm 14mm;
+          background-color: #FFFFFF;
+          page-break-inside: avoid; /* Structural single-page print boundary lock */
+
+          /* AUTOMATIC HORIZONTAL CENTERING */
+          margin-left: auto;
+          margin-right: auto;
+          height:100%
+        }
+
+        /* Fixed Master Table Row Structural Components */
+        .grid-table {
+          width: 100%;
+          border-collapse: collapse;
+          margin-bottom: 8px;
+        }
+        .grid-table td.col-cell {
+          width: 50%;
+          vertical-align: top;
+          box-sizing: border-box;
+        }
+        .grid-table td.col-cell:first-child { padding-right: 12px; }
+        .grid-table td.col-cell:last-child { padding-left: 12px; }
+
+        /* Header Section Brand Context */
+        .brand h1 {
+          font-size: 26px;
+          font-weight: 900;
+          color: #212529;
+          margin: 0 0 2px 0;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .brand p {
+          font-size: 10.5px;
+          color: #6c757d;
+          margin: 2px 0;
+        }
+
+        .doc-tag {
+          text-align: right;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        /* Heavy Duty Industrial Invoice Badge */
+        .badge {
+          display: inline-block;
+          background-color: #d90429; /* Energetic Crimson Steel Accent */
+          color: #FFFFFF;
+          padding: 4px 14px;
+          font-size: 10px;
+          font-weight: bold;
+          letter-spacing: 1px;
+          border-radius: 0px; /* Industrial hard edge */
+          margin-bottom: 4px;
+        }
+        .doc-tag div {
+          font-size: 10.5px;
+          color: #495057;
+          margin-top: 1px;
+        }
+        .doc-tag div b {
+          color: #212529;
+        }
+
+        /* Structural Columns Typography */
+        h2, h3 {
+          font-size: 12px;
+          color: #212529;
+          margin: 0 0 6px 0;
+          text-transform: uppercase;
+          border-bottom: 2px solid #212529;
+          padding-bottom: 2px;
+          letter-spacing: 0.5px;
+        }
+        .col-cell p {
+          margin: 4px 0;
+          font-size: 11px;
+          color: #343a40;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        .col-cell p b {
+          display: inline-block;
+          width: 60px;
+          color: #6c757d;
+          text-transform: uppercase;
+          font-size: 10px;
+        }
+
+        /* Barbell Graphical Separation Element Layout */
+        .barbell {
+          text-align: center;
+          margin: 12px 0;
+          font-size: 0px; /* Removes inline spacing glitches */
+          width: 100%;
+        }
+        .plate-sm {
+          display: inline-block;
+          width: 6px;
+          height: 18px;
+          background-color: #495057;
+          vertical-align: middle;
+        }
+        .plate {
+          display: inline-block;
+          width: 10px;
+          height: 28px;
+          background-color: #212529;
+          vertical-align: middle;
+          margin: 0 2px;
+        }
+        .bar {
+          display: inline-block;
+          width: 70%;
+          height: 4px;
+          background-color: #6c757d;
+          vertical-align: middle;
+          position: relative;
+        }
+        .bar-label {
+      display: block;
+      font-size: 10px;
+      font-weight: bold;
+      color: #d90429;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      font-family: Arial, Helvetica, sans-serif;
+
+      /* REMOVE THE NEGATIVE MARGIN AND USE THIS INSTEAD */
+      padding-top: 6px; /* Adjust this number to increase or decrease the gap */
+    }
+
+
+        /* Purchase Breakdown Items Table */
+        table.items {
+          width: 100%;
+          border-collapse: collapse;
+          margin: 4px 0 10px 0;
+        }
+        table.items th {
+          background-color: #212529;
+          color: #FFFFFF;
+          font-size: 10px;
+          font-weight: bold;
+          text-transform: uppercase;
+          padding: 6px 10px;
+          text-align: left;
+          letter-spacing: 0.5px;
+        }
+        table.items td {
+          padding: 6px 10px;
+          border-bottom: 1px solid #dee2e6;
+          color: #343a40;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Totals Sub-Grid System Context */
+        .qr {
+          display: inline-block;
+          margin-top: 6px;
+          padding: 4px 10px;
+          border: 2px solid #212529;
+          font-size: 9px;
+          color: #212529;
+          font-weight: bold;
+          background: #FFFFFF;
+          letter-spacing: 0.5px;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        table.totals-layout {
+          width: 100%;
+          border-collapse: collapse;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        table.totals-layout td {
+          padding: 3.5px 0;
+          font-size: 11px;
+          color: #495057;
+          border-bottom: 1px dotted #dee2e6;
+        }
+        table.totals-layout td:last-child {
+          text-align: right;
+          font-weight: bold;
+          color: #212529;
+        }
+        table.totals-layout tr.grand td {
+          font-size: 12px;
+          font-weight: bold;
+          color: #d90429; /* Highlighted crimson price indicator */
+          border-top: 2px solid #212529;
+          padding-top: 5px;
+        }
+        table.totals-layout tr.grand td:last-child {
+          color: #d90429;
+        }
+
+        /* Lower Document Terms Stub Elements */
+        .notes h4 {
+          margin: 0 0 3px 0;
+          font-size: 10.5px;
+          color: #212529;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .notes p {
+          margin: 0 0 8px 0;
+          font-size: 10px;
+          color: #6c757d;
+          line-height: 1.35;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        .sign {
+          text-align: center;
+          width: 180px;
+        }
+        .line {
+          border-top: 1.5px solid #212529;
+          margin-top: 25px;
+          margin-bottom: 4px;
+        }
+        .sign .name {
+          font-weight: bold;
+          color: #212529;
+          font-size: 11px;
+          text-transform: uppercase;
+        }
+        .sign .role {
+          font-size: 9.5px;
+          color: #6c757d;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+        .stamp {
+          display: inline-block;
+          margin-top: 6px;
+          border: 2px dashed #ced4da;
+          padding: 3px 12px;
+          font-size: 8.5px;
+          color: #ced4da;
+          letter-spacing: 1px;
+          font-weight: bold;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+
+        /* Footer System Elements */
+        footer {
+          text-align: center;
+          margin-top: 10px;
+          border-top: 1px solid #dee2e6;
+          padding-top: 6px;
+        }
+        .thanks {
+          font-weight: bold;
+          color: #212529;
+          font-size: 11.5px;
+          text-transform: uppercase;
+          letter-spacing: 0.5px;
+        }
+        .gen {
+          font-size: 9px;
+          color: #adb5bd;
+          margin-top: 2px;
+          font-family: Arial, Helvetica, sans-serif;
+        }
+    </style>
+</head>
+<body>
+<div class="page">
+
+    <!-- Header Branding Layout Row Wrap Grid -->
+    <table class="grid-table" style="margin-bottom: 12px;">
+        <tr>
+            <td class="col-cell brand">
+                <h1 th:text="${gym.name}">Gym Name</h1>
+                <p th:text="${gym.address}">Gym Address</p>
+                <p>
+                    <span th:text="${member.phone}">Phone</span> /
+                    <span th:text="${gym.email}">Email</span> /
+                    <span th:text="${gym.website}">Website</span>
+                </p>
+            </td>
+            <td class="col-cell doc-tag">
+                <span class="badge">INVOICE</span>
+                <div><b>No.</b> <span th:text="${invoice.invoiceNumber}">INV-001</span></div>
+                <div><b>Invoice:</b> <span th:text="${invoice.invoiceDate}">01/01/2026</span></div>
+                <div><b>Payment:</b> <span th:text="${invoice.paymentDate}">01/01/2026</span></div>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Master Sub-Grid Core Profile Section Row -->
+    <table class="grid-table">
+        <tr>
+            <td class="col-cell">
+                <h2>Member</h2>
+                <p><b>Name</b> <span th:text="${member.name}">John Doe</span></p>
+                <p><b>Phone</b> <span th:text="${member.phone}">+91 98765 43210</span></p>
+                <p><b>Email</b> <span th:text="${member.email}">john@example.com</span></p>
+            </td>
+            <td class="col-cell">
+                <h2>Membership</h2>
+                <p><b>Plan</b> <span th:text="${membership.planName}">Premium Plan</span></p>
+                <p><b>Duration</b> <span th:text="${membership.duration}">3 Months</span></p>
+                <p><b>Start</b> <span th:text="${membership.startDate}">01/01/2026</span></p>
+                <p><b>Expiry</b> <span th:text="${membership.expiryDate}">31/03/2026</span></p>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Barbell Graphical Separation Element Layout -->
+    <div class="barbell">
+        <div class="plate-sm"></div>
+        <div class="plate"></div>
+        <div class="bar"></div> <!-- Left empty as the structural line graphic -->
+        <div class="plate"></div>
+        <div class="plate-sm"></div>
+
+        <!-- Move the label outside the bar element for clean vertical spacing -->
+        <span class="bar-label" th:text="'SET NO. ' + ${invoice.invoiceNumber}">SET NO. INV-001</span>
+    </div>
+
+
+    <!-- Purchase Ledger Items Table -->
+    <table class="items">
+        <thead>
+        <tr>
+            <th>Description</th>
+            <th style="width: 50px; text-align: right;">Qty</th>
+            <th style="width: 100px; text-align: right;">Unit Price</th>
+            <th style="width: 100px; text-align: right;">Total</th>
+        </tr>
+        </thead>
+        <tbody>
+        <tr>
+            <td th:text="${membership.planName}">Premium Plan</td>
+            <td style="text-align: right;">1</td>
+            <td style="text-align: right;">
+                <span th:text="${payment.total}">0</span> rs.
+            </td>
+            <td style="text-align: right;">
+                <span th:text="${payment.total}">0</span> rs.
+            </td>
+        </tr>
+        </tbody>
+    </table>
+
+    <!-- Lower Calculations and Operational Breakdown Columns Wrap Grid -->
+    <table class="grid-table" style="margin-top: 4px;">
+        <tr>
+            <td class="col-cell">
+                <h3>Payment Details</h3>
+                <p><b>Method:</b>
+                    <span th:text="${payment.paymentMethod}">UPI</span>
+                </p>
+
+                <p>
+                    <b>Reference:</b>
+                    <!-- Added a strict 24px left margin gap directly to the text container -->
+                    <span style="display: inline-block; margin-left: 5px;"
+                          th:text="${payment.transactionId}">TXN123456</span>
+                </p>
+
+            </td>
+            <td class="col-cell totals">
+                <table class="totals-layout">
+                    <tr>
+                        <td>Subtotal</td>
+                        <td><span th:text="${payment.total}">0</span> rs.</td>
+                    </tr>
+                    <tr>
+                        <td>Discount</td>
+                        <td><span th:text="${payment.discount}">0</span> rs.</td>
+                    </tr>
+                    <tr>
+                        <td>GST</td>
+                        <td><span th:text="${payment.gst}">0</span> rs.</td>
+                    </tr>
+                    <tr class="grand">
+                        <td>Total</td>
+                        <td><span th:text="${payment.total}">0</span> rs.</td>
+                    </tr>
+                    <tr>
+                        <td>Paid</td>
+                        <td><span th:text="${payment.paidAmount}">0</span> rs.</td>
+                    </tr>
+                    <tr>
+                        <td>Due</td>
+                        <td><span th:text="${payment.dueAmount}">0</span> rs.</td>
+                    </tr>
+                </table>
+            </td>
+        </tr>
+    </table>
+
+    <!-- Lower Terms and Notes Section Grid -->
+    <table class="grid-table" style="margin-top: 10px;">
+        <tr>
+            <td class="col-cell notes">
+                <h4>Notes</h4>
+                <p>No notes provided.</p>
+                <h4>Terms &amp; Conditions</h4>
+                <p>Terms apply.</p>
+            </td>
+            <td class="col-cell sign">
+                <div class="line"></div>
+                <div class="name">Owner</div>
+                <div class="role">Authorized Signature</div>
+                <div class="stamp">STAMP</div>
+            </td>
+        </tr>
+    </table>
+
+    <footer>
+        <div class="thanks" th:text="${thankYouMessage}">Thank you for your business!</div>
+        <div class="gen" th:text="'Generated by ' + ${gym.name}">Generated by Gym Name</div>
+    </footer>
+</div>
+</body>
+</html>
+

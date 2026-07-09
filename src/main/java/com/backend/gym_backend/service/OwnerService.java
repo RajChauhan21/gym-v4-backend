@@ -86,7 +86,7 @@ public class OwnerService {
             rt.setToken(refreshToken);
             rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(rt);
-            Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.getId(), SubscriptionStatus.ACTIVE).orElse(null);
+            Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.getId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).orElse(null);
 
 // 2. Safely extract the plan from the subscription
             Plan plan = (subscription != null) ? subscription.getPlan() : null;
@@ -112,6 +112,7 @@ public class OwnerService {
                     .subscriptionStatus(subscription != null ? subscription.getStatus() : null)
                     // Plan fields (null-safe)
                     .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
+                    .billingDate(subscription != null ? subscription.getNextBillingDate() : null)
                     .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
                     .build();
 
@@ -138,7 +139,6 @@ public class OwnerService {
         Owner save = ownerRepository.save(owner);
 
 //        subscriptionService.ownerSubscribesToPlan(save.getId(), trial.getId(), password, password);
-
         return "Account created successfully";
     }
 
@@ -164,7 +164,7 @@ public class OwnerService {
 
     @Transactional
     public OwnerDetailsResponse update(OwnerDetailsRequest ownerDetailsRequestDto) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerDetailsRequestDto.getOwnerId(), SubscriptionStatus.ACTIVE).isEmpty()){
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerDetailsRequestDto.getOwnerId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()) {
             throw new RuntimeException("100");
         }
         Owner owner = ownerRepository.findById(ownerDetailsRequestDto.getOwnerId())
@@ -191,7 +191,7 @@ public class OwnerService {
             throw new RuntimeException("User not found");
         }
         Owner owner = ownerRepository.findById(id).get();
-        Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(owner.getId(), SubscriptionStatus.ACTIVE).orElse(null);
+        Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.getId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).orElse(null);
         Plan plan = (subscription != null) ? subscription.getPlan() : null;
         OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                 .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
@@ -213,6 +213,7 @@ public class OwnerService {
                 .subscriptionStatus(subscription != null ? subscription.getStatus() : null)
                 // Plan fields (null-safe)
                 .memberLimitCount(plan != null ? plan.getMemberLimit() : 0)
+                .billingDate(subscription != null ? subscription.getNextBillingDate() : null)
                 .currentMemberCount(memberRepository.countAllMembersByOwnerId(owner.getId()))
                 .build();
 
@@ -256,12 +257,20 @@ public class OwnerService {
         return new PaymentDueResponse(sum, count);
     }
 
-    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, Integer dueAmount, LocalDate joinedFrom, LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, String plan, Pageable pageable) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE).isEmpty()){
+    public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, String dueAmount,Integer source, LocalDate joinedFrom, LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, LocalDate startDateFrom, LocalDate startDateTo, String plan, Integer isActive, Pageable pageable) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()) {
             throw new RuntimeException("100");
         }
-        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId), name, dueAmount, joinedFrom, joinedTo, expiryFrom, expiryTo, plan, pageable);
+        return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId), name, dueAmount,source, joinedFrom, joinedTo, expiryFrom, expiryTo, startDateFrom, startDateTo, plan, isActive, pageable);
     }
+    public long countMembersOfOwner(Long ownerId, String dueAmount, LocalDate joinedFrom,
+                                    LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo,
+                                    LocalDate startDateFrom, LocalDate startDateTo, String plan, Integer isActive) {
+
+        return memberRepository.countMembersByOwnerIdAndFilters(ownerId, dueAmount, joinedFrom,joinedTo, expiryFrom, expiryTo, startDateFrom, startDateTo, plan, isActive
+        );
+    }
+
 
     public OwnerDetailsResponse findByEmail(String email) {
         if (ownerRepository.findByEmail(email).isEmpty()) {
@@ -285,7 +294,10 @@ public class OwnerService {
         return responseDto;
     }
 
-    public Page<OwnerPaymentProjection> getAllPaymentsOfOwner(Integer ownerId, BigDecimal amount, String status, String method, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+    public Page<OwnerPaymentProjection> getAllPaymentsOfOwner(Integer ownerId, String amount, String status, String method, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
+        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()) {
+            throw new RuntimeException("100");
+        }
         com.backend.gym_backend.enums.Payment payment = null;
         if (status != null && status.equals("SUCCESS")) {
             payment = com.backend.gym_backend.enums.Payment.CAPTURED;
@@ -296,6 +308,17 @@ public class OwnerService {
         Page<OwnerPaymentProjection> byOwner = ownerPaymentRepository.findPaymentsByOwner(ownerId, amount, payment, method, startDate, endDate, pageable);
 
         return byOwner;
+    }
+
+    public Long getPaymentHistoryCountByOwner(Integer ownerId, String amount, String status, String method, LocalDateTime startDate, LocalDateTime endDate){
+        com.backend.gym_backend.enums.Payment payment = null;
+        if (status != null && status.equals("SUCCESS")) {
+            payment = com.backend.gym_backend.enums.Payment.CAPTURED;
+        }
+        if (status != null && status.equals("FAILED")) {
+            payment = com.backend.gym_backend.enums.Payment.FAILED;
+        }
+        return ownerPaymentRepository.countPaymentsByOwner(ownerId,amount,payment,method,startDate,endDate);
     }
 
     @Transactional
@@ -323,10 +346,10 @@ public class OwnerService {
     }
 
 
-    public SubscriptionResponse getOwnerActiveSubscription(Integer ownerId){
-        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusOrderByCreatedAtDesc(ownerId, SubscriptionStatus.ACTIVE);
+    public SubscriptionResponse getOwnerActiveSubscription(Integer ownerId) {
+        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE));
 
-        if (subscription.isEmpty()){
+        if (subscription.isEmpty()) {
             return SubscriptionResponse.builder().build();
         }
 
@@ -336,6 +359,8 @@ public class OwnerService {
                 .startDate(subscription.get().getStartDate())
                 .subscriptionStatus(subscription.get().getStatus())
                 .price(subscription.get().getPrice())
+                .memberLimitCount(subscription.get().getPlan() != null ? subscription.get().getPlan().getMemberLimit() : 0)
+                .billingDate(subscription.get().getNextBillingDate())
                 .name(subscription.get().getName())
                 .build();
     }

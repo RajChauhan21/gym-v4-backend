@@ -24,9 +24,13 @@ public class MemberResponse {
 
     private LocalDate expiry;
 
+    private LocalDate startDate;
+
     private Integer dueAmount;
 
     private int ownerId;
+
+    private int sourceId;
 
     private String plan;
 

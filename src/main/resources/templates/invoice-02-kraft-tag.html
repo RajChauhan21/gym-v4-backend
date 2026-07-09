@@ -1,0 +1,164 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Kraft Tag</title>
+<style type="text/css">
+<![CDATA[
+  /* Optional: self-host TTF/OTF files and uncomment below, or register fonts via
+     PdfRendererBuilder.useFont(...) in Java and skip this block entirely.
+  @font-face{ font-family:'Fraunces'; src:url('fonts/Fraunces-SemiBold.ttf'); font-weight:bold; font-style:normal; }
+  @font-face{ font-family:'Karla'; src:url('fonts/Karla-Regular.ttf'); font-weight:normal; font-style:normal; }
+  */
+
+  @page{ size:A4; margin:0; }
+  body{ margin:0; padding:0; font-family:'Karla', Helvetica, Arial, sans-serif; color:#3A332C; font-size:13px; }
+  table.page-shell{ width:210mm; min-height:297mm; }
+  td.tag-col{ width:60mm; background-color:#F1E6D3; border-right:2px dashed #E5D9C3; padding:0; vertical-align:top; }
+  td.main-col{ vertical-align:top; padding:16mm 16mm 14mm 14mm; }
+
+  .hole-wrap{ text-align:center; padding:24px 0 4px 0; }
+  .hole{ display:inline-block; width:30px; height:30px; border-radius:50%; border:5px solid #FBF6EE; background-color:#F1E6D3; }
+  .tag-body{ padding:8px 18px 24px 18px; text-align:center; }
+  .tag-gymname{ font-family:'Fraunces', Georgia, 'Times New Roman', serif; font-weight:bold; font-size:19px; line-height:1.3; margin:0 0 16px 0; color:#C4663F; }
+  .tag-label{ font-size:9.5px; letter-spacing:2px; color:#8C7F6E; text-transform:uppercase; margin:14px 0 3px 0; }
+  .tag-val{ font-size:13px; font-family:'Courier New', monospace; word-wrap:break-word; }
+  .tag-val-big{ font-size:21px; font-family:'Fraunces', Georgia, serif; font-weight:bold; color:#C4663F; }
+  .tag-foot{ padding:14px 18px; font-size:10px; color:#8C7F6E; text-align:center; border-top:1px dashed #E5D9C3; margin-top:8px; }
+
+  .row{ overflow:hidden; padding:8px 0; border-bottom:1px solid #E5D9C3; font-size:13px; }
+  .row .k{ float:left; color:#8C7F6E; text-transform:uppercase; font-size:10px; letter-spacing:1px; }
+  .row .v{ float:right; font-weight:bold; text-align:right; }
+
+  .section-h{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:16px; color:#C4663F; margin:26px 0 8px 0; padding-bottom:6px; border-bottom:1px solid #C4663F; }
+  .section-h.first{ margin-top:0; }
+  .chip{ font-size:9.5px; padding:2px 8px; border:1px solid #C4663F; color:#C4663F; font-weight:bold; }
+
+  table.items{ width:100%; margin-top:6px; border-collapse:collapse; }
+  table.items thead th{ text-align:left; font-size:10px; text-transform:uppercase; letter-spacing:1px; color:#8C7F6E; padding:0 0 8px 0; font-weight:bold; }
+  table.items thead th.r{ text-align:right; }
+  table.items tbody td{ padding:9px 0; font-size:13.5px; border-bottom:1px solid #E5D9C3; }
+  table.items tbody td.r{ text-align:right; }
+
+  table.payrow{ width:100%; margin-top:8px; }
+  table.payrow td.c1{ width:50%; padding-right:14px; }
+  table.payrow td.c2{ width:50%; padding-left:14px; }
+  .pay-p{ font-size:13px; margin:5px 0; }
+  .pay-p .lbl{ color:#8C7F6E; }
+  .qr-box{ margin-top:10px; width:60px; height:60px; border:1px dashed #E5D9C3; text-align:center; font-size:8.5px; color:#8C7F6E; line-height:60px; }
+
+  table.totals-tbl{ width:100%; font-size:13px; }
+  table.totals-tbl td{ padding:5px 0; color:#8C7F6E; }
+  table.totals-tbl td.amt{ text-align:right; color:#3A332C; font-weight:bold; }
+  table.totals-tbl tr.grand td{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:18px; color:#C4663F; border-top:1px solid #C4663F; padding-top:10px; }
+  table.totals-tbl tr.due td.amt{ color:#A8492C; }
+
+  table.notesign{ width:100%; margin-top:8px; }
+  table.notesign td.notes-cell{ width:58%; padding-right:14px; }
+  table.notesign td.sign-cell{ width:42%; padding-left:14px; text-align:center; }
+  .notes-lbl{ font-size:11px; text-transform:uppercase; letter-spacing:1px; margin-bottom:3px; color:#3A332C; font-weight:bold; }
+  .notes-p{ font-size:12px; color:#8C7F6E; margin:0 0 14px 0; line-height:1.6; }
+  .sign-line{ height:28px; border-bottom:1px solid #3A332C; margin-bottom:6px; }
+  .sign-name{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:13.5px; }
+  .sign-role{ font-size:10px; color:#8C7F6E; }
+  .sign-stamp{ display:inline; font-size:9px; letter-spacing:1px; color:#C4663F; border:1px solid #C4663F; padding:7px 13px; margin-top:10px; }
+
+  .footer-row td{ text-align:center; padding:18px 16mm 14mm 16mm; border-top:1px solid #E5D9C3; }
+  .footer-thanks{ font-family:'Fraunces', Georgia, serif; font-weight:bold; font-size:13.5px; color:#C4663F; }
+  .footer-gen{ font-size:10px; color:#8C7F6E; margin-top:4px; }
+]]>
+</style>
+</head>
+<body th:inline="text">
+<table class="page-shell">
+  <tr>
+    <td class="tag-col">
+      <div class="hole-wrap"><span class="hole"></span></div>
+      <div class="tag-body">
+        <p class="tag-gymname">[[${gymName}]]</p>
+        <p class="tag-label">Invoice No.</p>
+        <p class="tag-val-big">[[${invoiceNumber}]]</p>
+        <p class="tag-label">Invoice Date</p>
+        <p class="tag-val">[[${invoiceDate}]]</p>
+        <p class="tag-label">Payment Date</p>
+        <p class="tag-val">[[${paymentDate}]]</p>
+        <p class="tag-label">GST</p>
+        <p class="tag-val">[[${gstNumber}]]</p>
+        <p class="tag-label">Contact</p>
+        <p class="tag-val">[[${gymPhone}]]</p>
+        <p class="tag-val">[[${gymEmail}]]</p>
+        <p class="tag-val">[[${gymWebsite}]]</p>
+      </div>
+      <p class="tag-foot">[[${gymAddress}]]</p>
+    </td>
+
+    <td class="main-col">
+      <p class="section-h first"><span class="chip">01</span> Member Details</p>
+      <div class="row"><span class="k">Name</span><span class="v">[[${memberName}]]</span></div>
+      <div class="row"><span class="k">Member ID</span><span class="v">[[${memberId}]]</span></div>
+      <div class="row"><span class="k">Phone</span><span class="v">[[${memberPhone}]]</span></div>
+      <div class="row"><span class="k">Email</span><span class="v">[[${memberEmail}]]</span></div>
+
+      <p class="section-h"><span class="chip">02</span> Membership</p>
+      <div class="row"><span class="k">Plan</span><span class="v">[[${planName}]]</span></div>
+      <div class="row"><span class="k">Duration</span><span class="v">[[${planDuration}]]</span></div>
+      <div class="row"><span class="k">Start / Expiry</span><span class="v">[[${startDate}]] &#8594; [[${expiryDate}]]</span></div>
+      <div class="row"><span class="k">Trainer</span><span class="v">[[${trainerName}]]</span></div>
+
+      <p class="section-h"><span class="chip">03</span> Charges</p>
+      <table class="items">
+        <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+        <tbody><tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr></tbody>
+      </table>
+
+      <p class="section-h"><span class="chip">04</span> Payment &amp; Totals</p>
+      <table class="payrow">
+        <tr>
+          <td class="c1">
+            <p class="pay-p"><span class="lbl">Method</span> [[${paymentMethod}]]</p>
+            <p class="pay-p"><span class="lbl">Reference</span> [[${transactionId}]]</p>
+            <div class="qr-box">QR CODE</div>
+          </td>
+          <td class="c2">
+            <table class="totals-tbl">
+              <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+              <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+              <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+              <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+              <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+              <tr class="due"><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+            </table>
+          </td>
+        </tr>
+      </table>
+
+      <p class="section-h"><span class="chip">05</span> Notes &amp; Sign-off</p>
+      <table class="notesign">
+        <tr>
+          <td class="notes-cell">
+            <p class="notes-lbl">Notes</p>
+            <p class="notes-p">[[${notes}]]</p>
+            <p class="notes-lbl">Terms &amp; Conditions</p>
+            <p class="notes-p">[[${terms}]]</p>
+          </td>
+          <td class="sign-cell">
+            <div class="sign-line"></div>
+            <p class="sign-name">[[${signatureName}]]</p>
+            <p class="sign-role">Authorized Signature</p>
+            <p class="sign-stamp">STAMP</p>
+          </td>
+        </tr>
+      </table>
+    </td>
+  </tr>
+
+  <tr class="footer-row">
+    <td colspan="2">
+      <p class="footer-thanks">[[${thankYouMessage}]]</p>
+      <p class="footer-gen">Generated by Gym SaaS</p>
+    </td>
+  </tr>
+</table>
+</body>
+</html>

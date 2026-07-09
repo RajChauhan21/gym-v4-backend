@@ -1,0 +1,412 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE html PUBLIC "-//W3C//DTD XHTML 1.0 Strict//EN" "http://www.w3.org/TR/xhtml1/DTD/xhtml1-strict.dtd">
+<html xmlns="http://www.w3.org/1999/xhtml" xmlns:th="http://www.thymeleaf.org">
+<head>
+<meta http-equiv="Content-Type" content="text/html; charset=UTF-8" />
+<title>Invoice - Pulse Trail</title>
+  <style type="text/css">
+    @page {
+      size: A4;
+      margin: 0;
+    }
+
+    body {
+      margin: 0;
+      padding: 0;
+      font-family: 'Inter', Helvetica, Arial, sans-serif;
+      color: #2B3A45;
+      font-size: 13px;
+      background-color: #FFFFFF;
+    }
+
+    .page {
+      width: 210mm;
+      min-height: 297mm;
+      padding: 16mm;
+      box-sizing: border-box;
+    }
+
+    table {
+      border-collapse: collapse;
+      width: 100%;
+    }
+
+    td {
+      vertical-align: top;
+    }
+
+    .header-table td.brand-cell { width: 62%; }
+    .header-table td.doc-cell { width: 38%; text-align: right; }
+
+    .brand-name {
+      font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-size: 32px;
+      letter-spacing: 1px;
+      color: #3A5A6B;
+      margin: 0 0 8px 0;
+    }
+
+    .brand-line {
+      font-size: 12px;
+      color: #86979C;
+      line-height: 1.6;
+      margin: 2px 0;
+    }
+
+    .brand-gst {
+      color: #3A5A6B;
+      font-weight: bold;
+    }
+
+    /* display: inline-block is required instead of inline for padding support */
+    .badge {
+      display: inline-block;
+      border: 1.5px solid #E8806B;
+      color: #E8806B;
+      padding: 5px 15px;
+      font-size: 11px;
+      letter-spacing: 2px;
+      font-weight: bold;
+    }
+
+    .doc-meta {
+      font-size: 12px;
+      color: #86979C;
+      line-height: 1.9;
+      margin-top: 10px;
+    }
+
+    .doc-meta .lbl {
+      color: #2B3A45;
+      font-weight: bold;
+    }
+
+    .doc-meta .mono {
+      font-family: 'IBM Plex Mono', 'Courier New', monospace;
+      color: #E8806B;
+    }
+
+    .divider {
+      height: 2px;
+      background-color: #E8806B;
+      margin: 14px 0 4px 0;
+      font-size: 0px; /* Prevents empty space bugs in old engines */
+    }
+
+    /* Safe replacement layout for your absolute timeline */
+    table.spine td.connector {
+      width: 24px;
+      border-right: 2px dashed #E1E9E8;
+    }
+
+    td.sec-content {
+      padding: 18px 0 18px 16px;
+    }
+
+    .sec-h {
+      font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-size: 16px;
+      letter-spacing: .5px;
+      color: #3A5A6B;
+      margin: 0 0 12px 0;
+      border-left: 3px solid #E8806B;
+      padding-left: 8px;
+    }
+
+    table.cols2 td.c1 { width: 50%; padding-right: 14px; }
+    table.cols2 td.c2 { width: 50%; padding-left: 14px; }
+
+    /* Tables provide a more reliable layout for PDF engines than floats */
+    table.field-table {
+      width: 100%;
+      margin-bottom: 4px;
+    }
+    table.field-table td {
+      padding: 4px 0;
+      border-bottom: 1px dotted #E1E9E8;
+      font-size: 13px;
+    }
+    table.field-table td.v {
+      text-align: right;
+      font-weight: bold;
+    }
+    table.field-table td.k {
+      color: #86979C;
+    }
+
+    table.items thead th {
+      text-align: left;
+      font-size: 10.5px;
+      text-transform: uppercase;
+      letter-spacing: 1px;
+      color: #86979C;
+      padding: 0 0 8px 0;
+      border-bottom: 1px solid #3A5A6B;
+      font-weight: bold;
+    }
+
+    table.items thead th.r {
+      text-align: right;
+    }
+
+    table.items tbody td {
+      padding: 10px 0;
+      font-size: 13.5px;
+      border-bottom: 1px dotted #E1E9E8;
+    }
+
+    table.items tbody td.r {
+      text-align: right;
+    }
+
+    table.paytot td.pay-cell { width: 50%; padding-right: 14px; }
+    table.paytot td.tot-cell { width: 50%; padding-left: 14px; }
+
+    .pay-line {
+      font-size: 13px;
+      margin: 5px 0;
+    }
+
+    .pay-line .lbl2 {
+      color: #86979C;
+    }
+
+    .qr-box {
+      margin-top: 10px;
+      width: 60px;
+      height: 60px;
+      border: 1px dashed #E1E9E8;
+      text-align: center;
+      font-size: 8.5px;
+      color: #86979C;
+      line-height: 60px;
+    }
+
+    table.totals-tbl {
+      width: 100%;
+      font-size: 13px;
+    }
+
+    table.totals-tbl td {
+      padding: 5px 0;
+      color: #86979C;
+    }
+
+    table.totals-tbl td.amt {
+      text-align: right;
+      color: #2B3A45;
+    }
+
+    table.totals-tbl tr.grand td {
+      font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-size: 21px;
+      color: #E8806B;
+      border-top: 2px solid #3A5A6B;
+      padding-top: 9px;
+    }
+
+    table.totals-tbl tr.due td {
+      font-weight: bold;
+      color: #E8806B;
+    }
+
+    table.notesign td.notes-cell { width: 58%; padding-right: 14px; }
+    table.notesign td.sign-cell { width: 42%; padding-left: 14px; text-align: center; }
+
+    .notes-h {
+      font-size: 10.5px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+      color: #E8806B;
+      margin: 0 0 5px 0;
+      font-weight: bold;
+    }
+
+    .notes-p {
+      font-size: 12px;
+      color: #86979C;
+      margin: 0 0 14px 0;
+      line-height: 1.6;
+    }
+
+    .sign-line {
+      height: 28px;
+      border-bottom: 1px solid #2B3A45;
+      margin-bottom: 6px;
+    }
+
+    .sign-name {
+      font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      font-size: 14px;
+      color: #3A5A6B;
+    }
+
+    .sign-role {
+      font-size: 10.5px;
+      color: #86979C;
+    }
+
+    .sign-stamp {
+      display: inline-block;
+      font-size: 9px;
+      letter-spacing: 1px;
+      color: #86979C;
+      border: 1px solid #E1E9E8;
+      padding: 7px 13px;
+      margin-top: 10px;
+    }
+
+    .footer {
+      background-color: #F4F8F8;
+      text-align: center;
+      padding: 16px;
+      margin-top: 8px;
+    }
+
+    .footer-thanks {
+      font-family: 'Bebas Neue', Impact, 'Arial Narrow', sans-serif;
+      color: #3A5A6B;
+      font-size: 14px;
+      letter-spacing: .5px;
+    }
+
+    .footer-gen {
+      font-size: 10px;
+      color: #86979C;
+      margin-top: 4px;
+    }
+  </style>
+
+</head>
+<body th:inline="text">
+<div class="page">
+
+  <table class="header-table">
+    <tr>
+      <td class="brand-cell">
+        <p class="brand-name">[[${gymName}]]</p>
+        <p class="brand-line">[[${gymAddress}]]</p>
+        <p class="brand-line">[[${gymPhone}]] &#160;&#8226;&#160; [[${gymEmail}]] &#160;&#8226;&#160; [[${gymWebsite}]]</p>
+        <p class="brand-line brand-gst">GST [[${gstNumber}]]</p>
+      </td>
+      <td class="doc-cell">
+        <span class="badge">INVOICE</span>
+        <p class="doc-meta"><span class="lbl">No.</span> <span class="mono">[[${invoiceNumber}]]</span><br/>
+        <span class="lbl">Invoice</span> [[${invoiceDate}]]<br/>
+        <span class="lbl">Payment</span> [[${paymentDate}]]</p>
+      </td>
+    </tr>
+  </table>
+  <div class="divider"></div>
+
+  <table class="spine">
+    <tr>
+      <td class="connector"><div class="line-wrap"><div class="dot"></div></div></td>
+      <td class="sec-content">
+        <p class="sec-h">Member</p>
+        <table class="cols2">
+          <tr>
+            <td class="c1">
+              <div class="field"><span class="k">Name</span><span class="v">[[${memberName}]]</span></div>
+              <div class="field"><span class="k">Member ID</span><span class="v">[[${memberId}]]</span></div>
+            </td>
+            <td class="c2">
+              <div class="field"><span class="k">Phone</span><span class="v">[[${memberPhone}]]</span></div>
+              <div class="field"><span class="k">Email</span><span class="v">[[${memberEmail}]]</span></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="connector"><div class="line-wrap"><div class="dot"></div></div></td>
+      <td class="sec-content">
+        <p class="sec-h">Membership</p>
+        <table class="cols2">
+          <tr>
+            <td class="c1">
+              <div class="field"><span class="k">Plan</span><span class="v">[[${planName}]]</span></div>
+              <div class="field"><span class="k">Duration</span><span class="v">[[${planDuration}]]</span></div>
+              <div class="field"><span class="k">Trainer</span><span class="v">[[${trainerName}]]</span></div>
+            </td>
+            <td class="c2">
+              <div class="field"><span class="k">Start</span><span class="v">[[${startDate}]]</span></div>
+              <div class="field"><span class="k">Expiry</span><span class="v">[[${expiryDate}]]</span></div>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="connector"><div class="line-wrap"><div class="dot"></div></div></td>
+      <td class="sec-content">
+        <p class="sec-h">Charges</p>
+        <table class="items">
+          <thead><tr><th>Description</th><th class="r">Qty</th><th class="r">Unit Price</th><th class="r">Total</th></tr></thead>
+          <tbody>
+            <tr><td>[[${planName}]]</td><td class="r">1</td><td class="r">&#8377;[[${amount}]]</td><td class="r">&#8377;[[${amount}]]</td></tr>
+          </tbody>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="connector"><div class="line-wrap"><div class="dot"></div></div></td>
+      <td class="sec-content">
+        <p class="sec-h">Payment &amp; Totals</p>
+        <table class="paytot">
+          <tr>
+            <td class="pay-cell">
+              <p class="pay-line"><span class="lbl2">Method</span> [[${paymentMethod}]]</p>
+              <p class="pay-line"><span class="lbl2">Reference</span> [[${transactionId}]]</p>
+              <div class="qr-box">QR CODE</div>
+            </td>
+            <td class="tot-cell">
+              <table class="totals-tbl">
+                <tr><td>Subtotal</td><td class="amt">&#8377;[[${subtotal}]]</td></tr>
+                <tr><td>Discount</td><td class="amt">&#8722;&#8377;[[${discount}]]</td></tr>
+                <tr><td>GST</td><td class="amt">&#8377;[[${gst}]]</td></tr>
+                <tr class="grand"><td>Total</td><td class="amt">&#8377;[[${total}]]</td></tr>
+                <tr><td>Paid</td><td class="amt">&#8377;[[${paidAmount}]]</td></tr>
+                <tr class="due"><td>Due</td><td class="amt">&#8377;[[${dueAmount}]]</td></tr>
+              </table>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+
+    <tr>
+      <td class="connector"><div class="line-wrap" style="border-left:2px dashed #E1E9E8; height:80px;"><div class="dot"></div></div></td>
+      <td class="sec-content">
+        <p class="sec-h">Notes &amp; Sign-off</p>
+        <table class="notesign">
+          <tr>
+            <td class="notes-cell">
+              <p class="notes-h">Notes</p>
+              <p class="notes-p">[[${notes}]]</p>
+              <p class="notes-h">Terms &amp; Conditions</p>
+              <p class="notes-p">[[${terms}]]</p>
+            </td>
+            <td class="sign-cell">
+              <div class="sign-line"></div>
+              <p class="sign-name">[[${signatureName}]]</p>
+              <p class="sign-role">Authorized Signature</p>
+              <p class="sign-stamp">STAMP</p>
+            </td>
+          </tr>
+        </table>
+      </td>
+    </tr>
+  </table>
+
+  <div class="footer">
+    <p class="footer-thanks">[[${thankYouMessage}]]</p>
+    <p class="footer-gen">Generated by Gym SaaS</p>
+  </div>
+
+</div>
+</body>
+</html>

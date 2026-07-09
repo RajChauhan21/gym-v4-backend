@@ -13,4 +13,7 @@ public interface MemberProjection {
     Integer getDueAmount();
     int getOwnerId();
     String getPlan();
+    LocalDate getStartDate();
+    Integer getIsActive();
+    String getSource();
 }

@@ -13,7 +13,9 @@ import jakarta.servlet.http.HttpServletResponse;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.data.domain.Pageable;
+import org.springframework.http.HttpHeaders;
 import org.springframework.http.HttpStatus;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.security.core.Authentication;
 import org.springframework.web.bind.annotation.*;
@@ -46,6 +48,9 @@ public class OwnerController {
 
     @Autowired
     private CloudinaryService cloudinaryService;
+
+    @Autowired
+    private DataExportService dataExportService;
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe(Authentication authentication) {
@@ -126,15 +131,42 @@ public class OwnerController {
     }
 
     @GetMapping("/getAllMembersOfOwner")
-    public ResponseEntity<?> getAllMembersOfOwner(@RequestParam("q") Integer ownerId, @RequestParam(value = "name",required = false) String name,
-                                                  @RequestParam(value = "dueAmount",required = false) Integer dueAmount,
-                                                  @RequestParam(value = "joinedFrom",required = false) LocalDate joinedFrom,
-                                                  @RequestParam(value = "joinedTo",required = false) LocalDate joinedTo,
-                                                  @RequestParam(value = "expiryFrom",required = false) LocalDate expiryFrom,
-                                                  @RequestParam(value = "plan",required = false) String plan,
-                                                  @RequestParam(value = "expiryTo",required = false) LocalDate expiryTo,Pageable pageable) {
-        return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId,name,dueAmount,joinedFrom,joinedTo,expiryFrom,expiryTo, plan,pageable), HttpStatus.ACCEPTED);
+    public ResponseEntity<?> getAllMembersOfOwner(
+            @RequestParam("q") Integer ownerId,
+            @RequestParam(value = "name",required = false) String name,
+            @RequestParam(value = "dueAmount",required = false) String dueAmount,
+            @RequestParam(value = "source",required = false) Integer source,
+            @RequestParam(value = "joinedFrom",required = false) LocalDate joinedFrom,
+            @RequestParam(value = "joinedTo",required = false) LocalDate joinedTo,
+            @RequestParam(value = "expiryFrom",required = false) LocalDate expiryFrom,
+            @RequestParam(value = "startFrom",required = false) LocalDate startDateFrom,
+            @RequestParam(value = "startTo",required = false) LocalDate startDateTo,
+            @RequestParam(value = "plan",required = false) String plan,
+            @RequestParam(value = "isActive",required = false) Integer isActive,
+            @RequestParam(value = "expiryTo",required = false) LocalDate expiryTo,
+            Pageable pageable) {
+        return new ResponseEntity<>(ownerService.getAllMembersOfOwner(ownerId,name,dueAmount,source,joinedFrom,joinedTo,expiryFrom,expiryTo,startDateFrom,startDateTo, plan,isActive,pageable), HttpStatus.ACCEPTED);
     }
+
+    @GetMapping("/getMembersCountOfOwner")
+    public ResponseEntity<?> getMembersCountOfOwner(
+            @RequestParam("q") Long ownerId, // Kept "q" mapping as requested
+            @RequestParam(value = "dueAmount", required = false) String dueAmount,
+            @RequestParam(value = "joinedFrom", required = false) LocalDate joinedFrom,
+            @RequestParam(value = "joinedTo", required = false) LocalDate joinedTo,
+            @RequestParam(value = "expiryFrom", required = false) LocalDate expiryFrom,
+            @RequestParam(value = "expiryTo", required = false) LocalDate expiryTo,
+            @RequestParam(value = "startFrom", required = false) LocalDate startDateFrom,
+            @RequestParam(value = "startTo", required = false) LocalDate startDateTo,
+            @RequestParam(value = "plan", required = false) String plan,
+            @RequestParam(value = "isActive", required = false) Integer isActive) {
+
+        long totalRecords = ownerService.countMembersOfOwner(
+                ownerId, dueAmount, joinedFrom,joinedTo, expiryFrom, expiryTo, startDateFrom, startDateTo, plan, isActive
+        );
+        return new ResponseEntity<>(totalRecords, HttpStatus.ACCEPTED);
+    }
+
 
     @GetMapping("/getAllMembersCount")
     public ResponseEntity<?> getAllMembersCount(@RequestParam("q") Integer ownerId){
@@ -143,13 +175,23 @@ public class OwnerController {
 
     @GetMapping("/getAllPaymentsOwner")
     public ResponseEntity<?> getAllPaymentsOfOwner(@RequestParam("q") Integer ownerId,
-                                                   @RequestParam(value = "amount",required = false) BigDecimal amount,
+                                                   @RequestParam(value = "amount",required = false) String amount,
                                                    @RequestParam(value = "status",required = false) String status,
                                                    @RequestParam(value = "method",required = false) String method,
                                                    @RequestParam(value = "startDate",required = false) LocalDateTime createdAt,
                                                    @RequestParam(value = "endDate",required = false) LocalDateTime endAt,
                                                    Pageable pageable){
         return new ResponseEntity<>(ownerService.getAllPaymentsOfOwner(ownerId,amount,status,method,createdAt,endAt,pageable),HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/getPaymentHistoryCountByOwner")
+    public ResponseEntity<?> getPaymentHistoryCountByOwner(@RequestParam("q") Integer ownerId,
+                                                   @RequestParam(value = "amount",required = false) String amount,
+                                                   @RequestParam(value = "status",required = false) String status,
+                                                   @RequestParam(value = "method",required = false) String method,
+                                                   @RequestParam(value = "startDate",required = false) LocalDateTime createdAt,
+                                                   @RequestParam(value = "endDate",required = false) LocalDateTime endAt){
+        return new ResponseEntity<>(ownerService.getPaymentHistoryCountByOwner(ownerId,amount,status,method,createdAt,endAt),HttpStatus.ACCEPTED);
     }
 
     @DeleteMapping("/deleteById")
@@ -181,5 +223,76 @@ public class OwnerController {
         response.addCookie(accessCookie);
 
         return ResponseEntity.ok("Token refreshed");
+    }
+
+    @GetMapping("/export-members")
+    public ResponseEntity<byte[]> exportMembers(@RequestParam("q") Long ownerId,
+                                                @RequestParam(value = "dueAmount", required = false) String dueAmount,
+                                                @RequestParam(value = "source", required = false) Integer source,
+                                                @RequestParam(value = "joinedFrom", required = false) LocalDate joinedFrom,
+                                                @RequestParam(value = "joinedTo", required = false) LocalDate joinedTo,
+                                                @RequestParam(value = "expiryFrom", required = false) LocalDate expiryFrom,
+                                                @RequestParam(value = "expiryTo", required = false) LocalDate expiryTo,
+                                                @RequestParam(value = "startFrom", required = false) LocalDate startDateFrom,
+                                                @RequestParam(value = "startTo", required = false) LocalDate startDateTo,
+                                                @RequestParam(value = "plan", required = false) String plan,
+                                                @RequestParam(value = "isActive", required = false) Integer isActive) {
+
+        byte[] excelFile = dataExportService.exportMembers(ownerId, dueAmount,source, joinedFrom,joinedTo, expiryFrom, expiryTo, startDateFrom, startDateTo, plan, isActive);
+
+        if (excelFile == null || excelFile.length == 0) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=members-report.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelFile);
+    }
+
+    @GetMapping("/export-payments")
+    public ResponseEntity<byte[]> exportPayments(@RequestParam("q") Integer ownerId,
+                                                 @RequestParam(value = "plan", required = false) String plan,
+                                                 @RequestParam(value = "method", required = false) String method,
+                                                 @RequestParam(value = "amount", required = false) String amount,
+                                                 @RequestParam(value = "dueAmount", required = false) String dueAmount,
+                                                 @RequestParam(value = "fromDate", required = false) LocalDate dateFrom,
+                                                 @RequestParam(value = "toDate", required = false) LocalDate dateTo) {
+
+        byte[] excelFile = dataExportService.exportPayments(Long.valueOf(ownerId), dueAmount,amount,dateFrom,dateTo,method,plan);
+
+        if (excelFile == null || excelFile.length == 0) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=payments-report.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelFile);
+    }
+    @GetMapping("/export-subscription")
+    public ResponseEntity<?> exportSubscription(@RequestParam("q") Integer ownerId,
+                                                           @RequestParam(value = "amount",required = false) String amount,
+                                                           @RequestParam(value = "status",required = false) String status,
+                                                           @RequestParam(value = "method",required = false) String method,
+                                                           @RequestParam(value = "startDate",required = false) LocalDateTime createdAt,
+                                                           @RequestParam(value = "endDate",required = false) LocalDateTime endAt){
+
+        byte[] excelFile = dataExportService.exportSubscriptions(Long.valueOf(ownerId),amount,method,status,createdAt,endAt);
+
+        if (excelFile == null || excelFile.length == 0) {
+            return ResponseEntity.status(HttpStatus.NO_CONTENT).build();
+        }
+
+        return ResponseEntity.ok()
+                .header(HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=subcription-report.xlsx")
+                .contentType(MediaType.parseMediaType(
+                        "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
+                .body(excelFile);
     }
 }
