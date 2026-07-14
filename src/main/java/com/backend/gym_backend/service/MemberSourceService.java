@@ -27,22 +27,35 @@ public class MemberSourceService {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
-    @Value("${source.max.limit}")
-    private Integer sourcesLimit;
+    @Value("${max.pro.source.max.limit}")
+    private int maxProSourcesLimit;
+
+    @Value("${pro.source.max.limit}")
+    private int proSourcesLimit;
 
     public String save(MemberSourceRequest request) {
-        Optional<Subscription> ss = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE));
+        Subscription subscription = subscriptionRepository
+                .findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(
+                        request.getOwnerId(),
+                        List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)
+                )
+                .orElseThrow(() -> new RuntimeException("100"));
 
-        if (ss.isPresent()) {
-            if (!ss.get().getName().equals("Max Pro")) {
-                throw new RuntimeException("300");
-            }
+        int allowedLimit;
+        String planName = subscription.getName();
+
+        if ("Max Pro".equals(planName)) {
+            allowedLimit = maxProSourcesLimit; // 7
+        } else if ("Pro".equals(planName)) {
+            allowedLimit = proSourcesLimit;    // 5
         } else {
-            throw new RuntimeException("100");
+            throw new RuntimeException("120");
         }
 
-        if (sourcesLimit <= memberSourceRepository.countSourcesByOwnerId(request.getOwnerId())) {
-            throw new RuntimeException("limit");
+        long currentSourcesCount = memberSourceRepository.countSourcesByOwnerId(request.getOwnerId());
+
+        if (currentSourcesCount >= allowedLimit) {
+            throw new RuntimeException(String.valueOf(allowedLimit));
         }
 
         if (memberSourceRepository.existsByNameAndOwnerId(request.getName().strip(), request.getOwnerId())) {

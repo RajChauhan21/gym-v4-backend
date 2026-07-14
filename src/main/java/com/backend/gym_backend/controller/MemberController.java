@@ -89,9 +89,9 @@ public class MemberController {
     }
 
     @GetMapping("/invoice/pdf")
-    public ResponseEntity<byte[]> downloadInvoice(@RequestParam("p") Integer paymentId) throws Exception {
+    public ResponseEntity<byte[]> downloadInvoice(@RequestParam("p") Integer paymentId, @RequestParam("o") Integer ownerId) throws Exception {
 
-        byte[] pdf = invoiceTemplateService.generateInvoice(paymentId);
+        byte[] pdf = invoiceTemplateService.generateInvoice(paymentId, ownerId);
 
         return ResponseEntity.ok()
                 .header(HttpHeaders.CONTENT_DISPOSITION,

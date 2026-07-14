@@ -39,6 +39,8 @@ public class Owner {
 
     private String providerId;
 
+    private Integer templateId;
+
     @JsonBackReference()
     @OneToOne(cascade = CascadeType.ALL)
     private Gym gym;

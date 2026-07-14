@@ -118,6 +118,12 @@
           border-bottom: none;
         }
 
+        tr.due td {
+          color: #FF0000;
+          font-weight: bold;
+          font-size: 12px;
+        }
+
         /* Total Computations Aggressive Row Variant */
         tr.total td {
           color: #0288d1; /* Highlighted Total Text */
@@ -168,7 +174,7 @@
             <div class="gym" th:text="${gym.name}">Iron Paradise Gym</div>
             <div class="info">
                 <div th:text="${gym.address}">Address</div>
-                <div>P: <span th:text="${gym.phone}">+919999999999</span></div>
+                <div>P: <span th:text="${member.phone}">+919999999999</span></div>
                 <div>M: <span th:text="${gym.email}">gym@example.com</span></div>
             </div>
         </div>
@@ -182,8 +188,8 @@
                     <td class="value" th:text="${invoice.invoiceNumber}">INV-1001</td>
                 </tr>
                 <tr>
-                    <td class="label">Receipt Date</td>
-                    <td class="value" th:text="${invoice.invoiceDate}">29 Jun 2026</td>
+                    <td class="label">Receipt/Payment Date</td>
+                    <td class="value" th:text="${invoice.paymentDate}">29 Jun 2026</td>
                 </tr>
             </table>
         </div>
@@ -220,19 +226,23 @@
             <table>
                 <tr>
                     <td>Membership Fee</td>
-                    <td class="value">₹ <span th:text="${payment.total}">12000</span></td>
+                    <td class="value"><span th:text="${payment.total}">12000</span> rs.</td>
                 </tr>
                 <tr>
                     <td>Discount</td>
-                    <td class="value">₹ <span th:text="${payment.discount}">0</span></td>
+                    <td class="value"><span th:text="${payment.discount}">0</span> rs.</td>
                 </tr>
                 <tr>
                     <td>Tax</td>
-                    <td class="value">₹ <span th:text="${payment.gst}">0</span></td>
+                    <td class="value"><span th:text="${payment.gst}">0</span> rs.</td>
                 </tr>
                 <tr class="total">
                     <td>Total Paid</td>
-                    <td class="value">₹ <span th:text="${payment.paidAmount}">12000</span></td>
+                    <td class="value"><span th:text="${payment.paidAmount}">12000</span> rs.</td>
+                </tr>
+                <tr class="due">
+                    <td>Due</td>
+                    <td class="value"><span th:text="${payment.dueAmount}">12000</span> rs.</td>
                 </tr>
             </table>
         </div>
@@ -259,7 +269,7 @@
         <div class="footer">
             <div><b th:text="${gym.name}">My Gym</b></div>
             <div th:text="${gym.address}">Mumbai</div>
-            <div>Generated: <span th:text="${invoice.paymentDate}">29 Jun 2026</span></div>
+            <div>Generated: <span th:text="${invoice.invoiceDate}">29 Jun 2026</span></div>
         </div>
 
     </div>

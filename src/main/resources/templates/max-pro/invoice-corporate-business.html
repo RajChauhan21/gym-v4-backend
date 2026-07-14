@@ -178,7 +178,7 @@
                 <td class="r" th:text="${invoice.invoiceNumber}">32</td>
             </tr>
             <tr>
-                <td>Receipt Date</td>
+                <td>Receipt/Payment Date</td>
                 <td class="r" th:text="${invoice.paymentDate}">10/07/2026</td>
             </tr>
             <tr>
@@ -209,7 +209,7 @@
             </tr>
             <tr>
                 <td>Validity</td>
-                <td class="r"><span th:text="${membership.startDate}">28/05/2026</span> - <span
+                <td class="r"><span th:text="${membership.startDate}">28/05/2026</span> | <span
                         th:text="${membership.expiryDate}">30/10/2026</span></td>
             </tr>
         </table>

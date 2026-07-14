@@ -295,4 +295,9 @@ public class OwnerController {
                         "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"))
                 .body(excelFile);
     }
+
+    @GetMapping("/select-template")
+    public ResponseEntity<String> selectInvoiceTemplate(@RequestParam("o") Integer ownerId, @RequestParam("t") Integer templateId){
+        return new ResponseEntity<>(ownerService.selectInvoiceTemplate(ownerId,templateId),HttpStatus.ACCEPTED);
+    }
 }

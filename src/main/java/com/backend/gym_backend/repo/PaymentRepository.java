@@ -23,7 +23,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
                     p.amount_paid AS amount,
                     p.method AS method,
                     p.date AS paymentDate,
-                    m.due_amount AS dueAmount
+                    p.amount_due AS dueAmount
                 FROM payment p
                 JOIN member m ON p.member_id = m.id
                 JOIN member_ship ms ON m.member_ship_id = ms.id
@@ -33,7 +33,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
                 AND (:method IS NULL OR p.method = :method)
                 -- Numeric columns casted to CHAR for partial search
                 AND (:amount IS NULL OR CAST(p.amount_paid AS CHAR) LIKE CONCAT('%', :amount, '%'))
-                AND (:dueAmount IS NULL OR CAST(m.due_amount AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
+                AND (:dueAmount IS NULL OR CAST(p.amount_due AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
                 -- Date Range Logic for Payment Date
                 AND (:dateFrom IS NULL OR p.date >= :dateFrom)
                 AND (:dateTo IS NULL OR p.date <= :dateTo)
@@ -48,7 +48,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
                 AND (:membershipName IS NULL OR ms.name LIKE CONCAT('%', :membershipName, '%'))
                 AND (:method IS NULL OR p.method = :method)
                 AND (:amount IS NULL OR CAST(p.amount_paid AS CHAR) LIKE CONCAT('%', :amount, '%'))
-                AND (:dueAmount IS NULL OR CAST(m.due_amount AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
+                AND (:dueAmount IS NULL OR CAST(p.amount_due AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
                 AND (:dateFrom IS NULL OR p.date >= :dateFrom)
                 AND (:dateTo IS NULL OR p.date <= :dateTo)
                 """,
@@ -77,7 +77,7 @@ public interface PaymentRepository extends JpaRepository<Payment, Integer> {
                 AND (:method IS NULL OR p.method = :method)
                 -- Numeric columns casted to CHAR for partial search
                 AND (:amount IS NULL OR CAST(p.amount_paid AS CHAR) LIKE CONCAT('%', :amount, '%'))
-                AND (:dueAmount IS NULL OR CAST(m.due_amount AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
+                AND (:dueAmount IS NULL OR CAST(p.amount_due AS CHAR) LIKE CONCAT('%', :dueAmount, '%'))
                 -- Date Range Logic for Payment Date
                 AND (:dateFrom IS NULL OR p.date >= :dateFrom)
                 AND (:dateTo IS NULL OR p.date <= :dateTo)

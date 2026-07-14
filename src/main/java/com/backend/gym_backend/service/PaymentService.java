@@ -41,6 +41,7 @@ public class PaymentService {
         payment.setMethod(request.getMethod());
         payment.setAmountPaid(request.getAmountPaid());
         payment.setMember(member);
+        payment.setAmountDue(Math.abs(member.getDueAmount()) - request.getAmountPaid());
         member.setDueAmount(Math.abs(member.getDueAmount()) - request.getAmountPaid());
 
         Payment save = paymentRepository.save(payment);
@@ -49,25 +50,29 @@ public class PaymentService {
                 .paymentId(save.getId())
                 .member(save.getMember())
                 .date(save.getDate())
+                .amountDue(save.getAmountDue())
                 .amountPaid(save.getAmountPaid())
                 .method(save.getMethod())
                 .build();
     }
 
     @Transactional
-    public PaymentResponse update(PaymentRequest request) {
+    public PaymentResponse updatesssssss(PaymentRequest request) {
         if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
             throw new RuntimeException("100");
         }
-        if (!memberRepository.existsById(request.getMemberId())) {
-            throw new RuntimeException("member id not found");
+        Member member = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        if (request.getAmountPaid() > member.getDueAmount()) {
+            throw new RuntimeException("Amount exceeds due amount");
         }
-        Member member = memberRepository.findById(request.getMemberId()).get();
 
         Payment payment = new Payment();
         payment.setId(request.getPaymentId());
         payment.setDate(request.getDate());
         payment.setMethod(request.getMethod());
+        payment.setAmountDue(Math.max(Math.abs(member.getDueAmount()) - request.getAmountPaid(), 0));
         payment.setAmountPaid(request.getAmountPaid());
         member.setDueAmount(Math.max(Math.abs(member.getDueAmount()) - request.getAmountPaid(), 0));
         payment.setMember(member);
@@ -76,8 +81,63 @@ public class PaymentService {
                 .paymentId(save.getId())
                 .member(save.getMember())
                 .date(save.getDate())
+                .amountDue(save.getAmountDue())
                 .amountPaid(save.getAmountPaid())
                 .method(save.getMethod())
+                .build();
+    }
+
+    @Transactional
+    public PaymentResponse update(PaymentRequest request) {
+
+        subscriptionRepository
+                .findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(
+                        request.getOwnerId(),
+                        List.of(
+                                SubscriptionStatus.ACTIVE,
+                                SubscriptionStatus.PARTIALLY_ACTIVE))
+                .orElseThrow(() -> new RuntimeException("100"));
+
+        Member member = memberRepository.findById(request.getMemberId())
+                .orElseThrow(() -> new RuntimeException("Member not found"));
+
+        boolean isUpdate = request.getPaymentId() != null;
+
+        Payment payment = isUpdate
+                ? paymentRepository.findById(request.getPaymentId())
+                .orElseThrow(() -> new RuntimeException("Payment not found"))
+                : new Payment();
+
+        int oldPaidAmount = isUpdate ? payment.getAmountPaid() : 0;
+
+        // Restore previous payment amount (if updating)
+        int effectiveDueAmount = member.getDueAmount() + oldPaidAmount;
+
+        // Validation
+        if (request.getAmountPaid() > effectiveDueAmount) {
+            throw new RuntimeException("112"); //exceeds due amount.
+        }
+
+        int newDueAmount = effectiveDueAmount - request.getAmountPaid();
+
+        payment.setMember(member);
+        payment.setDate(request.getDate());
+        payment.setMethod(request.getMethod());
+        payment.setAmountPaid(request.getAmountPaid());
+        payment.setAmountDue(newDueAmount);
+
+        member.setDueAmount(newDueAmount);
+
+        paymentRepository.save(payment);
+        memberRepository.save(member);
+
+        return PaymentResponse.builder()
+                .paymentId(payment.getId())
+                .member(member)
+                .date(payment.getDate())
+                .amountPaid(payment.getAmountPaid())
+                .amountDue(payment.getAmountDue())
+                .method(payment.getMethod())
                 .build();
     }
 

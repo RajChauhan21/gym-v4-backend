@@ -19,6 +19,8 @@ public class Payment {
 
     private Integer amountPaid;
 
+    private Integer amountDue;
+
     private LocalDate date;
 
     private String method;

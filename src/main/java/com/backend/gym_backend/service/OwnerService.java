@@ -365,4 +365,16 @@ public class OwnerService {
                 .build();
     }
 
+    public String selectInvoiceTemplate(Integer ownerId, Integer templateId){
+        if (ownerId==null || templateId==null){
+            throw new RuntimeException("200");
+        }
+
+        Owner owner = ownerRepository.findById(ownerId).orElseThrow(()->new RuntimeException("Owner id not found"));
+
+        owner.setTemplateId(templateId);
+        ownerRepository.save(owner);
+        return "success";
+    }
+
 }

@@ -185,7 +185,7 @@
                 <td class="r" th:text="${invoice.invoiceNumber}">22</td>
             </tr>
             <tr>
-                <td>Receipt Date</td>
+                <td>Receipt/Payment Date</td>
                 <td class="r" th:text="${invoice.paymentDate}">03/07/2026</td>
             </tr>
         </table>
@@ -226,23 +226,23 @@
         <table>
             <tr>
                 <td>Membership Fee</td>
-                <td class="r">₹ <span th:text="${payment.total}">3000</span></td>
+                <td class="r"><span th:text="${payment.total}">3000</span> rs.</td>
             </tr>
             <tr>
                 <td>Discount</td>
-                <td class="r">₹ <span th:text="${payment.discount}">0</span></td>
+                <td class="r"><span th:text="${payment.discount}">0</span> rs.</td>
             </tr>
             <tr>
                 <td>Tax</td>
-                <td class="r">₹ <span th:text="${payment.gst}">0</span></td>
+                <td class="r"><span th:text="${payment.gst}">0</span> rs.</td>
             </tr>
             <tr class="total">
                 <td>Total Paid</td>
-                <td class="r">₹ <span th:text="${payment.paidAmount}">1500</span></td>
+                <td class="r"><span th:text="${payment.paidAmount}">1500</span> rs.</td>
             </tr>
             <tr class="due">
                 <td>Due Amount</td>
-                <td class="r">₹ <span th:text="${payment.dueAmount}">1500</span></td>
+                <td class="r"><span th:text="${payment.dueAmount}">1500</span> rs.</td>
             </tr>
         </table>
     </div>

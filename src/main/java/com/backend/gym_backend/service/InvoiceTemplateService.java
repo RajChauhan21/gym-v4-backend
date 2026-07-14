@@ -3,6 +3,7 @@ package com.backend.gym_backend.service;
 import com.backend.gym_backend.dto.*;
 import com.backend.gym_backend.entity.*;
 import com.backend.gym_backend.enums.SubscriptionStatus;
+import com.backend.gym_backend.repo.OwnerRepository;
 import com.backend.gym_backend.repo.PaymentRepository;
 //import com.openhtmltopdf.pdfboxout.PdfRendererBuilder;
 import com.backend.gym_backend.repo.SubscriptionRepository;
@@ -35,12 +36,42 @@ public class InvoiceTemplateService {
     @Autowired
     private SubscriptionRepository subscriptionRepository;
 
-    public byte[] generateInvoice(Integer paymentId) throws Exception {
+    @Autowired
+    private OwnerRepository ownerRepository;
+
+    public byte[] generateInvoice(Integer paymentId, Integer ownerId) throws Exception {
 
         Payment payment = paymentRepository.findById(paymentId)
                 .orElseThrow(() -> new RuntimeException("payment not found"));
 
         InvoicePdfDTO dto = buildInvoicePdfDTO(payment);
+
+        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE));
+
+
+
+        if (subscription.isEmpty()){
+            throw new RuntimeException("101");
+        }
+        Owner owner = subscription.get().getOwner();
+        if (owner==null){
+            throw new RuntimeException("102");
+        }
+        String name = subscription.get().getName();
+        String folderName = null;
+        if (name!=null && name.equals("Max Pro")){
+            folderName = "max-pro";
+        }
+        else if(name != null){
+            folderName = "basic";
+        }
+        String templateName = "";
+        if (folderName.equals("max-pro")){
+           templateName = getTemplateNameForMaxProPlan(owner.getTemplateId() != null ? owner.getTemplateId() : 1);
+        }
+        else{
+            templateName = getTemplateNameForProPlan(owner.getTemplateId() != null ? owner.getTemplateId() : 1);
+        }
 
         Context context = new Context();
         System.out.println(dto.getGym().getLogoUrl());
@@ -56,7 +87,7 @@ public class InvoiceTemplateService {
         context.setVariable("invoice", dto.getInvoice());
 
         String html = templateEngine.process(
-                "invoice-corporate-business",
+                folderName+"/"+templateName,
                 context
 //                invoice-modern-card, invoice-apple-minimal, invoice-corporate-business
                 //invoice-fitness-green, invoice-luxury-executive, invoice-material-light
@@ -103,7 +134,7 @@ public class InvoiceTemplateService {
 
         dto.setMembership(buildMembershipDTO(membership,member));
 
-        dto.setPayment(buildPaymentDTO(payment, member, membership));
+        dto.setPayment(buildPaymentDTO(payment, membership));
 
         dto.setInvoice(buildInvoiceDTO(payment));
 
@@ -174,7 +205,7 @@ public class InvoiceTemplateService {
         return dto;
     }
 
-    private PaymentDTO buildPaymentDTO(Payment payment, Member member, MemberShip memberShip) {
+    private PaymentDTO buildPaymentDTO(Payment payment, MemberShip memberShip) {
 
         PaymentDTO dto = new PaymentDTO();
 
@@ -188,7 +219,7 @@ public class InvoiceTemplateService {
 
         dto.setPaidAmount(payment.getAmountPaid());
 
-        dto.setDueAmount(member.getDueAmount());
+        dto.setDueAmount(payment.getAmountDue());
 
         dto.setPaymentMethod(payment.getMethod());
 
@@ -342,6 +373,33 @@ public class InvoiceTemplateService {
             case "invoice-soft-blue-saas" -> "Our flagship premium template.";
             case "invoice-ticket-light" -> "High quality multi column template";
             default -> throw new IllegalStateException("Unexpected value: " + templateName);
+        };
+    }
+
+    private String getTemplateNameForProPlan(Integer id) {
+        return switch (id) {
+            case 1 -> "invoice-chalk-light";
+            case 2 -> "invoice-corporate-business";
+            case 3 -> "invoice-luxury-executive";
+            case 4 -> "invoice-modern-card";
+            case 5 ->"invoice-premium";
+            default -> throw new IllegalStateException("Unexpected value: " + id);
+        };
+    }
+
+    private String getTemplateNameForMaxProPlan(Integer id) {
+        return switch (id) {
+            case 1 -> "invoice-apple-minimal";
+            case 2 -> "invoice-chalk-light";
+            case 3 -> "invoice-corporate-business";
+            case 4 -> "invoice-fitness-green";
+            case 5 -> "invoice-luxury-executive";
+            case 6 ->"invoice-material-light";
+            case 7 ->"invoice-modern-card";
+            case 8 ->"invoice-premium";
+            case 9 ->"invoice-soft-blue-saas";
+            case 10 ->"invoice-ticket-light";
+            default -> throw new IllegalStateException("Unexpected value: " + id);
         };
     }
 
