@@ -12,7 +12,6 @@ import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
-import java.util.ArrayList;
 import java.util.List;
 import java.util.Optional;
 
@@ -44,18 +43,18 @@ public class MemberService {
 
         Member member = new Member();
         member.setId(null);
-        member.setName(request.getName());
-        member.setAddress(request.getAddress());
-        member.setJoined(LocalDate.now());
-        member.setMemberShip(memberShip);
-        member.setStartDate(request.getStartDate());
-        member.setOwner(owner);
-        member.setDueAmount(memberShip.getPrice());
-        member.setExpiry(LocalDate.now().plusDays(memberShip.getValidity()));
-        member.setEmail(request.getEmail());
-        member.setPhone(request.getPhone());
-        member.setIsActive(1);
-        member.setSourceId(request.getSourceId());
+        member.setName(request.getName() != null ? request.getName() : member.getName());
+        member.setAddress(request.getAddress() != null ? request.getAddress() : member.getAddress());
+        member.setJoined(LocalDate.now()); // LocalDate.now() is never null
+        member.setMemberShip(memberShip != null ? memberShip : member.getMemberShip());
+        member.setStartDate(request.getStartDate() != null ? request.getStartDate() : member.getStartDate());
+        member.setOwner(owner != null ? owner : member.getOwner());
+        member.setDueAmount(memberShip != null ? memberShip.getPrice() : member.getDueAmount());
+        member.setExpiry(memberShip != null ? LocalDate.now().plusDays(memberShip.getValidity()) : member.getExpiry());
+        member.setEmail(request.getEmail() != null ? request.getEmail() : member.getEmail());
+        member.setPhone(request.getPhone() != null ? request.getPhone() : member.getPhone());
+        member.setIsActive(1); // Primitive/constant value is never null
+        member.setSourceId(request.getSourceId() != null ? request.getSourceId() : member.getSourceId());
 
         Member save = memberRepository.save(member);
 
@@ -78,13 +77,13 @@ public class MemberService {
     @Transactional
     public MemberResponse update(MemberRequest request) {
         Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).orElse(null);
-        Integer currentCount = memberRepository.countAllMembersByOwnerIdAndIsActive(request.getOwnerId(),1);
+        Integer currentCount = memberRepository.countAllMembersByOwnerIdAndIsActive(request.getOwnerId(), 1);
         Plan plan = (subscription != null) ? subscription.getPlan() : null;
 
         if (subscription == null) {
             throw new RuntimeException("100");
         }
-        if (request.getMemberId()==null && currentCount!=null && plan!=null && plan.getMemberLimit() <= currentCount){
+        if (request.getMemberId() == null && currentCount != null && plan != null && plan.getMemberLimit() <= currentCount) {
             throw new RuntimeException("limit");
         }
         if (!memberShipRepository.existsById(request.getMemberShipId())) {
@@ -135,31 +134,30 @@ public class MemberService {
                 .build();
     }
 
-    public Integer getActiveMembers(Integer ownerId, Integer isActive){
-        return memberRepository.countAllMembersByOwnerIdAndIsActive(ownerId,isActive);
+    public Integer getActiveMembers(Integer ownerId, Integer isActive) {
+        return memberRepository.countAllMembersByOwnerIdAndIsActive(ownerId, isActive);
     }
 
     @Transactional
-    public String makeMemberActiveOrInactive(String action, Integer memberId, Integer ownerId){
+    public String makeMemberActiveOrInactive(String action, Integer memberId, Integer ownerId) {
         Optional<Member> member = memberRepository.findById(memberId);
-        if (member.isEmpty()){
+        if (member.isEmpty()) {
             throw new RuntimeException("401"); //check if member exists or not
         }
         Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).orElse(null);
 
         //get active count of members
-        Integer currentCount = memberRepository.countAllMembersByOwnerIdAndIsActive(ownerId,1);
+        Integer currentCount = memberRepository.countAllMembersByOwnerIdAndIsActive(ownerId, 1);
 
         Plan plan = (subscription != null) ? subscription.getPlan() : null;
 
         //check if a user has enough limit/space to make member active
-        if (currentCount!=null && plan!=null && plan.getMemberLimit() <= currentCount && action!=null && !action.isEmpty() && action.equals("active")){
+        if (currentCount != null && plan != null && plan.getMemberLimit() <= currentCount && action != null && !action.isEmpty() && action.equals("active")) {
             throw new RuntimeException("limit");
         }
-        if (action!=null && !action.isEmpty() && action.equals("active")){
+        if (action != null && !action.isEmpty() && action.equals("active")) {
             member.get().setIsActive(1);
-        }
-        else if(action!=null && !action.isEmpty() && action.equals("inactive")){
+        } else if (action != null && !action.isEmpty() && action.equals("inactive")) {
             member.get().setIsActive(0);
         }
 
@@ -189,8 +187,8 @@ public class MemberService {
                 .build();
     }
 
-    public long getMembersCountOnMemberShipId(Integer memberShipId,Integer gymId,Integer ownerId) {
-       return memberRepository.countByMembershipIdAndGymId(memberShipId,gymId,ownerId);
+    public long getMembersCountOnMemberShipId(Integer memberShipId, Integer gymId, Integer ownerId) {
+        return memberRepository.countByMembershipIdAndGymId(memberShipId, gymId, ownerId);
     }
 
     public Integer getAllMembersCount(Integer ownerId) {
@@ -232,14 +230,14 @@ public class MemberService {
         return memberRepository.getFullStatsByOwner(ownerId);
     }
 
-    public String renewMemberShip(RenewMemberShipRequest request){
-        if (request.getMemberId()==null || request.getPlanId()==null){
+    public String renewMemberShip(RenewMemberShipRequest request) {
+        if (request.getMemberId() == null || request.getPlanId() == null) {
             return "404";
         }
-        if (!memberRepository.existsById(request.getMemberId())){
+        if (!memberRepository.existsById(request.getMemberId())) {
             return "404";
         }
-        if (!memberShipRepository.existsById(request.getPlanId())){
+        if (!memberShipRepository.existsById(request.getPlanId())) {
             return "404";
         }
         MemberShip memberShip = memberShipRepository.findById(request.getPlanId()).get();

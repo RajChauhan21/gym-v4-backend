@@ -14,6 +14,7 @@ public interface MemberShipRepository extends JpaRepository<MemberShip,Integer> 
 
     List<MemberShip> findAllByGymId(Integer id);
 
-    boolean existsByNameAndGymId(String name, Integer gymId);
+    boolean existsByNameIgnoreCaseAndGymId(String name, Integer gymId);
+    Optional<MemberShip> findByNameIgnoreCaseAndGymId(String name, Integer gymId);
 
 }

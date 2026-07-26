@@ -50,7 +50,7 @@ public class OwnerController {
     private CloudinaryService cloudinaryService;
 
     @Autowired
-    private DataExportService dataExportService;
+    private DataImportExportService dataExportService;
 
     @GetMapping("/me")
     public ResponseEntity<?> getMe(Authentication authentication) {
@@ -299,5 +299,29 @@ public class OwnerController {
     @GetMapping("/select-template")
     public ResponseEntity<String> selectInvoiceTemplate(@RequestParam("o") Integer ownerId, @RequestParam("t") Integer templateId){
         return new ResponseEntity<>(ownerService.selectInvoiceTemplate(ownerId,templateId),HttpStatus.ACCEPTED);
+    }
+
+    @PostMapping(value = "/members/import", consumes = MediaType.MULTIPART_FORM_DATA_VALUE)
+    public ResponseEntity<?> importMembers(@RequestParam("file") MultipartFile file, @RequestParam("o") Integer ownerId) {
+        return ResponseEntity.ok(dataExportService.importMembers(file,ownerId));
+    }
+
+    @GetMapping("/download-template")
+    public ResponseEntity<byte[]> downloadMemberImportTemplate() {
+
+        byte[] excelBytes = dataExportService.downloadMemberImportTemplate();
+
+        return ResponseEntity.ok()
+                .contentType(
+                        MediaType.parseMediaType(
+                                "application/vnd.openxmlformats-officedocument.spreadsheetml.sheet"
+                        )
+                )
+                .contentLength(excelBytes.length)
+                .header(
+                        HttpHeaders.CONTENT_DISPOSITION,
+                        "attachment; filename=\"Gym_Member_Import_Template.xlsx\""
+                )
+                .body(excelBytes);
     }
 }

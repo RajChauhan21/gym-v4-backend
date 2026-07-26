@@ -15,7 +15,6 @@ import org.springframework.stereotype.Service;
 
 import java.util.ArrayList;
 import java.util.List;
-import java.util.Optional;
 
 @Service
 public class MemberShipService {
@@ -62,7 +61,7 @@ public class MemberShipService {
         if(ownerRepository.existsById(request.getOwnerId()) && ownerRepository.findById(request.getOwnerId()).get().getGym()==null){
             throw new RuntimeException("404");
         }
-        if (request.getId()==null && memberShipRepository.existsByNameAndGymId(request.getName(),request.getGymId())){
+        if (request.getId()==null && memberShipRepository.existsByNameIgnoreCaseAndGymId(request.getName(),request.getGymId())){
             throw new RuntimeException("Plan already exists");
         }
         if (memberShipRepository.existsByNameAndGymIdAndIdNot(request.getName(),request.getGymId(), request.getId())){
