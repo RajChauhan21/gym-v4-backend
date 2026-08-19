@@ -6,6 +6,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -30,4 +31,8 @@ public class MemberShip {
     @JsonBackReference("plans")
     @ManyToOne
     private Gym gym;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

@@ -24,23 +24,20 @@ public class MemberSourceService {
     @Autowired
     private MemberSourceRepository memberSourceRepository;
 
-    @Autowired
-    private SubscriptionRepository subscriptionRepository;
-
     @Value("${max.pro.source.max.limit}")
     private int maxProSourcesLimit;
 
     @Value("${pro.source.max.limit}")
     private int proSourcesLimit;
 
-    public String save(MemberSourceRequest request) {
-        Subscription subscription = subscriptionRepository
-                .findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(
-                        request.getOwnerId(),
-                        List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)
-                )
-                .orElseThrow(() -> new RuntimeException("100"));
+    @Autowired
+    private CommonService commonService;
 
+    public String save(MemberSourceRequest request) {
+        Subscription subscription = commonService.checkSubscriptionOfOwner(request.getOwnerId());
+        if (subscription==null){
+            throw new RuntimeException("100");
+        }
         int allowedLimit;
         String planName = subscription.getName();
 
@@ -94,6 +91,9 @@ public class MemberSourceService {
         MemberSource memberSource = memberSourceRepository.findById(request.getId()).get();
         memberSource.setName(request.getName());
         memberSource.setUpdatedAt(LocalDateTime.now());
+        if (memberSource.getCreatedAt()==null){
+            memberSource.setCreatedAt(LocalDateTime.now());
+        }
         memberSourceRepository.save(memberSource);
 
         return "202";

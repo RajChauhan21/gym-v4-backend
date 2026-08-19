@@ -14,6 +14,7 @@ import org.springframework.data.domain.Pageable;
 import org.springframework.stereotype.Service;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -27,7 +28,7 @@ public class PaymentService {
     private MemberRepository memberRepository;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private CommonService commonService;
 
     @Transactional
     public PaymentResponse save(PaymentRequest request) {
@@ -58,7 +59,7 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse updatesssssss(PaymentRequest request) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
+        if (commonService.checkSubscriptionOfOwner(request.getOwnerId())==null){
             throw new RuntimeException("100");
         }
         Member member = memberRepository.findById(request.getMemberId())
@@ -89,15 +90,9 @@ public class PaymentService {
 
     @Transactional
     public PaymentResponse update(PaymentRequest request) {
-
-        subscriptionRepository
-                .findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(
-                        request.getOwnerId(),
-                        List.of(
-                                SubscriptionStatus.ACTIVE,
-                                SubscriptionStatus.PARTIALLY_ACTIVE))
-                .orElseThrow(() -> new RuntimeException("100"));
-
+        if(commonService.checkSubscriptionOfOwner(request.getOwnerId())==null){
+          throw new RuntimeException("100");
+        }
         Member member = memberRepository.findById(request.getMemberId())
                 .orElseThrow(() -> new RuntimeException("Member not found"));
 
@@ -125,7 +120,10 @@ public class PaymentService {
         payment.setMethod(request.getMethod());
         payment.setAmountPaid(request.getAmountPaid());
         payment.setAmountDue(newDueAmount);
-
+        if (payment.getCreatedAt()==null){
+            payment.setCreatedAt(LocalDateTime.now());
+        }
+        payment.setUpdatedAt(LocalDateTime.now());
         member.setDueAmount(newDueAmount);
 
         paymentRepository.save(payment);
@@ -181,7 +179,7 @@ public class PaymentService {
     }
 
     public Page<PaymentProjection> getAllPaymentsOfMemberByOwnerId(Long ownerId, String memberName, String membershipName, String method, String amount,String dueAmount, LocalDate dateFrom, LocalDate dateTo, Pageable pageable) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(Math.toIntExact(ownerId), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
+        if (commonService.checkSubscriptionOfOwner(Math.toIntExact(ownerId))==null){
             throw new RuntimeException("100");
         }
         return paymentRepository.findPaymentsFiltered(ownerId, memberName, membershipName, method, amount,dueAmount, dateFrom, dateTo, pageable);
@@ -192,14 +190,14 @@ public class PaymentService {
     }
 
     public List<RecentPaymentProjection> getRecentPaymentByOwnerId(Integer ownerId){
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
+        if (commonService.checkSubscriptionOfOwner(ownerId)==null){
             throw new RuntimeException("100");
         }
         return paymentRepository.findRecentPaymentsByOwner(ownerId);
     }
 
     public RevenueProjection getRevenues(Integer ownerId){
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
+        if (commonService.checkSubscriptionOfOwner(ownerId)==null){
             throw new RuntimeException("100");
         }
         return paymentRepository.getRevenueByOwner(ownerId);

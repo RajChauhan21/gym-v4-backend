@@ -4,6 +4,7 @@ import com.fasterxml.jackson.annotation.JsonManagedReference;
 import jakarta.persistence.*;
 import lombok.*;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -39,4 +40,8 @@ public class Gym {
     @JsonManagedReference(value = "plans")
     @OneToMany(mappedBy = "gym",cascade = CascadeType.ALL)
     private List<MemberShip> memberShips = new ArrayList<>();
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

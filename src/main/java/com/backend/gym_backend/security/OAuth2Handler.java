@@ -20,6 +20,7 @@ import org.springframework.stereotype.Component;
 
 import java.io.IOException;
 import java.time.Instant;
+import java.time.LocalDateTime;
 import java.time.temporal.ChronoUnit;
 import java.util.Map;
 import java.util.Objects;
@@ -49,11 +50,9 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
         //2.get details and attributes from provider
         OAuth2User oAuth2User = (OAuth2User) authentication.getPrincipal();
         Map<String, Object> attributes = oAuth2User.getAttributes();
-        System.out.println(attributes);
 
         // 3. Map to your POJO based on Provider
         OAuth2UserInfo userInfo = mapToUserInfo(attributes, provider);
-        System.out.println(userInfo);
 
         // 4. Find or Create Owner in DB
         Owner owner = ownerRepository.findByEmail(userInfo.getEmail())
@@ -68,6 +67,10 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
 
         rt.setOwner(owner);
         rt.setToken(refreshToken);
+        rt.setUpdatedAt(LocalDateTime.now());
+        if (rt.getCreatedAt()==null){
+            rt.setCreatedAt(LocalDateTime.now());
+        }
         rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
 
         refreshTokenRepository.save(rt);
@@ -97,6 +100,8 @@ public class OAuth2Handler extends SimpleUrlAuthenticationSuccessHandler {
         owner.setName(userInfo.getName());
         owner.setEmail(userInfo.getEmail());
         owner.setImage(userInfo.getPicture());
+        owner.setCreatedAt(LocalDateTime.now());
+        owner.setUpdatedAt(LocalDateTime.now());
         owner.setPassword(null);
 
         return ownerRepository.save(owner);

@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.Instant;
+import java.time.LocalDateTime;
 
 @Entity
 @Getter
@@ -23,4 +24,8 @@ public class RefreshToken {
     @JsonBackReference("ref")
     @OneToOne
     private Owner owner;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

@@ -20,4 +20,6 @@ public class MemberShipResponse {
 
     private List<Member> members;
 
+    private Long memberCount;
+
 }

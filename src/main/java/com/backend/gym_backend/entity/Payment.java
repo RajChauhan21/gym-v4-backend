@@ -6,6 +6,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -28,4 +29,8 @@ public class Payment {
     @JsonBackReference("pay")
     @ManyToOne
     private Member member;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

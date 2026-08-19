@@ -7,6 +7,7 @@ import lombok.Getter;
 import lombok.Setter;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -49,4 +50,8 @@ public class Member {
     @JsonManagedReference("pay")
     @OneToMany(mappedBy = "member", cascade = CascadeType.ALL)
     private List<Payment> payments;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

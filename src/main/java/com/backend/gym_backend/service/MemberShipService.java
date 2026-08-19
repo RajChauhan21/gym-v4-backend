@@ -8,11 +8,12 @@ import com.backend.gym_backend.enums.SubscriptionStatus;
 import com.backend.gym_backend.repo.MemberRepository;
 import com.backend.gym_backend.repo.MemberShipRepository;
 import com.backend.gym_backend.repo.OwnerRepository;
-import com.backend.gym_backend.repo.SubscriptionRepository;
 import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.math.BigDecimal;
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -29,7 +30,7 @@ public class MemberShipService {
     private OwnerRepository ownerRepository;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private CommonService commonService;
 
     @Transactional
     public MemberShipResponse save(MemberShipRequest request) {
@@ -55,7 +56,7 @@ public class MemberShipService {
 
     @Transactional
     public MemberShipResponse update(MemberShipRequest request) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(request.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
+        if (commonService.checkSubscriptionOfOwner(request.getOwnerId())==null){
             throw new RuntimeException("100");
         }
         if(ownerRepository.existsById(request.getOwnerId()) && ownerRepository.findById(request.getOwnerId()).get().getGym()==null){
@@ -67,12 +68,24 @@ public class MemberShipService {
         if (memberShipRepository.existsByNameAndGymIdAndIdNot(request.getName(),request.getGymId(), request.getId())){
             throw new RuntimeException("Plan already exists");
         }
-        MemberShip memberShip = new MemberShip();
+        MemberShip memberShip;
+
+        if (request.getId()!=null && request.getId() > 0){
+           memberShip =  memberShipRepository.findById(request.getId())
+                    .orElseThrow(()->new RuntimeException("plan not found"));
+        }
+        else{
+            memberShip = new MemberShip();
+        }
         memberShip.setId(request.getId());
         memberShip.setName(request.getName());
         memberShip.setPrice(request.getPrice());
         memberShip.setGym(ownerRepository.findById(request.getOwnerId()).get().getGym());
         memberShip.setValidity(request.getValidity()*30);//convert months in days
+        memberShip.setUpdatedAt(LocalDateTime.now());
+        if (memberShip.getCreatedAt()==null){
+            memberShip.setCreatedAt(LocalDateTime.now());
+        }
         MemberShip save = memberShipRepository.save(memberShip);
 
         return MemberShipResponse.builder()
@@ -99,15 +112,22 @@ public class MemberShipService {
     }
 
     public List<MemberShipResponse> getAllByGymId(Integer gymId){
+        List<Object[]> results =
+                memberShipRepository.findAllPlansWithMemberCount(gymId);
+
         List<MemberShipResponse> responses = new ArrayList<>();
-        for (MemberShip m : memberShipRepository.findAllByGymId(gymId)){
-            MemberShipResponse build = MemberShipResponse.builder()
-                    .name(m.getName())
-                    .id(m.getId())
-                    .price(m.getPrice())
-                    .validity(m.getValidity() / 30)
+
+        for (Object[] row : results) {
+
+            MemberShipResponse response = MemberShipResponse.builder()
+                    .id((Integer) row[0])
+                    .name((String) row[1])
+                    .price((Integer) row[2])
+                    .validity(((Number) row[3]).intValue() / 30)
+                    .memberCount(((Number) row[4]).longValue())
                     .build();
-            responses.add(build);
+
+            responses.add(response);
         }
 
         return responses;

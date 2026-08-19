@@ -65,6 +65,7 @@ public class OtpEmailService {
                 .sentAt(LocalDateTime.now())
                 .expiresAt(LocalDateTime.now().plusMinutes(5))
                 .ownerEmail(toEmail)
+                .createdAt(LocalDateTime.now())
                 .isVerified(false)
                 .build();
 
@@ -132,6 +133,7 @@ public class OtpEmailService {
 
         // mark as used
         savedOtp.setIsVerified(true);
+        savedOtp.setVerifiedAt(LocalDateTime.now());
 
         log.info("successfully verified otp");
 

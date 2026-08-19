@@ -8,10 +8,12 @@ import com.backend.gym_backend.entity.Member;
 import org.springframework.data.domain.Page;
 import org.springframework.data.domain.Pageable;
 import org.springframework.data.jpa.repository.JpaRepository;
+import org.springframework.data.jpa.repository.Modifying;
 import org.springframework.data.jpa.repository.Query;
 import org.springframework.data.repository.query.Param;
 
 import java.time.LocalDate;
+import java.time.LocalDateTime;
 import java.util.List;
 
 public interface MemberRepository extends JpaRepository<Member, Integer> {
@@ -82,6 +84,7 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
             Integer isActive,     // ?12
             Pageable pageable
     );
+
     @Query(
             value = "SELECT COUNT(*) FROM member m " +
                     "LEFT JOIN member_ship ms ON m.member_ship_id = ms.id " +
@@ -181,5 +184,19 @@ public interface MemberRepository extends JpaRepository<Member, Integer> {
             """, nativeQuery = true)
     List<MemberExpiryProjection> findExpiringMembers(@Param("ownerId") Integer ownerId);
 
+    @Modifying
+    @Query("""
+                UPDATE Member m
+                SET m.isActive = :inactiveStatus,
+                    m.updatedAt = :updatedAt
+                WHERE m.expiry IS NOT NULL
+                  AND m.expiry < :today
+                  AND m.isActive <> :inactiveStatus
+            """)
+    int updateExpiredMembersToInactive(
+            @Param("today") LocalDate today,
+            @Param("inactiveStatus") int inactiveStatus,
+            @Param("updatedAt") LocalDateTime updatedAt
+    );
 
 }

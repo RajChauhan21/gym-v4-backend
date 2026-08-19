@@ -13,4 +13,5 @@ public class InvoiceTemplateResponse {
     private boolean featured;
     private String previewUrl;
     private String description;
+    private int ownerTemplateId;
 }

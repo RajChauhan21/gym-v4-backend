@@ -12,6 +12,7 @@ import jakarta.transaction.Transactional;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.stereotype.Service;
 
+import java.time.LocalDateTime;
 import java.util.ArrayList;
 import java.util.List;
 
@@ -25,11 +26,11 @@ public class GymService {
     private OwnerRepository ownerRepository;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private CommonService commonService;
 
     @Transactional
     public GymDetailsResponse save(GymDetailsRequest requestDto) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(requestDto.getOwnerId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()){
+        if (commonService.checkSubscriptionOfOwner(requestDto.getOwnerId())==null){
             throw new RuntimeException("100");
         }
 
@@ -61,6 +62,10 @@ public class GymService {
         gym.setWebsite(requestDto.getWebsite());
         gym.setLocation(requestDto.getLocation());
         gym.setGoogleMapUrl(requestDto.getGoogleMapUrl());
+        if (gym.getCreatedAt()==null){
+            gym.setCreatedAt(LocalDateTime.now());
+        }
+        gym.setUpdatedAt(LocalDateTime.now());
 
         Owner owner = ownerRepository.findById(requestDto.getOwnerId()).orElse(null);
 

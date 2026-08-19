@@ -34,10 +34,10 @@ public class InvoiceTemplateService {
     private PaymentRepository paymentRepository;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private OwnerRepository ownerRepository;
 
     @Autowired
-    private OwnerRepository ownerRepository;
+    private CommonService commonService;
 
     public byte[] generateInvoice(Integer paymentId, Integer ownerId) throws Exception {
 
@@ -46,18 +46,16 @@ public class InvoiceTemplateService {
 
         InvoicePdfDTO dto = buildInvoicePdfDTO(payment);
 
-        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE));
+       Subscription subscription =  commonService.checkSubscriptionOfOwner(ownerId);
 
-
-
-        if (subscription.isEmpty()){
+        if (subscription==null){
             throw new RuntimeException("101");
         }
-        Owner owner = subscription.get().getOwner();
+        Owner owner = subscription.getOwner();
         if (owner==null){
             throw new RuntimeException("102");
         }
-        String name = subscription.get().getName();
+        String name = subscription.getName();
         String folderName = null;
         if (name!=null && name.equals("Max Pro")){
             folderName = "max-pro";
@@ -242,16 +240,20 @@ public class InvoiceTemplateService {
     }
 
     public List<InvoiceTemplateResponse> getInvoiceTemplatesOfOwner(Integer ownerId){
+        Optional<Owner> owner = ownerRepository.findById(ownerId);
+        if (owner.isEmpty()){
+            throw new RuntimeException("403");
+        }
 
         // 1. Get the assigned subscription tier folder (e.g., "basic", "premium")
-        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE));
+      Subscription subscription = commonService.checkSubscriptionOfOwner(ownerId);
 
         String folderName = "";
 
-        if (subscription.isEmpty()) {
+        if (subscription==null) {
             throw new RuntimeException("403");
         }
-        if (subscription.get().getName().equals("Max Pro")){
+        if (subscription.getName().equals("Max Pro")){
             folderName = "max-pro";
         }
         else{
@@ -338,6 +340,7 @@ public class InvoiceTemplateService {
         //  Loop through each template file, process it, and append it to the list
         List<InvoiceTemplateResponse> responses = new ArrayList<>();
         int count = 1;
+        int ownerTemplateId = owner.get().getTemplateId();
         for (String currentTemplate : templateNames) {
             String fullTemplatePath = folderName + "/" + currentTemplate;
 
@@ -345,6 +348,7 @@ public class InvoiceTemplateService {
             String renderedHtml = templateEngine.process(fullTemplatePath, context);
 
             InvoiceTemplateResponse build = InvoiceTemplateResponse.builder()
+                    .ownerTemplateId(ownerTemplateId==count?1:0)
                     .id(count++)
                     .name(getTemplateName(currentTemplate))
                     .description(getTemplateDescription(currentTemplate))

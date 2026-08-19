@@ -61,7 +61,7 @@ public class OwnerService {
     private OtpRepository otpRepository;
 
     @Autowired
-    private SubscriptionRepository subscriptionRepository;
+    private CommonService commonService;
 
 
     public ResponseEntity<?> logIn(AuthRequest userRequest, HttpServletResponse response) throws Exception {
@@ -86,7 +86,7 @@ public class OwnerService {
             rt.setToken(refreshToken);
             rt.setExpiryTime(Instant.now().plus(7, ChronoUnit.DAYS));
             refreshTokenRepository.save(rt);
-            Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.getId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).orElse(null);
+            Subscription subscription = commonService.checkSubscriptionOfOwner(owner.getId());
 
 // 2. Safely extract the plan from the subscription
             Plan plan = (subscription != null) ? subscription.getPlan() : null;
@@ -131,13 +131,13 @@ public class OwnerService {
         }
         String password = bCryptPasswordEncoder.encode(userRequest.getPassword());
         Owner owner = new Owner();
-        Plan trial = planRepository.findByName("Trial").get();
         owner.setProvider(OAuthProvider.LOCAL);
         owner.setName(userRequest.getName());
+        owner.setCreatedAt(LocalDateTime.now());
+        owner.setUpdatedAt(LocalDateTime.now());
         owner.setPassword(password);
         owner.setEmail(userRequest.getEmail());
         Owner save = ownerRepository.save(owner);
-
 //        subscriptionService.ownerSubscribesToPlan(save.getId(), trial.getId(), password, password);
         return "Account created successfully";
     }
@@ -164,7 +164,7 @@ public class OwnerService {
 
     @Transactional
     public OwnerDetailsResponse update(OwnerDetailsRequest ownerDetailsRequestDto) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerDetailsRequestDto.getOwnerId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()) {
+        if (commonService.checkSubscriptionOfOwner(ownerDetailsRequestDto.getOwnerId())==null) {
             throw new RuntimeException("100");
         }
         Owner owner = ownerRepository.findById(ownerDetailsRequestDto.getOwnerId())
@@ -175,6 +175,7 @@ public class OwnerService {
                 .phone(ownerDetailsRequestDto.getPhone())
                 .email(ownerDetailsRequestDto.getEmail())
                 .name(ownerDetailsRequestDto.getOwnerName())
+                .updatedAt(LocalDateTime.now())
                 .build();
 
 //        Owner save = ownerRepository.save(owner);
@@ -191,7 +192,7 @@ public class OwnerService {
             throw new RuntimeException("User not found");
         }
         Owner owner = ownerRepository.findById(id).get();
-        Subscription subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.getId(), List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).orElse(null);
+        Subscription subscription = commonService.checkSubscriptionOfOwner(owner.getId());
         Plan plan = (subscription != null) ? subscription.getPlan() : null;
         OwnerDetailsResponse responseDto = OwnerDetailsResponse.builder()
                 .website(owner.getGym() != null ? owner.getGym().getWebsite() : "")
@@ -258,7 +259,7 @@ public class OwnerService {
     }
 
     public Page<MemberProjection> getAllMembersOfOwner(Integer ownerId, String name, String dueAmount,Integer source, LocalDate joinedFrom, LocalDate joinedTo, LocalDate expiryFrom, LocalDate expiryTo, LocalDate startDateFrom, LocalDate startDateTo, String plan, Integer isActive, Pageable pageable) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()) {
+        if (commonService.checkSubscriptionOfOwner(ownerId)==null) {
             throw new RuntimeException("100");
         }
         return memberRepository.findAllMembersByOwnerId(Long.valueOf(ownerId), name, dueAmount,source, joinedFrom, joinedTo, expiryFrom, expiryTo, startDateFrom, startDateTo, plan, isActive, pageable);
@@ -295,7 +296,7 @@ public class OwnerService {
     }
 
     public Page<OwnerPaymentProjection> getAllPaymentsOfOwner(Integer ownerId, String amount, String status, String method, LocalDateTime startDate, LocalDateTime endDate, Pageable pageable) {
-        if (subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE)).isEmpty()) {
+        if (commonService.checkSubscriptionOfOwner(ownerId)==null) {
             throw new RuntimeException("100");
         }
         com.backend.gym_backend.enums.Payment payment = null;
@@ -347,21 +348,21 @@ public class OwnerService {
 
 
     public SubscriptionResponse getOwnerActiveSubscription(Integer ownerId) {
-        Optional<Subscription> subscription = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(ownerId, List.of(SubscriptionStatus.ACTIVE, SubscriptionStatus.PARTIALLY_ACTIVE));
+        Subscription subscription = commonService.checkSubscriptionOfOwner(ownerId);
 
-        if (subscription.isEmpty()) {
+        if (subscription==null) {
             return SubscriptionResponse.builder().build();
         }
 
         return SubscriptionResponse.builder()
-                .id(subscription.get().getId())
-                .endDate(subscription.get().getEndDate())
-                .startDate(subscription.get().getStartDate())
-                .subscriptionStatus(subscription.get().getStatus())
-                .price(subscription.get().getPrice())
-                .memberLimitCount(subscription.get().getPlan() != null ? subscription.get().getPlan().getMemberLimit() : 0)
-                .billingDate(subscription.get().getNextBillingDate())
-                .name(subscription.get().getName())
+                .id(subscription.getId())
+                .endDate(subscription.getEndDate())
+                .startDate(subscription.getStartDate())
+                .subscriptionStatus(subscription.getStatus())
+                .price(subscription.getPrice())
+                .memberLimitCount(subscription.getPlan() != null ? subscription.getPlan().getMemberLimit() : 0)
+                .billingDate(subscription.getNextBillingDate())
+                .name(subscription.getName())
                 .build();
     }
 

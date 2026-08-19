@@ -5,6 +5,7 @@ import jakarta.persistence.*;
 import lombok.Getter;
 import lombok.Setter;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -35,4 +36,8 @@ public class Plan {
     @JsonManagedReference("pl")
     @OneToMany(mappedBy = "plan", cascade = CascadeType.ALL, orphanRemoval = true)
     private List<PlanFeature> features;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }

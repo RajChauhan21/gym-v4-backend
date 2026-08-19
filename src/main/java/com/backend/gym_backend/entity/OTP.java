@@ -27,4 +27,8 @@ public class OTP {
     private LocalDateTime expiresAt;
 
     private Boolean isVerified;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime verifiedAt;
 }

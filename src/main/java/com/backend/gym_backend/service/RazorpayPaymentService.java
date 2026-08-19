@@ -56,6 +56,9 @@ public class RazorpayPaymentService {
     @Autowired
     private OtpEmailService emailService;
 
+    @Autowired
+    private CommonService commonService;
+
     public String createSubscription(int planId, int ownerId) throws RazorpayException {
 
         Plan plan = planRepository.findById(planId)
@@ -186,16 +189,16 @@ public class RazorpayPaymentService {
         if (owner.isEmpty()){
             throw new RuntimeException("owner not found");
         }
-        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.get().getId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE));
+        com.backend.gym_backend.entity.Subscription subscriptionEntity = commonService.checkSubscriptionOfOwner(ownerId);
 
-        if (subscriptionEntity.isEmpty()){
+        if (subscriptionEntity==null){
              return "102"; //no active subs found
         }
 
-        subscriptionEntity.get().setStatus(SubscriptionStatus.PARTIALLY_ACTIVE);
-        subscriptionEntity.get().setUpdatedAt(LocalDateTime.now());
+        subscriptionEntity.setStatus(SubscriptionStatus.PARTIALLY_ACTIVE);
+        subscriptionEntity.setUpdatedAt(LocalDateTime.now());
 
-        subscriptionRepository.save(subscriptionEntity.get());
+        subscriptionRepository.save(subscriptionEntity);
 
         RazorpayClient razorpay = new RazorpayClient(apiKey, secretKey);
 
@@ -203,9 +206,9 @@ public class RazorpayPaymentService {
         request.put("cancel_at_cycle_end", true);
 
         Subscription subscription =
-                razorpay.subscriptions.cancel(subscriptionEntity.get().getRazorpaySubscriptionId(), request);
+                razorpay.subscriptions.cancel(subscriptionEntity.getRazorpaySubscriptionId(), request);
 
-        emailService.sendSubscriptionCancellationEmail(owner.get().getEmail(),owner.get().getName(),subscriptionEntity.get().getName(),subscriptionEntity.get().getEndDate());
+        emailService.sendSubscriptionCancellationEmail(owner.get().getEmail(),owner.get().getName(),subscriptionEntity.getName(),subscriptionEntity.getEndDate());
 
         return "202";
     }
@@ -215,9 +218,9 @@ public class RazorpayPaymentService {
         if (owner.isEmpty()){
             throw new RuntimeException("owner not found");
         }
-        Optional<com.backend.gym_backend.entity.Subscription> subscriptionEntity = subscriptionRepository.findFirstByOwner_IdAndStatusInOrderByCreatedAtDesc(owner.get().getId(), List.of(SubscriptionStatus.ACTIVE,SubscriptionStatus.PARTIALLY_ACTIVE));
+        com.backend.gym_backend.entity.Subscription subscriptionEntity = commonService.checkSubscriptionOfOwner(ownerId);
 
-        if (subscriptionEntity.isEmpty()){
+        if (subscriptionEntity==null){
             throw new RuntimeException("102"); //no active subs found
         }
 
@@ -232,11 +235,11 @@ public class RazorpayPaymentService {
 
         Subscription subscription =
                 razorpay.subscriptions.update(
-                        subscriptionEntity.get().getRazorpaySubscriptionId(),
+                        subscriptionEntity.getRazorpaySubscriptionId(),
                         request
                 );
 
-        emailService.sendSubscriptionUpgradeEmail(owner.get().getEmail(),owner.get().getName(),subscriptionEntity.get().getName(),plan.getName(),subscriptionEntity.get().getEndDate());
+        emailService.sendSubscriptionUpgradeEmail(owner.get().getEmail(),owner.get().getName(),subscriptionEntity.getName(),plan.getName(),subscriptionEntity.getEndDate());
         return "202";
     }
 }

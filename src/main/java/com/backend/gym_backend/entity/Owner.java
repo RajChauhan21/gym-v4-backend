@@ -7,6 +7,7 @@ import jakarta.persistence.*;
 import lombok.*;
 import org.hibernate.annotations.Cascade;
 
+import java.time.LocalDateTime;
 import java.util.List;
 
 @Entity
@@ -64,4 +65,8 @@ public class Owner {
     @JsonManagedReference("ref")
     @OneToOne(mappedBy = "owner")
     private RefreshToken refreshToken;
+
+    private LocalDateTime createdAt;
+
+    private LocalDateTime updatedAt;
 }
