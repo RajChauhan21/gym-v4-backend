@@ -12,6 +12,7 @@ import java.util.Set;
 
 public interface MemberShipAdjustmentRepository extends JpaRepository<MemberShipAdjustment, Integer> {
     Optional<List<MemberShipAdjustment>> findByMemberIdAndIsCurrent(Integer id,int isCurrent);
+    Optional<List<MemberShipAdjustment>> findByMemberId(Integer id);
 
     Optional<MemberShipAdjustment> findByMemberIdAndStatus(Integer id, Integer status);
 
@@ -32,9 +33,11 @@ public interface MemberShipAdjustmentRepository extends JpaRepository<MemberShip
                 SELECT m
                 FROM MemberShipAdjustment m
                 WHERE
+                isCurrent = 1 AND (
                     (m.status = 2 AND m.freezeEndDate < :today)
                     OR
                     (m.status = 3 AND m.newEndDate < :today)
+                    )
             """)
     List<MemberShipAdjustment> findExpiredAdjustments(
             @Param("today") LocalDate today

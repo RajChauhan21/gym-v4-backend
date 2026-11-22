@@ -20,6 +20,11 @@ public class MemberShipAdjustmentController {
     }
 
     @GetMapping("/getMembershipAdjustment")
+    public ResponseEntity<?> getMemberShipAdjustmentByMemberIdAndIsActive(@RequestParam("m") Integer memberId){
+        return new ResponseEntity<>(memberShipAdjustmentService.getMemberShipAdjustmentByMemberIdAndIsActive(memberId), HttpStatus.ACCEPTED);
+    }
+
+    @GetMapping("/get-membership-adjustment")
     public ResponseEntity<?> getMemberShipAdjustmentByMemberId(@RequestParam("m") Integer memberId){
         return new ResponseEntity<>(memberShipAdjustmentService.getMemberShipAdjustmentByMemberId(memberId), HttpStatus.ACCEPTED);
     }

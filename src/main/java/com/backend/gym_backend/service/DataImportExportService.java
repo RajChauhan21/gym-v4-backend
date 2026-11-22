@@ -846,8 +846,8 @@ public class DataImportExportService {
         if (status != null && status.equals("FAILED")) {
             payment = Payment.FAILED;
         }
-
-        Page<OwnerPaymentProjection> subscriptionsRecord = ownerPaymentRepository.findPaymentsByOwner(Math.toIntExact(ownerId), amount, payment, method, fromDate, toDate, null);
+        String formattedAmount = (amount != null && !amount.trim().isEmpty()) ? "%" + amount + "%" : null;
+        Page<OwnerPaymentProjection> subscriptionsRecord = ownerPaymentRepository.findPaymentsByOwner(Math.toIntExact(ownerId), formattedAmount, payment, method, fromDate, toDate, null);
 
         List<SubscriptionExportDto> subscription =
                 subscriptionsRecord.stream()

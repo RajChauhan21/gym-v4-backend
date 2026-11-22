@@ -306,7 +306,8 @@ public class OwnerService {
         if (status != null && status.equals("FAILED")) {
             payment = com.backend.gym_backend.enums.Payment.FAILED;
         }
-        Page<OwnerPaymentProjection> byOwner = ownerPaymentRepository.findPaymentsByOwner(ownerId, amount, payment, method, startDate, endDate, pageable);
+        String formattedAmount = (amount != null && !amount.trim().isEmpty()) ? "%" + amount + "%" : null;
+        Page<OwnerPaymentProjection> byOwner = ownerPaymentRepository.findPaymentsByOwner(ownerId, formattedAmount, payment, method, startDate, endDate, pageable);
 
         return byOwner;
     }

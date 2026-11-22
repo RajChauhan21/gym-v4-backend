@@ -110,8 +110,8 @@ public class MemberShipAdjustmentService {
         if (request.getDurationDays() > 0) memberShipAdjustment.setDurationDays(request.getDurationDays());
         if (request.getNewEndDate() != null) {
             memberShipAdjustment.setNewEndDate(request.getNewEndDate());
-            member.get().setExpiry(request.getNewEndDate());
-            member.get().setUpdatedAt(LocalDateTime.now());
+//            member.get().setExpiry(request.getNewEndDate());
+//            member.get().setUpdatedAt(LocalDateTime.now());
         }
         if (request.getOldEndDate() != null) memberShipAdjustment.setOldEndDate(request.getOldEndDate());
 
@@ -167,7 +167,7 @@ public class MemberShipAdjustmentService {
         return "ok";
     }
 
-    public List<MemberShipAdjustmentResponse> getMemberShipAdjustmentByMemberId(Integer memberId) {
+    public List<MemberShipAdjustmentResponse> getMemberShipAdjustmentByMemberIdAndIsActive(Integer memberId) {
         List<MemberShipAdjustmentResponse> responses = new ArrayList<>();
 
         if (memberId == null) {
@@ -189,6 +189,37 @@ public class MemberShipAdjustmentService {
                     .freezeStartDate(member.getFreezeStartDate())
                     .freezeEndDate(member.getFreezeEndDate())
                     .newEndDate(member.getNewEndDate())
+                    .build();
+
+            responses.add(m);
+        }
+
+        return responses;
+    }
+
+    public List<MemberShipAdjustmentResponse> getMemberShipAdjustmentByMemberId(Integer memberId) {
+        List<MemberShipAdjustmentResponse> responses = new ArrayList<>();
+
+        if (memberId == null) {
+            throw new RuntimeException("100");
+        }
+        Optional<List<MemberShipAdjustment>> members = repository.findByMemberId(memberId);
+        if (members.isEmpty()) {
+            throw new RuntimeException("101");
+        }
+        for (MemberShipAdjustment member : members.get()) {
+            MemberShipAdjustmentResponse m = MemberShipAdjustmentResponse.builder()
+                    .memberId(member.getMemberId())
+                    .id(member.getId())
+                    .notes(member.getNotes())
+                    .reason(member.getReason())
+                    .durationDays(member.getDurationDays())
+                    .oldEndDate(member.getOldEndDate())
+                    .status(member.getStatus())
+                    .freezeStartDate(member.getFreezeStartDate())
+                    .freezeEndDate(member.getFreezeEndDate())
+                    .newEndDate(member.getNewEndDate())
+                    .isCurrent(member.getIsCurrent())
                     .build();
 
             responses.add(m);

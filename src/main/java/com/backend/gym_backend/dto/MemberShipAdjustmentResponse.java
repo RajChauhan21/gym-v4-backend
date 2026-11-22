@@ -28,4 +28,6 @@ public class MemberShipAdjustmentResponse {
     private int status;
 
     private int memberId;
+
+    private int isCurrent;
 }
